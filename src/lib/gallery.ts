@@ -1,0 +1,98 @@
+export const GALLERY = [
+  {
+    src: "/images/residential-frontage.png",
+    alt: "Contemporary Melbourne home with dark slat fencing and an automated sliding driveway gate",
+    caption: "Architectural slat fence and sliding gate",
+    tag: "Residential",
+  },
+  {
+    src: "/images/service-steel.webp",
+    alt: "Custom powder-coated charcoal steel slat sliding driveway gate",
+    caption: "Custom steel sliding gate",
+    tag: "Steel",
+  },
+  {
+    src: "/images/service-timber.webp",
+    alt: "Treated pine timber paling fence along a Melbourne suburban boundary",
+    caption: "Timber paling boundary",
+    tag: "Timber",
+  },
+  {
+    src: "/images/service-colorbond.webp",
+    alt: "Colorbond steel fence in Monument grey on a Melbourne side boundary",
+    caption: "Colorbond privacy fencing",
+    tag: "Colorbond",
+  },
+  {
+    src: "/images/service-pool.webp",
+    alt: "Frameless glass pool fence with self-closing gate in a Melbourne backyard",
+    caption: "AS 1926 glass pool barrier",
+    tag: "Pool",
+  },
+  {
+    src: "/images/service-retaining.webp",
+    alt: "Charcoal concrete sleeper retaining wall with Colorbond fence above",
+    caption: "Sleeper wall and fence",
+    tag: "Retaining",
+  },
+  {
+    src: "/images/service-ogscene.webp",
+    alt: "Melbourne residential street frontage with steel sliding gate at dusk",
+    caption: "Dusk sliding-gate frontage",
+    tag: "Automation",
+  },
+  {
+    src: "/images/service-automation.webp",
+    alt: "Sliding gate motor, track and photocell installed on a residential driveway",
+    caption: "CAME / Beninca hardware",
+    tag: "Automation",
+  },
+  {
+    src: "/images/service-palisade.webp",
+    alt: "Powder-coated black steel palisade fencing on a Melbourne residential block",
+    caption: "Residential palisade",
+    tag: "Palisade",
+  },
+  {
+    src: "/images/hero-daytime.webp",
+    alt: "Automated steel sliding gate and pedestrian gate with perimeter fencing",
+    caption: "Sliding gate with pedestrian access",
+    tag: "Automation",
+  },
+  {
+    src: "/images/projects-st-damians-primary-school-bundoora-full-gate.webp",
+    alt: "Full-width automated gate at St Damian's Primary School in Bundoora",
+    caption: "Bundoora — automated entrance",
+    tag: "Bundoora",
+  },
+  {
+    src: "/images/projects-body-corporate-richmond-frontage-wide.webp",
+    alt: "Body corporate street frontage fencing and gates in Richmond",
+    caption: "Strata frontage, Richmond",
+    tag: "Strata",
+  },
+  {
+    src: "/images/rjl-project-gallery-03-epping1.webp",
+    alt: "Residential fencing project in Epping",
+    caption: "Epping residential fencing",
+    tag: "Colorbond",
+  },
+  {
+    src: "/images/rjl-project-gallery-14-lalor1.webp",
+    alt: "Fencing completed for a Lalor home",
+    caption: "Lalor boundary fencing",
+    tag: "Timber",
+  },
+  {
+    src: "/images/projects-uniting-agewell-toorak-pedestrian-gates.webp",
+    alt: "Pedestrian gates with intercom and matching fence",
+    caption: "Pedestrian gates and intercom",
+    tag: "Gates",
+  },
+  {
+    src: "/images/chris-alebakis-industry-legend.jpg",
+    alt: "Chris Alebakis, Australian Fencing Awards Hall of Fame inductee, on site",
+    caption: "Chris Alebakis — Hall of Fame",
+    tag: "Team",
+  },
+];
