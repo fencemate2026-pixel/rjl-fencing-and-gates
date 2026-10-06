@@ -118,7 +118,7 @@ def reviews_section(cards, heading, section_id):
     )
 
 
-SITE_JS_TAG = '<script src="/assets/site.js" defer></script><script src="/assets/chat.js" defer></script>'
+SITE_JS_TAG = '<script src="/assets/ga.js" defer></script><script src="/assets/site.js" defer></script><script src="/assets/chat.js" defer></script>'
 
 
 def strip_runtime(s, fname):
@@ -310,6 +310,8 @@ SITE_JS = r"""/*
       status.innerHTML = "<strong>Your enquiry is ready to send.</strong><p>If your email app did not open, choose an option below. Press Send in your email app to submit your enquiry.</p>" +
         '<p><a href="' + mailto + '">Open email app</a> · <a href="' + gmail + '" target="_blank" rel="noopener noreferrer">Gmail</a> · ' +
         '<a href="' + outlook + '" target="_blank" rel="noopener noreferrer">Outlook / Hotmail</a></p>';
+      // Tell ga.js a valid enquiry was produced (no personal details passed).
+      document.dispatchEvent(new CustomEvent("rjl:enquiry-ready", { detail: { service: g("service") } }));
       window.location.href = mailto;
     });
   }
@@ -327,6 +329,8 @@ def main():
     (OUT / "assets" / "site.js").write_text(SITE_JS, encoding="utf-8")
     # Ask RJL assistant (vanilla rebuild; injects its own markup).
     shutil.copy(Path(__file__).with_name("chat.js"), OUT / "assets" / "chat.js")
+    # Google Analytics 4 (G-N0LPMXRT3D) + lead events.
+    shutil.copy(Path(__file__).with_name("ga.js"), OUT / "assets" / "ga.js")
     # Bigger logo + light footer: trimmed logo file and an override stylesheet.
     shutil.copy(Path(__file__).with_name("logo-trim.png"), OUT / "images" / "rjl-logo-trim.png")
     shutil.copy(Path(__file__).with_name("overrides.css"), OUT / "assets" / "overrides.css")

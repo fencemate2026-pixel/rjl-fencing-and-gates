@@ -56,6 +56,8 @@
       status.innerHTML = "<strong>Your enquiry is ready to send.</strong><p>If your email app did not open, choose an option below. Press Send in your email app to submit your enquiry.</p>" +
         '<p><a href="' + mailto + '">Open email app</a> · <a href="' + gmail + '" target="_blank" rel="noopener noreferrer">Gmail</a> · ' +
         '<a href="' + outlook + '" target="_blank" rel="noopener noreferrer">Outlook / Hotmail</a></p>';
+      // Tell ga.js a valid enquiry was produced (no personal details passed).
+      document.dispatchEvent(new CustomEvent("rjl:enquiry-ready", { detail: { service: g("service") } }));
       window.location.href = mailto;
     });
   }
