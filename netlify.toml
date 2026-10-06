@@ -1,16 +1,50 @@
+# RJL Fencing and Gates - static site (no build step).
+# Pages are plain HTML in /site. Edit them directly; tools/ holds the
+# conversion script and the browser test used to verify the site.
 [build]
-  command = "npm run build:netlify"
-  publish = "dist/client"
+  publish = "site"
+  command = "echo 'static site - no build'"
 
-[build.environment]
-  NODE_VERSION = "22.13.0"
-  NPM_FLAGS = "--no-audit --no-fund"
-  NITRO_PRESET = "netlify"
+# Retired page names from the old site.
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+[[redirects]]
+  from = "/contact"
+  to = "/contact-us"
+  status = 301
+[[redirects]]
+  from = "/about"
+  to = "/about-rjlfencing-and-gates"
+  status = 301
+[[redirects]]
+  from = "/faq"
+  to = "/frequently-asked-questions"
+  status = 301
+[[redirects]]
+  from = "/services"
+  to = "/#services"
+  status = 301
+[[redirects]]
+  from = "/service-areas/*"
+  to = "/service-areas"
+  status = 301
 
 [[headers]]
   for = "/*"
   [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com; frame-src https://www.google.com https://maps.google.com; form-action 'self' https:; base-uri 'self'; object-src 'none'"
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"

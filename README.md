@@ -1,26 +1,15 @@
-# RJL Fencing & Gates
+# rjlfencingandgates.com.au
 
-Residential fencing, custom steel gates, Colorbond, pool fencing, retaining walls and automation within 100 km of Bundoora. Family-led since 1990 — sibling of [RJL Commercial Group](https://www.rjlcommercialgroup.com).
+Plain static site (HTML + one CSS file + one small script). No build step.
 
-## Local
+- `site/` - the website. Each page is `site/<page-name>.html`.
+- `site/assets/site.js` - mobile menu and email enquiry form.
+- `site/assets/chat.js` - "Ask RJL" assistant (fixed, source-linked answers; no AI, nothing sent anywhere).
+- `tools/build_site.py` - converted the original ChatGPT-built site to this
+  static version and applied the Oct 2026 changes (service area limited to
+  Melbourne's north and north-east; Google reviews featured site-wide).
+- `tools/verify.py` - browser test: every page loads with no errors, form and
+  mobile menu work. Run `python3 tools/serve.py site` then `python3 tools/verify.py`.
+- `tools/audit-log.txt` - every automated edit, per page.
 
-```bash
-npm install
-npm run dev
-```
-
-Preview: http://localhost:8080
-
-## Netlify
-
-Same process as the commercial site. See [NETLIFY-DEPLOYMENT.md](./NETLIFY-DEPLOYMENT.md).
-
-- Build: `npm run build:netlify`
-- Publish: `dist/client`
-- Node: 22.13.0
-
-## Contact
-
-- Phone: 0412 467 840
-- Email: info@rjlfencing.com.au
-- Address: 13 Oxley Avenue, Bundoora VIC 3083
+Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.

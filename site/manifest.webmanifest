@@ -1,0 +1,17 @@
+{
+  "name": "RJL FENCING PTY. LTD.",
+  "short_name": "RJL Fencing",
+  "description": "Residential fencing, gates, automation, pool barriers and retaining walls across Melbourne.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#071f38",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

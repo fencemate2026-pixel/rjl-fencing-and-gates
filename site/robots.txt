@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+
+User-Agent: Googlebot-Image
+Allow: /
+
+Sitemap: https://www.rjlfencingandgates.com.au/sitemap.xml
+Host: https://www.rjlfencingandgates.com.au

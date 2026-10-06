@@ -1,0 +1,29 @@
+/*
+ * overrides.css - RJL changes layered over the original stylesheet.
+ * Loaded after /assets/index-By4YIubB.css so these rules win.
+ *
+ * 1. Bigger logo. The logo file now has its empty border trimmed
+ *    (/images/rjl-logo-trim.png), so the visible logo fills its box.
+ * 2. Light footer so the black circle and "& GATES" in the logo show.
+ */
+
+/* ---- 1. Header logo ------------------------------------------------- */
+.brand { width: 250px; min-width: 250px; }
+.brand img { width: 250px; height: 70px; object-fit: contain; object-position: left center; }
+@media (width <= 560px) {
+  .brand { width: 175px; min-width: 175px; }
+  .brand img { width: 175px; height: 49px; }
+}
+
+/* ---- 2. Footer: light background ----------------------------------- */
+.footer { background: var(--paper); color: var(--ink); border-top: 4px solid var(--orange); }
+.footer-brand > img { width: 300px; height: 84px; object-fit: contain; object-position: left center; }
+.footer-brand > p { color: var(--muted); }
+.footer-contact a, .footer-contact span { color: var(--ink); }
+.footer h2 { color: var(--orange); }
+.footer li, .footer li a { color: var(--ink); }
+.footer li a:hover, .footer-contact a:hover { color: var(--orange); }
+.footer-base { border-top: 1px solid var(--line); color: var(--muted); }
+
+/* ---- 3. Rating lockup: 4.4 shown as four full stars + a faded fifth -- */
+.star-part { opacity: .35; }
