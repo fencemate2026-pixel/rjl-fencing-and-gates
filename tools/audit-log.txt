@@ -443,3 +443,93 @@ who-we-work-with.html	inserted Google reviews band (3 cards) before closing CTA	
 who-we-work-with.html	responsive images; removed 2 image preloads; hero preload=yes	1
 who-we-work-with.html	LocalBusiness opening hours added	1
 sitemap.xml	regenerated with 25 URLs + lastmod	1
+
+# add_rapid_maintenance.py - 2026-10-07T16:14:51
+emergency-fence-gate-repairs.html	created page from gate-automation template	1
+gate-servicing-maintenance.html	created page from gate-automation template	1
+404.html	added 24/7 Rapid Response bar	1
+404.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+404.html	footer: servicing + emergency links	1
+about-rjlfencing-and-gates.html	added 24/7 Rapid Response bar	1
+about-rjlfencing-and-gates.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+about-rjlfencing-and-gates.html	footer: servicing + emergency links	1
+blogs/big-group-hug-grand-opening.html	added 24/7 Rapid Response bar	1
+blogs/big-group-hug-grand-opening.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+blogs/big-group-hug-grand-opening.html	footer: servicing + emergency links	1
+blogs/neighbour-wont-pay-half-fence-victoria.html	added 24/7 Rapid Response bar	1
+blogs/neighbour-wont-pay-half-fence-victoria.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+blogs/neighbour-wont-pay-half-fence-victoria.html	footer: servicing + emergency links	1
+blogs/pool-fencing-requirements-victoria.html	added 24/7 Rapid Response bar	1
+blogs/pool-fencing-requirements-victoria.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+blogs/pool-fencing-requirements-victoria.html	footer: servicing + emergency links	1
+blogs/retaining-wall-permits-victoria.html	added 24/7 Rapid Response bar	1
+blogs/retaining-wall-permits-victoria.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+blogs/retaining-wall-permits-victoria.html	footer: servicing + emergency links	1
+blogs/sliding-vs-swing-driveway-gates.html	added 24/7 Rapid Response bar	1
+blogs/sliding-vs-swing-driveway-gates.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+blogs/sliding-vs-swing-driveway-gates.html	footer: servicing + emergency links	1
+blogs/timber-vs-colorbond-fencing-melbourne.html	added 24/7 Rapid Response bar	1
+blogs/timber-vs-colorbond-fencing-melbourne.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+blogs/timber-vs-colorbond-fencing-melbourne.html	footer: servicing + emergency links	1
+blogs.html	added 24/7 Rapid Response bar	1
+blogs.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+blogs.html	footer: servicing + emergency links	1
+contact-us.html	added 24/7 Rapid Response bar	1
+contact-us.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+contact-us.html	footer: servicing + emergency links	1
+emergency-fence-gate-repairs.html	added 24/7 Rapid Response bar	1
+emergency-fence-gate-repairs.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+emergency-fence-gate-repairs.html	footer: servicing + emergency links	1
+fencing-bundoora.html	added 24/7 Rapid Response bar	1
+fencing-bundoora.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+fencing-bundoora.html	footer: servicing + emergency links	1
+frequently-asked-questions.html	added 24/7 Rapid Response bar	1
+frequently-asked-questions.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+frequently-asked-questions.html	footer: servicing + emergency links	1
+gallery.html	added 24/7 Rapid Response bar	1
+gallery.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+gallery.html	footer: servicing + emergency links	1
+gate-automation-bundoora.html	added 24/7 Rapid Response bar	1
+gate-automation-bundoora.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+gate-automation-bundoora.html	footer: servicing + emergency links	1
+gate-servicing-maintenance.html	added 24/7 Rapid Response bar	1
+gate-servicing-maintenance.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+gate-servicing-maintenance.html	footer: servicing + emergency links	1
+index.html	added 24/7 Rapid Response bar	1
+index.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+index.html	footer: servicing + emergency links	1
+pool-fencing-regulations-victoria.html	added 24/7 Rapid Response bar	1
+pool-fencing-regulations-victoria.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+pool-fencing-regulations-victoria.html	footer: servicing + emergency links	1
+pool-fencing.html	added 24/7 Rapid Response bar	1
+pool-fencing.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+pool-fencing.html	footer: servicing + emergency links	1
+privacy-policy.html	added 24/7 Rapid Response bar	1
+privacy-policy.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+privacy-policy.html	footer: servicing + emergency links	1
+retaining-walls.html	added 24/7 Rapid Response bar	1
+retaining-walls.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+retaining-walls.html	footer: servicing + emergency links	1
+reviews.html	added 24/7 Rapid Response bar	1
+reviews.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+reviews.html	footer: servicing + emergency links	1
+service-areas.html	added 24/7 Rapid Response bar	1
+service-areas.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+service-areas.html	footer: servicing + emergency links	1
+sliding-double-gates-bundoora.html	added 24/7 Rapid Response bar	1
+sliding-double-gates-bundoora.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+sliding-double-gates-bundoora.html	footer: servicing + emergency links	1
+steel-fencing-gates.html	added 24/7 Rapid Response bar	1
+steel-fencing-gates.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+steel-fencing-gates.html	footer: servicing + emergency links	1
+terms-and-conditions.html	added 24/7 Rapid Response bar	1
+terms-and-conditions.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+terms-and-conditions.html	footer: servicing + emergency links	1
+timber-colorbond-fencing-melbourne.html	added 24/7 Rapid Response bar	1
+timber-colorbond-fencing-melbourne.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+timber-colorbond-fencing-melbourne.html	footer: servicing + emergency links	1
+who-we-work-with.html	added 24/7 Rapid Response bar	1
+who-we-work-with.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
+who-we-work-with.html	footer: servicing + emergency links	1
+sitemap.xml	added /gate-servicing-maintenance	1
+sitemap.xml	added /emergency-fence-gate-repairs	1
