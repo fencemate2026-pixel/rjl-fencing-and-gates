@@ -17,7 +17,6 @@
     var setOpen = function (open) {
       menu.classList.toggle("is-open", open);
       btn.setAttribute("aria-expanded", String(open));
-      btn.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
       btn.querySelector("span").textContent = open ? "Close" : "Menu";
       panel.hidden = !open;
       document.body.classList.toggle("mobile-nav-open", open);

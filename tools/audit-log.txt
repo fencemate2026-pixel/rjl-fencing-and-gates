@@ -1,4 +1,19 @@
 assets/	deleted React JS bundles; wrote site.js and chat.js	1
+images/	/images/awards.png: 5 WebP sizes	5
+images/	/images/gate-automation.webp: 5 WebP sizes	5
+images/	/images/hero-gate.webp: 5 WebP sizes	5
+images/	/images/picket-fence.webp: 5 WebP sizes	5
+images/	/images/pool-black.webp: 2 WebP sizes	2
+images/	/images/pool-glass.webp: 2 WebP sizes	2
+images/	/images/pool-timber.webp: 5 WebP sizes	5
+images/	/images/retaining-wall-concept.webp: 4 WebP sizes	4
+images/	/images/slat-fence.webp: 5 WebP sizes	5
+images/	/images/sliding-gate.webp: 5 WebP sizes	5
+images/	/images/timber-fence.webp: 3 WebP sizes	3
+images/	/images/rjl-logo-trim.png -> rjl-logo-trim.webp 604x168	1
+images/	/images/rjl-logo.png -> rjl-logo.webp 454x168	1
+images/	/client-logos/cfa.png -> cfa.webp 116x116	1
+images/	/client-logos/victoria-police.png -> victoria-police.webp 406x116	1
 404.html	removed React runtime (7 scripts), static chat placeholder; added site.js + chat.js	1
 404.html	header/footer logo -> trimmed file	2
 404.html	logo preload	1
@@ -12,6 +27,9 @@ assets/	deleted React JS bundles; wrote site.js and chat.js	1
 404.html	desktop nav label	1
 404.html	mobile nav label	1
 404.html	removed red top banner	1
+404.html	responsive images; removed 1 image preloads; hero preload=no	1
+404.html	LocalBusiness opening hours added	1
+404.html	404 set to noindex	1
 about-rjlfencing-and-gates.html	removed React runtime (9 scripts), static chat placeholder; added site.js + chat.js	1
 about-rjlfencing-and-gates.html	header/footer logo -> trimmed file	2
 about-rjlfencing-and-gates.html	logo preload	1
@@ -26,6 +44,8 @@ about-rjlfencing-and-gates.html	desktop nav label	1
 about-rjlfencing-and-gates.html	mobile nav label	1
 about-rjlfencing-and-gates.html	removed red top banner	1
 about-rjlfencing-and-gates.html	inserted Google reviews band (3 cards) before closing CTA	1
+about-rjlfencing-and-gates.html	responsive images; removed 2 image preloads; hero preload=yes	1
+about-rjlfencing-and-gates.html	LocalBusiness opening hours added	1
 blogs/big-group-hug-grand-opening.html	removed React runtime (9 scripts), static chat placeholder; added site.js + chat.js	1
 blogs/big-group-hug-grand-opening.html	header/footer logo -> trimmed file	2
 blogs/big-group-hug-grand-opening.html	logo preload	1
@@ -39,6 +59,9 @@ blogs/big-group-hug-grand-opening.html	Service areaServed	6
 blogs/big-group-hug-grand-opening.html	desktop nav label	1
 blogs/big-group-hug-grand-opening.html	mobile nav label	1
 blogs/big-group-hug-grand-opening.html	removed red top banner	1
+blogs/big-group-hug-grand-opening.html	responsive images; removed 2 image preloads; hero preload=yes	1
+blogs/big-group-hug-grand-opening.html	title shortened	1
+blogs/big-group-hug-grand-opening.html	LocalBusiness opening hours added	1
 blogs/neighbour-wont-pay-half-fence-victoria.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 blogs/neighbour-wont-pay-half-fence-victoria.html	header/footer logo -> trimmed file	2
 blogs/neighbour-wont-pay-half-fence-victoria.html	logo preload	1
@@ -52,6 +75,9 @@ blogs/neighbour-wont-pay-half-fence-victoria.html	Service areaServed	6
 blogs/neighbour-wont-pay-half-fence-victoria.html	desktop nav label	1
 blogs/neighbour-wont-pay-half-fence-victoria.html	mobile nav label	1
 blogs/neighbour-wont-pay-half-fence-victoria.html	removed red top banner	1
+blogs/neighbour-wont-pay-half-fence-victoria.html	responsive images; removed 2 image preloads; hero preload=yes	1
+blogs/neighbour-wont-pay-half-fence-victoria.html	title shortened	1
+blogs/neighbour-wont-pay-half-fence-victoria.html	LocalBusiness opening hours added	1
 blogs/pool-fencing-requirements-victoria.html	removed React runtime (8 scripts), static chat placeholder; added site.js + chat.js	1
 blogs/pool-fencing-requirements-victoria.html	header/footer logo -> trimmed file	2
 blogs/pool-fencing-requirements-victoria.html	logo preload	1
@@ -65,6 +91,9 @@ blogs/pool-fencing-requirements-victoria.html	Service areaServed	6
 blogs/pool-fencing-requirements-victoria.html	desktop nav label	1
 blogs/pool-fencing-requirements-victoria.html	mobile nav label	1
 blogs/pool-fencing-requirements-victoria.html	removed red top banner	1
+blogs/pool-fencing-requirements-victoria.html	responsive images; removed 2 image preloads; hero preload=yes	1
+blogs/pool-fencing-requirements-victoria.html	title shortened	1
+blogs/pool-fencing-requirements-victoria.html	LocalBusiness opening hours added	1
 blogs/retaining-wall-permits-victoria.html	removed React runtime (8 scripts), static chat placeholder; added site.js + chat.js	1
 blogs/retaining-wall-permits-victoria.html	header/footer logo -> trimmed file	2
 blogs/retaining-wall-permits-victoria.html	logo preload	1
@@ -78,6 +107,9 @@ blogs/retaining-wall-permits-victoria.html	Service areaServed	6
 blogs/retaining-wall-permits-victoria.html	desktop nav label	1
 blogs/retaining-wall-permits-victoria.html	mobile nav label	1
 blogs/retaining-wall-permits-victoria.html	removed red top banner	1
+blogs/retaining-wall-permits-victoria.html	responsive images; removed 2 image preloads; hero preload=yes	1
+blogs/retaining-wall-permits-victoria.html	title shortened	1
+blogs/retaining-wall-permits-victoria.html	LocalBusiness opening hours added	1
 blogs/sliding-vs-swing-driveway-gates.html	removed React runtime (8 scripts), static chat placeholder; added site.js + chat.js	1
 blogs/sliding-vs-swing-driveway-gates.html	header/footer logo -> trimmed file	2
 blogs/sliding-vs-swing-driveway-gates.html	logo preload	1
@@ -91,6 +123,9 @@ blogs/sliding-vs-swing-driveway-gates.html	Service areaServed	6
 blogs/sliding-vs-swing-driveway-gates.html	desktop nav label	1
 blogs/sliding-vs-swing-driveway-gates.html	mobile nav label	1
 blogs/sliding-vs-swing-driveway-gates.html	removed red top banner	1
+blogs/sliding-vs-swing-driveway-gates.html	responsive images; removed 2 image preloads; hero preload=yes	1
+blogs/sliding-vs-swing-driveway-gates.html	title shortened	1
+blogs/sliding-vs-swing-driveway-gates.html	LocalBusiness opening hours added	1
 blogs/timber-vs-colorbond-fencing-melbourne.html	removed React runtime (8 scripts), static chat placeholder; added site.js + chat.js	1
 blogs/timber-vs-colorbond-fencing-melbourne.html	header/footer logo -> trimmed file	2
 blogs/timber-vs-colorbond-fencing-melbourne.html	logo preload	1
@@ -104,6 +139,9 @@ blogs/timber-vs-colorbond-fencing-melbourne.html	Service areaServed	6
 blogs/timber-vs-colorbond-fencing-melbourne.html	desktop nav label	1
 blogs/timber-vs-colorbond-fencing-melbourne.html	mobile nav label	1
 blogs/timber-vs-colorbond-fencing-melbourne.html	removed red top banner	1
+blogs/timber-vs-colorbond-fencing-melbourne.html	responsive images; removed 2 image preloads; hero preload=yes	1
+blogs/timber-vs-colorbond-fencing-melbourne.html	title shortened	1
+blogs/timber-vs-colorbond-fencing-melbourne.html	LocalBusiness opening hours added	1
 blogs.html	removed React runtime (9 scripts), static chat placeholder; added site.js + chat.js	1
 blogs.html	header/footer logo -> trimmed file	2
 blogs.html	logo preload	1
@@ -117,6 +155,8 @@ blogs.html	Service areaServed	6
 blogs.html	desktop nav label	1
 blogs.html	mobile nav label	1
 blogs.html	removed red top banner	1
+blogs.html	responsive images; removed 1 image preloads; hero preload=no	1
+blogs.html	LocalBusiness opening hours added	1
 contact-us.html	removed React runtime (8 scripts), static chat placeholder; added site.js + chat.js	1
 contact-us.html	header/footer logo -> trimmed file	2
 contact-us.html	logo preload	1
@@ -131,6 +171,8 @@ contact-us.html	Service areaServed	6
 contact-us.html	desktop nav label	1
 contact-us.html	mobile nav label	1
 contact-us.html	removed red top banner	1
+contact-us.html	responsive images; removed 1 image preloads; hero preload=no	1
+contact-us.html	LocalBusiness opening hours added	1
 fencing-bundoora.html	removed React runtime (12 scripts), static chat placeholder; added site.js + chat.js	1
 fencing-bundoora.html	header/footer logo -> trimmed file	2
 fencing-bundoora.html	logo preload	1
@@ -144,6 +186,8 @@ fencing-bundoora.html	Service areaServed	6
 fencing-bundoora.html	desktop nav label	1
 fencing-bundoora.html	mobile nav label	1
 fencing-bundoora.html	removed red top banner	1
+fencing-bundoora.html	responsive images; removed 2 image preloads; hero preload=yes	1
+fencing-bundoora.html	LocalBusiness opening hours added	1
 frequently-asked-questions.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 frequently-asked-questions.html	header/footer logo -> trimmed file	2
 frequently-asked-questions.html	logo preload	1
@@ -159,6 +203,8 @@ frequently-asked-questions.html	desktop nav label	1
 frequently-asked-questions.html	mobile nav label	1
 frequently-asked-questions.html	removed red top banner	1
 frequently-asked-questions.html	inserted Google reviews band (3 cards) before closing CTA	1
+frequently-asked-questions.html	responsive images; removed 1 image preloads; hero preload=no	1
+frequently-asked-questions.html	LocalBusiness opening hours added	1
 gallery.html	removed React runtime (9 scripts), static chat placeholder; added site.js + chat.js	1
 gallery.html	header/footer logo -> trimmed file	2
 gallery.html	logo preload	1
@@ -173,6 +219,8 @@ gallery.html	desktop nav label	1
 gallery.html	mobile nav label	1
 gallery.html	removed red top banner	1
 gallery.html	inserted Google reviews band (3 cards) before closing CTA	1
+gallery.html	responsive images; removed 2 image preloads; hero preload=yes	1
+gallery.html	LocalBusiness opening hours added	1
 gate-automation-bundoora.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 gate-automation-bundoora.html	header/footer logo -> trimmed file	2
 gate-automation-bundoora.html	logo preload	1
@@ -187,6 +235,9 @@ gate-automation-bundoora.html	desktop nav label	1
 gate-automation-bundoora.html	mobile nav label	1
 gate-automation-bundoora.html	removed red top banner	1
 gate-automation-bundoora.html	inserted Google reviews band (3 cards) before closing CTA	1
+gate-automation-bundoora.html	responsive images; removed 2 image preloads; hero preload=yes	1
+gate-automation-bundoora.html	title shortened	1
+gate-automation-bundoora.html	LocalBusiness opening hours added	1
 index.html	removed React runtime (15 scripts), static chat placeholder; added site.js + chat.js	1
 index.html	header/footer logo -> trimmed file	2
 index.html	logo preload	1
@@ -201,6 +252,8 @@ index.html	desktop nav label	1
 index.html	mobile nav label	1
 index.html	removed red top banner	1
 index.html	home reviews: 3 -> 6 cards, Google lockup, stronger CTAs	1
+index.html	responsive images; removed 16 image preloads; hero preload=yes	1
+index.html	LocalBusiness opening hours added	1
 pool-fencing-regulations-victoria.html	removed React runtime (13 scripts), static chat placeholder; added site.js + chat.js	1
 pool-fencing-regulations-victoria.html	header/footer logo -> trimmed file	2
 pool-fencing-regulations-victoria.html	logo preload	1
@@ -215,6 +268,9 @@ pool-fencing-regulations-victoria.html	desktop nav label	1
 pool-fencing-regulations-victoria.html	mobile nav label	1
 pool-fencing-regulations-victoria.html	removed red top banner	1
 pool-fencing-regulations-victoria.html	inserted Google reviews band (3 cards) before closing CTA	1
+pool-fencing-regulations-victoria.html	responsive images; removed 2 image preloads; hero preload=no	1
+pool-fencing-regulations-victoria.html	title shortened	1
+pool-fencing-regulations-victoria.html	LocalBusiness opening hours added	1
 pool-fencing.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 pool-fencing.html	header/footer logo -> trimmed file	2
 pool-fencing.html	logo preload	1
@@ -229,6 +285,8 @@ pool-fencing.html	desktop nav label	1
 pool-fencing.html	mobile nav label	1
 pool-fencing.html	removed red top banner	1
 pool-fencing.html	inserted Google reviews band (3 cards) before closing CTA	1
+pool-fencing.html	responsive images; removed 2 image preloads; hero preload=yes	1
+pool-fencing.html	LocalBusiness opening hours added	1
 privacy-policy.html	removed React runtime (8 scripts), static chat placeholder; added site.js + chat.js	1
 privacy-policy.html	header/footer logo -> trimmed file	2
 privacy-policy.html	logo preload	1
@@ -242,6 +300,9 @@ privacy-policy.html	Service areaServed	6
 privacy-policy.html	desktop nav label	1
 privacy-policy.html	mobile nav label	1
 privacy-policy.html	removed red top banner	1
+privacy-policy.html	responsive images; removed 2 image preloads; hero preload=yes	1
+privacy-policy.html	LocalBusiness opening hours added	1
+privacy-policy.html	privacy: analytics/advertising section added (approved wording)	1
 retaining-walls.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 retaining-walls.html	header/footer logo -> trimmed file	2
 retaining-walls.html	logo preload	1
@@ -256,6 +317,8 @@ retaining-walls.html	desktop nav label	1
 retaining-walls.html	mobile nav label	1
 retaining-walls.html	removed red top banner	1
 retaining-walls.html	inserted Google reviews band (3 cards) before closing CTA	1
+retaining-walls.html	responsive images; removed 2 image preloads; hero preload=yes	1
+retaining-walls.html	LocalBusiness opening hours added	1
 reviews.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 reviews.html	header/footer logo -> trimmed file	2
 reviews.html	logo preload	1
@@ -270,6 +333,8 @@ reviews.html	desktop nav label	1
 reviews.html	mobile nav label	1
 reviews.html	removed red top banner	1
 reviews.html	reviews page lockup text	1
+reviews.html	responsive images; removed 1 image preloads; hero preload=no	1
+reviews.html	LocalBusiness opening hours added	1
 service-areas.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 service-areas.html	header/footer logo -> trimmed file	2
 service-areas.html	logo preload	1
@@ -294,6 +359,9 @@ service-areas.html	desktop nav label	1
 service-areas.html	mobile nav label	1
 service-areas.html	removed red top banner	1
 service-areas.html	inserted Google reviews band (3 cards) before closing CTA	1
+service-areas.html	responsive images; removed 1 image preloads; hero preload=no	1
+service-areas.html	title shortened	1
+service-areas.html	LocalBusiness opening hours added	1
 sliding-double-gates-bundoora.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 sliding-double-gates-bundoora.html	header/footer logo -> trimmed file	2
 sliding-double-gates-bundoora.html	logo preload	1
@@ -308,6 +376,9 @@ sliding-double-gates-bundoora.html	desktop nav label	1
 sliding-double-gates-bundoora.html	mobile nav label	1
 sliding-double-gates-bundoora.html	removed red top banner	1
 sliding-double-gates-bundoora.html	inserted Google reviews band (3 cards) before closing CTA	1
+sliding-double-gates-bundoora.html	responsive images; removed 2 image preloads; hero preload=yes	1
+sliding-double-gates-bundoora.html	title shortened	1
+sliding-double-gates-bundoora.html	LocalBusiness opening hours added	1
 steel-fencing-gates.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 steel-fencing-gates.html	header/footer logo -> trimmed file	2
 steel-fencing-gates.html	logo preload	1
@@ -322,6 +393,8 @@ steel-fencing-gates.html	desktop nav label	1
 steel-fencing-gates.html	mobile nav label	1
 steel-fencing-gates.html	removed red top banner	1
 steel-fencing-gates.html	inserted Google reviews band (3 cards) before closing CTA	1
+steel-fencing-gates.html	responsive images; removed 2 image preloads; hero preload=yes	1
+steel-fencing-gates.html	LocalBusiness opening hours added	1
 terms-and-conditions.html	removed React runtime (11 scripts), static chat placeholder; added site.js + chat.js	1
 terms-and-conditions.html	header/footer logo -> trimmed file	2
 terms-and-conditions.html	logo preload	1
@@ -335,6 +408,8 @@ terms-and-conditions.html	Service areaServed	6
 terms-and-conditions.html	desktop nav label	1
 terms-and-conditions.html	mobile nav label	1
 terms-and-conditions.html	removed red top banner	1
+terms-and-conditions.html	responsive images; removed 1 image preloads; hero preload=no	1
+terms-and-conditions.html	LocalBusiness opening hours added	1
 timber-colorbond-fencing-melbourne.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 timber-colorbond-fencing-melbourne.html	header/footer logo -> trimmed file	2
 timber-colorbond-fencing-melbourne.html	logo preload	1
@@ -349,6 +424,8 @@ timber-colorbond-fencing-melbourne.html	desktop nav label	1
 timber-colorbond-fencing-melbourne.html	mobile nav label	1
 timber-colorbond-fencing-melbourne.html	removed red top banner	1
 timber-colorbond-fencing-melbourne.html	inserted Google reviews band (3 cards) before closing CTA	1
+timber-colorbond-fencing-melbourne.html	responsive images; removed 2 image preloads; hero preload=yes	1
+timber-colorbond-fencing-melbourne.html	LocalBusiness opening hours added	1
 who-we-work-with.html	removed React runtime (10 scripts), static chat placeholder; added site.js + chat.js	1
 who-we-work-with.html	header/footer logo -> trimmed file	2
 who-we-work-with.html	logo preload	1
@@ -363,3 +440,6 @@ who-we-work-with.html	desktop nav label	1
 who-we-work-with.html	mobile nav label	1
 who-we-work-with.html	removed red top banner	1
 who-we-work-with.html	inserted Google reviews band (3 cards) before closing CTA	1
+who-we-work-with.html	responsive images; removed 2 image preloads; hero preload=yes	1
+who-we-work-with.html	LocalBusiness opening hours added	1
+sitemap.xml	regenerated with 25 URLs + lastmod	1

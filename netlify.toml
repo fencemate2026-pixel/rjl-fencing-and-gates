@@ -5,9 +5,25 @@
   publish = "site"
   command = "echo 'static site - no build'"
 
-# Retired page names from the old site.
+# Duplicate hosts -> the one official address (avoids duplicate content in Google).
+[[redirects]]
+  from = "https://rjlfencingandgates.netlify.app/*"
+  to = "https://www.rjlfencingandgates.com.au/:splat"
+  status = 301
+  force = true
+[[redirects]]
+  from = "https://main--rjlfencingandgates.netlify.app/*"
+  to = "https://www.rjlfencingandgates.com.au/:splat"
+  status = 301
+  force = true
+
+# Retired page addresses from earlier versions of the site.
 [[redirects]]
   from = "/home"
+  to = "/"
+  status = 301
+[[redirects]]
+  from = "/index.html"
   to = "/"
   status = 301
 [[redirects]]
@@ -15,7 +31,23 @@
   to = "/contact-us"
   status = 301
 [[redirects]]
+  from = "/contact-1"
+  to = "/contact-us"
+  status = 301
+[[redirects]]
+  from = "/quote"
+  to = "/contact-us"
+  status = 301
+[[redirects]]
+  from = "/thank-you"
+  to = "/contact-us"
+  status = 301
+[[redirects]]
   from = "/about"
+  to = "/about-rjlfencing-and-gates"
+  status = 301
+[[redirects]]
+  from = "/about-1"
   to = "/about-rjlfencing-and-gates"
   status = 301
 [[redirects]]
@@ -25,6 +57,38 @@
 [[redirects]]
   from = "/services"
   to = "/#services"
+  status = 301
+[[redirects]]
+  from = "/services-1"
+  to = "/#services"
+  status = 301
+[[redirects]]
+  from = "/gates"
+  to = "/steel-fencing-gates"
+  status = 301
+[[redirects]]
+  from = "/gallery-1"
+  to = "/gallery"
+  status = 301
+[[redirects]]
+  from = "/blogs/project-custom-sliding-gate-melbourne"
+  to = "/gallery"
+  status = 301
+[[redirects]]
+  from = "/blogs/project-black-pool-barrier-melbourne"
+  to = "/gallery"
+  status = 301
+[[redirects]]
+  from = "/blogs/project-timber-boundary-fence-melbourne"
+  to = "/gallery"
+  status = 301
+[[redirects]]
+  from = "/blogs/Blog%20Post%20Title%20One-denbc"
+  to = "/blogs/big-group-hug-grand-opening"
+  status = 301
+[[redirects]]
+  from = "/blogs/Blog Post Title One-denbc"
+  to = "/blogs/big-group-hug-grand-opening"
   status = 301
 [[redirects]]
   from = "/service-areas/*"
@@ -40,11 +104,16 @@
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
     Content-Security-Policy = "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://www.google.com.au https://*.doubleclick.net https://www.googleadservices.com; frame-src https://www.google.com https://maps.google.com https://*.doubleclick.net https://www.googletagmanager.com; form-action 'self' https:; base-uri 'self'; object-src 'none'"
+# CSS/JS are referenced with ?v=<hash>, so they can be cached for a year.
 [[headers]]
   for = "/assets/*"
   [headers.values]
-    Cache-Control = "public, max-age=604800"
+    Cache-Control = "public, max-age=31536000, immutable"
 [[headers]]
   for = "/images/*"
   [headers.values]
-    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=2592000"
+[[headers]]
+  for = "/client-logos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=2592000"

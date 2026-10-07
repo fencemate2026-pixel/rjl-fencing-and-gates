@@ -22,10 +22,22 @@
   var host = location.hostname;
   if (host !== "www.rjlfencingandgates.com.au" && host !== "rjlfencingandgates.com.au") return;
 
-  var s = document.createElement("script");
-  s.async = true;
-  s.src = "https://www.googletagmanager.com/gtag/js?id=" + ID;
-  document.head.appendChild(s);
+  // Load the Google tag after the page has finished loading (or on the first
+  // interaction, whichever comes first) so it does not slow the first paint.
+  // Events raised before then are queued in dataLayer and sent once it loads.
+  var loaded = false;
+  function loadTag() {
+    if (loaded) return;
+    loaded = true;
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + ID;
+    document.head.appendChild(s);
+  }
+  ["pointerdown", "keydown", "scroll", "touchstart"].forEach(function (t) {
+    window.addEventListener(t, loadTag, { once: true, passive: true });
+  });
+  window.addEventListener("load", function () { setTimeout(loadTag, 2500); });
 
   window.dataLayer = window.dataLayer || [];
   function gtag() { window.dataLayer.push(arguments); }

@@ -27,3 +27,12 @@
 
 /* ---- 3. Rating lockup: 4.4 shown as four full stars + a faded fifth -- */
 .star-part { opacity: .35; }
+
+/* ---- 4. Accessibility: text contrast (WCAG AA) ---------------------- */
+/* Orange small text on light backgrounds was 2.3-4.0:1; this is >= 4.9:1. */
+.eyebrow:not(.eyebrow-light), .service-card-body small, .footer h2 { color: #a83c0e; }
+/* Muted grey on grey panels was 4.39:1; this is >= 5.2:1. */
+:root { --muted: #555d63; }
+
+/* ---- 5. Accessibility: tap targets at least 24px --------------------- */
+.footer-contact a, .contact-detail a { display: inline-block; min-height: 24px; padding: 3px 0; }

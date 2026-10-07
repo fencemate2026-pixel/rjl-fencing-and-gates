@@ -30,6 +30,8 @@ import shutil
 import sys
 from pathlib import Path
 
+import seo_perf
+
 MIRROR = Path(sys.argv[1])
 OUT = Path(sys.argv[2])
 AUDIT = []  # (file, description, count)
@@ -271,7 +273,6 @@ SITE_JS = r"""/*
     var setOpen = function (open) {
       menu.classList.toggle("is-open", open);
       btn.setAttribute("aria-expanded", String(open));
-      btn.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
       btn.querySelector("span").textContent = open ? "Close" : "Menu";
       panel.hidden = !open;
       document.body.classList.toggle("mobile-nav-open", open);
@@ -336,6 +337,9 @@ def main():
     shutil.copy(Path(__file__).with_name("overrides.css"), OUT / "assets" / "overrides.css")
     log("assets/", "deleted React JS bundles; wrote site.js and chat.js")
 
+    # Responsive WebP images and right-sized logos (performance pass).
+    srcsets, logos = seo_perf.build_images(OUT, log)
+
     pages = sorted(p for p in OUT.rglob("*.html"))
     for i, p in enumerate(pages):
         fname = str(p.relative_to(OUT))
@@ -347,7 +351,15 @@ def main():
         if fname == "service-areas.html":
             s = service_areas_page(s, fname)
         s = review_edits(s, fname, i)
+        s = seo_perf.rewrite_images(s, fname, srcsets, logos, log)
+        s = seo_perf.seo_edits(s, fname, log)
         p.write_text(s, encoding="utf-8")
+
+    # Cache-busting query strings (assets can then be cached for a year).
+    versions = seo_perf.asset_versions(OUT)
+    for p in pages:
+        p.write_text(seo_perf.cache_bust(p.read_text(encoding="utf-8"), versions), encoding="utf-8")
+    seo_perf.write_sitemap(OUT, pages, log)
 
     # Safety interlock: no removed suburb may remain anywhere in visible pages.
     banned = ["Officer", "Pakenham", "Berwick", "Cranbourne", "Narre Warren", "Dandenong", "Frankston",

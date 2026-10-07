@@ -63,7 +63,7 @@
       answer: "RJL's published website history traces the family's fencing work to 1990. RJL's official Facebook and Instagram profiles describe the fencing business as established in 1997. The current company ABN has been active since 1 July 2012. These dates describe different milestones, so this assistant shows all three rather than collapsing them into one claim.",
       sources: [{ label: "RJL company story", href: "/about-rjlfencing-and-gates" }, { label: "Official Facebook", href: R.facebook }, { label: "Official Instagram", href: R.instagram }, { label: "Australian Business Register", href: R.abnLookupUrl }] },
     { title: "Contact RJL", keywords: ["contact", "phone", "call", "email", "address", "location", "based", "visit", "open", "hours"],
-      answer: "Call " + R.phoneDisplay + " or email " + R.email + ". RJL is based in " + R.base + ". No verified public opening hours or customer walk-in street address are published here, so please call before visiting.",
+      answer: "Call " + R.phoneDisplay + " or email " + R.email + ". RJL is based in " + R.base + ". Hours on RJL's Google Business Profile are Monday to Friday 8 am to 5 pm and weekends 9 am to 5 pm. No customer walk-in street address is published, so please call before visiting.",
       sources: [{ label: "Contact RJL", href: "/contact-us" }, { label: "Australian Business Register", href: R.abnLookupUrl }] },
     { title: "Fencing and gate services", keywords: ["service", "services", "build", "install", "fence", "fencing", "gate", "gates", "what do you do"],
       answer: "RJL's published residential services are " + SERVICES + ". Every quote depends on the actual site, access, levels, dimensions, material and approvals.",
@@ -145,7 +145,7 @@
     panel.hidden = true;
 
     var head = el("div", { "class": "chat-panel-head" });
-    head.appendChild(el("img", { src: "/images/rjl-logo.png", alt: "", width: "110", height: "42" }));
+    head.appendChild(el("img", { src: "/images/rjl-logo-trim.webp", alt: "", width: "110", height: "42" }));
     var hd = el("div");
     hd.appendChild(el("strong", null, "Ask RJL"));
     hd.appendChild(el("span", null, "Source-linked business answers"));
@@ -185,7 +185,7 @@
     panel.appendChild(direct);
 
     var launcher = el("button", { "class": "chat-launcher", type: "button", "aria-expanded": "false" });
-    launcher.appendChild(el("img", { src: "/images/rjl-logo.png", alt: "", width: "76", height: "28" }));
+    launcher.appendChild(el("img", { src: "/images/rjl-logo-trim.webp", alt: "", width: "76", height: "28" }));
     var lbl = el("span", null, "Ask RJL");
     launcher.appendChild(lbl);
 
