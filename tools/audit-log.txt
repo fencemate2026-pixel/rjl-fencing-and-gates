@@ -560,3 +560,10 @@ sitemap.xml	added fencing-mill-park	1
 sitemap.xml	added fencing-epping	1
 sitemap.xml	added fencing-south-morang	1
 sitemap.xml	added fencing-greensborough	1
+
+# add_suburb_pages.py - 2026-10-08T09:15:06
+fencing-mill-park.html	created suburb page (title 59, desc 145)	1
+fencing-epping.html	created suburb page (title 56, desc 142)	1
+fencing-south-morang.html	created suburb page (title 54, desc 148)	1
+fencing-greensborough.html	created suburb page (title 55, desc 149)	1
+*	footer suburb links	0

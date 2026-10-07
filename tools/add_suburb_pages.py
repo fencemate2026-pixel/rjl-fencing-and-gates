@@ -75,7 +75,8 @@ def faq_items(sb):
         (f'Can RJL automate a driveway gate in {n}?',
          'Yes. RJL can build a new sliding or swing gate with automation, or assess whether a suitable existing gate can be motorised safely and reliably.'),
         ('What if my neighbour will not pay half for a new boundary fence?',
-         'Victoria’s Fences Act sets out a notice process for shared boundary fences. RJL’s homeowner guide explains the steps; get legal advice for a dispute.'),
+         # FROM SOURCE: site/blogs/neighbour-wont-pay-half-fence-victoria.html (Fencing Notice, 30 days, Magistrates’ Court).
+         'Victoria has a formal Fencing Notice process for shared boundary fences, and the neighbour has 30 days to respond. RJL’s homeowner guide explains the steps; get legal advice for a dispute.'),
         (f'How do I request a fencing quote in {n}?',
          'Send the suburb, approximate length or gate opening, preferred material, access notes and clear photos. RJL will review them and confirm the next practical step.'),
     ]
@@ -90,6 +91,8 @@ def hero_img(tpl, key):
 
 
 def build(tpl, sb):
+    # The Bundoora page carries its own 'nearby suburb pages' line (added below); drop it from the template copy.
+    tpl = re.sub(r'<p data-rjl="nearby">.*?</p>', '', tpl, flags=re.S)
     n, slug = sb['name'], sb['slug']
     url = f'{BASE}/{slug}'
     title = f'Fencing {n} | Timber, Colorbond &amp; Gates | RJL' + (' Fencing' if len(n) <= 9 else '')
