@@ -62,3 +62,8 @@
 .sample-page img { display: block; width: 100%; height: auto; }
 .sample-page figcaption { padding: .75rem 1rem; font-size: .9rem; color: var(--muted); }
 @media (width <= 900px) { .sample-report-grid { grid-template-columns: 1fr; } }
+
+/* 8. Service-area chips that link to a suburb page (Oct 2026). */
+.area-group>div>a{background:var(--paper);color:var(--navy,#071f38);border-radius:20px;padding:7px 11px;font-size:.77rem;font-weight:700;text-decoration:underline;text-decoration-color:var(--orange,#f36f21);text-underline-offset:3px}
+.area-group>div>a:hover{background:var(--orange,#f36f21);color:#fff;text-decoration:none}
+.content-body p a,.content-body .feature-list a{color:inherit;font-weight:700;text-decoration:underline;text-decoration-color:var(--orange-bright);text-decoration-thickness:2px;text-underline-offset:3px}

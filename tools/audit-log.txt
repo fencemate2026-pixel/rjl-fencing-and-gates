@@ -533,3 +533,30 @@ who-we-work-with.html	nav: Servicing (desktop) + servicing/emergency (mobile)	2
 who-we-work-with.html	footer: servicing + emergency links	1
 sitemap.xml	added /gate-servicing-maintenance	1
 sitemap.xml	added /emergency-fence-gate-repairs	1
+
+# add_suburb_pages.py - 2026-10-07T21:21:36
+fencing-mill-park.html	created suburb page (title 59, desc 145)	1
+fencing-epping.html	created suburb page (title 56, desc 142)	1
+fencing-south-morang.html	created suburb page (title 54, desc 148)	1
+fencing-greensborough.html	created suburb page (title 55, desc 149)	1
+blogs/neighbour-wont-pay-half-fence-victoria.html	title shortened to 55	1
+blogs/pool-fencing-requirements-victoria.html	title shortened to 56	1
+blogs/sliding-vs-swing-driveway-gates.html	title shortened to 51	1
+blogs/timber-vs-colorbond-fencing-melbourne.html	title shortened to 47	1
+gate-servicing-maintenance.html	title shortened to 54	1
+index.html	description shortened to 152	1
+404.html	description shortened to 152	1
+fencing-bundoora.html	description shortened to 148	1
+sliding-double-gates-bundoora.html	description shortened to 146	1
+who-we-work-with.html	description shortened to 156	1
+service-areas.html	chip linked: Mill Park	1
+service-areas.html	chip linked: Epping	1
+service-areas.html	chip linked: South Morang	1
+service-areas.html	chip linked: Greensborough	1
+service-areas.html	chip linked: Bundoora	1
+fencing-bundoora.html	nearby suburb links	1
+*	footer suburb links	32
+sitemap.xml	added fencing-mill-park	1
+sitemap.xml	added fencing-epping	1
+sitemap.xml	added fencing-south-morang	1
+sitemap.xml	added fencing-greensborough	1
