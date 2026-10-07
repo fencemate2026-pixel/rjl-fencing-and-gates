@@ -36,3 +36,5 @@
 
 /* ---- 5. Accessibility: tap targets at least 24px --------------------- */
 .footer-contact a, .contact-detail a { display: inline-block; min-height: 24px; padding: 3px 0; }
+/* Article card category labels (orange on white was 4.0:1). */
+.article-card > div > span { color: #a83c0e; }
