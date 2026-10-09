@@ -89,6 +89,8 @@ legend{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacin
 .vq-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .vq{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);color:inherit;font:inherit;font-size:12.5px;line-height:1.2;cursor:pointer;text-align:center}
 .vq span{font-size:11px;color:var(--muted)}
+.vq svg{width:46px;height:28px;color:var(--muted)}
+.vq.on svg{color:var(--accent)}
 .vq.on{border-color:var(--accent);background:var(--accent-soft)}
 .vq:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .pcard.on svg{color:var(--accent)}
@@ -380,11 +382,11 @@ const LOCKS = {
   magna:{code:'DD-MAGNALATCH', label:'D&D MagnaLatch magnetic pull-up pool safety latch'}
 };
 const LOCKABLE = t => t === 'pedestrian' || t === 'single' || t === 'double' || t === 'sliding' || t === 'cantilever';
-/* Website brand split: rjlcommercialgroup.com shows commercial systems only, rjlfencingandgates.com.au
- * residential only. The internal tool (no data-mode="web") shows both groups. */
-const BRAND_GROUPS = !WEB ? ['Residential','Commercial'] : CFG.brand === 'commercial' ? ['Commercial'] : ['Residential'];
+/* Both websites and the internal tool list every fence system (Jarrod, 9 Oct 2026: keep both lists on both sites).
+ * Boom gates, rising bollards, bi-fold speed gates and the vehicle entry quick-add are commercial-site only. */
+const BRAND_GROUPS = ['Residential','Commercial'];
 const productAllowed = k => !!PRODUCTS[k] && BRAND_GROUPS.includes(PRODUCTS[k].group);
-const RES_WEB = WEB && CFG.brand !== 'commercial';      // residential site: no boom / bollard / speed-gate lanes
+const RES_WEB = WEB && CFG.brand !== 'commercial';      // residential site: no boom / bollard / speed-gate lanes, no vehicle quick-add
 const GATES_FOR = p => PRODUCTS[p].pool ? ['none','pedestrian']
   : PRODUCTS[p].temp ? ['none','pedestrian','single','double']
   : Object.keys(GATE_TYPES).filter(k => !(RES_WEB && (k === 'boom' || k === 'bollards' || k === 'bifold')));
@@ -531,20 +533,27 @@ function layoutRun(run, rules){
     const G = g.width, block = 2*gw + G, sliding = SLIDES(g.type);
     const roleL = d => g.piers ? 'pier' : (sliding && d < 0 ? 'guide' : 'gate');
     const roleR = d => g.piers ? 'pier' : (sliding && d > 0 ? 'guide' : 'gate');
-    const gateBlock = d => { post(roleL(d), gw); seq.push({k:'gate', w:G, slideDir:d}); post(roleR(d), gw); };
+    // Boom lanes: the cabinet and boom rest stand in the gate-post slots, so the fence needs its own
+    // end post where it meets them (otherwise the mesh finishes in mid-air). ex = that extra post.
+    const ex = g.type === 'boom' ? p : 0;
+    const gateBlock = (d, fenceL, fenceR) => {
+      if (ex && fenceL) post('end', p);
+      post(roleL(d), gw); seq.push({k:'gate', w:G, slideDir:d}); post(roleR(d), gw);
+      if (ex && fenceR) post('end', p);
+    };
     const fenceLen = L - block;
     if (fenceLen < -0.5){
       errs.push(`The gate and its posts need ${fmt(block)} mm but the run is ${fmt(L)} mm. Lengthen the run or narrow the gate.`);
     } else if (g.position === 'middle'){
       const side = fenceLen/2;
-      if (side < p + 300) errs.push(`Each side of the gate is only ${fmt(side)} mm. Put the gate at the start or end, or lengthen the run.`);
-      else { post('end', p); bays(side - p); gateBlock(1); bays(side - p); post('end', p); }
+      if (side < p + ex + 300) errs.push(`Each side of the gate is only ${fmt(side)} mm. Put the gate at the start or end, or lengthen the run.`);
+      else { post('end', p); bays(side - p - ex); gateBlock(1, true, true); bays(side - p - ex); post('end', p); }
     } else {
       const atStart = g.position === 'start';
-      if (fenceLen < 1){ gateBlock(atStart ? 1 : -1); }
-      else if (fenceLen < p + 300) errs.push(`The fence beside the gate is only ${fmt(fenceLen)} mm. Make the run ${fmt(block)} mm (gate only) or at least ${fmt(block+p+300)} mm.`);
-      else if (atStart){ gateBlock(1); bays(fenceLen - p); post('end', p); }
-      else { post('end', p); bays(fenceLen - p); gateBlock(-1); }
+      if (fenceLen < 1){ gateBlock(atStart ? 1 : -1, false, false); }
+      else if (fenceLen < p + ex + 300) errs.push(`The fence beside the gate is only ${fmt(fenceLen)} mm. Make the run ${fmt(block)} mm (gate only) or at least ${fmt(block+p+ex+300)} mm.`);
+      else if (atStart){ gateBlock(1, false, true); bays(fenceLen - p - ex); post('end', p); }
+      else { post('end', p); bays(fenceLen - p - ex); gateBlock(-1, true, false); }
     }
   }
   let x = 0; seq.forEach(n => { n.x = x; x += n.w; });
@@ -1230,10 +1239,20 @@ function renderTabs(){
 }
 /* Vehicle entry quick-add: one tap adds a boom gate, rising bollards or tyre spikes to this run.
  * Shown on the commercial website and the internal tool, for systems that take vehicle gates. */
+/* Icons for the quick-add buttons, same 48 x 30 line style as the fence system cards. */
+const VQ_ICON = {
+  'q-boom': '<svg viewBox="0 0 48 30" aria-hidden="true"><rect x="3" y="10" width="7" height="18" rx="1" fill="currentColor"/><rect x="5" y="7" width="3" height="3" fill="currentColor" opacity=".6"/>'
+    + '<rect x="10" y="12" width="35" height="3" rx="1.5" fill="none" stroke="currentColor" stroke-width="1"/>'
+    + [14,22,30,38].map(x => `<rect x="${x}" y="12" width="4" height="3" fill="currentColor"/>`).join('') + '<rect x="1" y="28" width="46" height="1.2" fill="currentColor" opacity=".5"/></svg>',
+  'q-bollards': '<svg viewBox="0 0 48 30" aria-hidden="true">'
+    + [6,20,34].map(x => `<rect x="${x}" y="9" width="8" height="18" rx="4" fill="currentColor"/><rect x="${x}" y="12" width="8" height="2.4" fill="#f2b705"/><rect x="${x-1.5}" y="26" width="11" height="2" fill="currentColor" opacity=".55"/>`).join('') + '</svg>',
+  'q-spikes': '<svg viewBox="0 0 48 30" aria-hidden="true"><rect x="2" y="22" width="44" height="4" rx="1" fill="currentColor"/>'
+    + [5,11,17,23,29,35,41].map(x => `<polygon points="${x},22 ${x+2},12 ${x+4},22" fill="currentColor"/>`).join('') + '<rect x="2" y="26" width="44" height="2" fill="#f2b705" opacity=".8"/></svg>'
+};
 function vehicleQuickAdd(r){
   const P = PRODUCTS[r.product], g = r.gate;
   if (RES_WEB || P.pool || P.temp) return '';
-  const btn = (act, label, sub, on) => `<button type="button" class="vq${on ? ' on' : ''}" data-act="${act}" aria-pressed="${on}"><strong>${label}</strong><span>${sub}</span></button>`;
+  const btn = (act, label, sub, on) => `<button type="button" class="vq${on ? ' on' : ''}" data-act="${act}" aria-pressed="${on}">${VQ_ICON[act]}<strong>${label}</strong><span>${sub}</span></button>`;
   return `<fieldset class="vquick"><legend>Vehicle entry</legend>
     <div class="vq-row">
       ${btn('q-boom', 'Boom gate', g.type === 'boom' ? 'Added ✓' : 'Add a boom lane', g.type === 'boom')}
@@ -1341,8 +1360,8 @@ function renderEditor(){
         <label class="f"><span>Access control</span><select id="e-gacc" data-k="gate.access">${Object.entries(ACCESS).map(([k,a]) => opt(k, a.label, g.access)).join('')}</select></label>` : ''}
       </div>
       ${g.type !== 'none' ? `
-      ${P.noPosts || g.type === 'boom' ? '' : `<label class="chk"><input type="checkbox" id="e-gpiers" data-k="gate.piers"${g.piers ? ' checked' : ''}>Brick piers instead of steel gate posts</label>`}
-      ${P.pool || P.temp ? '' : `<label class="chk"><input type="checkbox" id="e-gauto" data-k="gate.auto"${isAuto(g) ? ' checked' : ''}${gt.forced ? ' disabled' : ''}>Automate this gate (RJL operator, safety beams)${gt.forced ? ' — always motorised' : ''}</label>`}
+      ${P.noPosts || g.type === 'boom' || g.type === 'bollards' ? '' : `<label class="chk"><input type="checkbox" id="e-gpiers" data-k="gate.piers"${g.piers ? ' checked' : ''}>Brick piers instead of steel gate posts</label>`}
+      ${P.pool || P.temp || gt.forced ? '' : `<label class="chk"><input type="checkbox" id="e-gauto" data-k="gate.auto"${isAuto(g) ? ' checked' : ''}>Automate this gate (RJL operator, safety beams)</label>`}
       ${g.type === 'bollards' ? `<label class="f"><span>Bollard rise</span><select id="e-bh" data-k="gate.bollardH" data-num>${[600,800,1000,1200].map(h => opt(h, h + ' mm', g.bollardH || 800)).join('')}</select></label>
         <p class="hint">${bollardCount(g.width)} bollards at up to ${BOLLARD_CC} mm centres. LED crown shows green when fully down, red while rising and when up.</p>` : ''}
       ${VEHICLE(g.type) && !P.pool && !P.temp ? `<div class="grid2">
@@ -1661,7 +1680,7 @@ let renderer, scene, camera, controls, root, sun, ground, grid, TEX = {}, anims 
 const sceneBox = { min:[0,0,0], max:[1,1,1] };
 let three = typeof THREE !== 'undefined' && THREE.OrbitControls;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const css = n => getComputedStyle(HOST || document.documentElement).getPropertyValue(n).trim();   // website theme vars live on #rjl-designer
 
 function init3D(){
   const host = $('#viewport');
@@ -1696,13 +1715,13 @@ function init3D(){
       else if (a.type === 'boom') a.obj.rotation.z = openT*Math.PI*0.48;
       else if (a.type === 'bollard'){
         a.obj.position.y = -a.h*openT;                                  // open lane = bollards down
-        const down = openT > 0.97, flash = 0.55 + 0.45*Math.sin(now/110);
+        const down = openT > 0.97, flash = 1.4 + 1.2*Math.sin(now/110);
         a.led.color.set(down ? '#1fd65a' : '#ff2a2a'); a.led.emissive.set(down ? '#00d84a' : '#ff0000');
-        a.led.emissiveIntensity = (Math.abs(openTarget - openT) > 0.02 && !down) ? flash : 0.9;   // flashes while moving
+        a.led.emissiveIntensity = (Math.abs(openTarget - openT) > 0.02 && !down) ? flash : 2.2;   // flashes while moving
       }
-      else if (a.type === 'tlight'){ const go = openT > 0.97; a.red.emissiveIntensity = go ? 0 : 1.1; a.green.emissiveIntensity = go ? 1.1 : 0; }
-      else if (a.type === 'beacon') a.m.emissiveIntensity = Math.abs(openTarget - openT) > 0.02 ? 0.4 + 0.6*(Math.sin(now/90) > 0 ? 1 : 0) : 0.15;
-      else if (a.type === 'spikes') a.obj.position.y = -90*openT;
+      else if (a.type === 'tlight'){ const go = openT > 0.97; a.red.emissiveIntensity = go ? 0.05 : 2.6; a.green.emissiveIntensity = go ? 2.6 : 0.05; }
+      else if (a.type === 'beacon') a.m.emissiveIntensity = Math.abs(openTarget - openT) > 0.02 ? (Math.sin(now/90) > 0 ? 3 : 0.3) : 0.6;
+      else if (a.type === 'spikes') a.obj.position.y = -125*openT;   // spikes drop flush when the lane opens
       else a.obj.position.x = a.base + a.shift*openT;
     }
     controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
@@ -1952,13 +1971,13 @@ function buildLaneAccessories(run, lay, n, grp){
     B.box(mBlk, x, hy, z, 260, 560, 200);
     const red = new THREE.MeshStandardMaterial({color:'#5a0d0d', emissive:'#ff1a1a', emissiveIntensity:0, roughness:0.3});
     const green = new THREE.MeshStandardMaterial({color:'#0d3a17', emissive:'#18e05a', emissiveIntensity:0, roughness:0.3});
-    [[red, hy + 130], [green, hy - 130]].forEach(([m, y]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(85, 85, 30, 24), m);
+    [[red, hy + 130], [green, hy - 130]].forEach(([m, y]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(95, 95, 34, 24), m);
       l.rotation.x = Math.PI/2; l.position.set(x, y, z + face*105); l.userData.own = true; grp.add(l); });
     anims.push({type:'tlight', red, green});
   });
   // photocell beams (automated): emitters both faces at 500 mm; posts for boom / bollard lanes
   if (auto){
-    const mLens = new THREE.MeshStandardMaterial({color:'#330000', emissive:'#ff2020', emissiveIntensity:0.7});
+    const mLens = new THREE.MeshStandardMaterial({color:'#330000', emissive:'#ff2020', emissiveIntensity:2});
     [450, -450].forEach(z => {
       [leftX, rightX].forEach(px => {
         const x = onPosts ? px : px + (px < n.x ? 250 : -250);
@@ -1988,12 +2007,16 @@ function buildLaneAccessories(run, lay, n, grp){
     B.box(mY, n.x + L/2, 25, z0, L, 50, 260);                      // centre plate
     B.wedge(mY, n.x + L/2, 25, z0 + 230, L, 50, 200, 0);           // ramp up from the street side
     B.wedge(mY, n.x + L/2, 25, z0 - 230, L, 50, 200, Math.PI);     // ramp down on the inside
-    for (let x = n.x + 75; x < n.x + L - 40; x += 150) B.cone(mSS, x, 85, z0, 40, 70);   // one-way teeth
+    const mTeeth = mat('#141516', 0.4, 0.45);                       // black teeth on safety-yellow plate
+    for (let x = n.x + 75; x < n.x + L - 40; x += 150) B.cone(mTeeth, x, 90, z0, 46, 80);   // one-way teeth
   }
   if (g.spikes === 'auto'){
     const z0 = spikeZ, L = n.w, sp = new THREE.Group(); sp.position.set(n.x, 0, z0); grp.add(sp);
-    B.box(mBlk, n.x + L/2, 3, z0, L, 6, 300);
-    const sb = new Batch(); for (let x = 75; x < L - 40; x += 150) sb.cone(mSS, x, 45, 0, 40, 90); sb.flush(sp);
+    // safety-yellow in-ground frame with black spikes that rise 130 mm (up = lane closed, down = open)
+    const mYel = mat('#f2b705', 0.3, 0.5), mSpk = mat('#141516', 0.4, 0.45);
+    B.box(mYel, n.x + L/2, 4, z0, L, 8, 340);
+    B.box(mat('#141516', 0.3, 0.6), n.x + L/2, 8.5, z0, L - 40, 1, 120);       // black slot the spikes rise through
+    const sb = new Batch(); for (let x = 60; x < L - 30; x += 120) sb.cone(mSpk, x, 65, 0, 52, 130); sb.flush(sp);
     anims.push({type:'spikes', obj:sp});
   }
   B.flush(grp);
@@ -2041,7 +2064,7 @@ function buildGateBody(run, lay, n, grp, mF, mDark){
       bb.cylY(mSS, 0, bh + 6, 0, BOLLARD_D + 4, 14);                       // top cap
       bb.flush(grpB);
       // LED band just under the cap: green when fully down, red while rising and when up (set in the render loop)
-      const led = new THREE.MeshStandardMaterial({color:'#ff2a2a', emissive:'#ff0000', emissiveIntensity:0.9, roughness:0.3});
+      const led = new THREE.MeshStandardMaterial({color:'#ff2a2a', emissive:'#ff0000', emissiveIntensity:2.2, roughness:0.3});
       const ring = new THREE.Mesh(new THREE.CylinderGeometry(BOLLARD_D/2 + 2, BOLLARD_D/2 + 2, 26, 32, 1, true), led);
       ring.position.y = bh - 22; ring.userData.own = true; grpB.add(ring);
       anims.push({type:'bollard', obj:grpB, h:bh, led});
@@ -2099,10 +2122,14 @@ function buildPier(grp, cx, w, H){
 }
 /* Concrete sleeper retaining wall with 150 UC uprights at each fence post position. Wall top is at y = 0
  * of the fence group, so the whole fence is lifted by the retained height. */
+/* Gate posts, piers, boom cabinet / rest and the gate itself sit at ground level even when the fence
+ * stands on a retaining wall: the wall finishes on the fence end posts either side of the opening. */
+const atGround = n => n.k === 'gate' || (n.k === 'post' && (n.role === 'gate' || n.role === 'guide' || n.role === 'pier'));
 function buildRetaining(run, i, lay, grp, wh){
   const B = new Batch(), mC = mat('#c8c7c1', 0, 0.95), mJ = mat('#a9a8a2', 0, 0.95), mS = mat('#222427', 0.5, 0.45);
   lay.seq.forEach((n, idx) => {
     const cx = n.x + n.w/2;
+    if (n.k === 'gate' || atGround(n)) return;            // the wall stops at the gate; the lane stays at ground level
     if (n.k === 'post'){
       if ((idx === 0 && JOINS[i].skipFirst) || (idx === lay.seq.length - 1 && JOINS[i].skipLast)) return;
       // 150 UC: two 150 mm flanges + web, flanges facing along the fence so sleepers slot between them
@@ -2120,13 +2147,16 @@ function buildRetaining(run, i, lay, grp, wh){
 }
 function buildRun(run, i, lay, grp){
   const wh = retainH(run);
+  const base = grp, Bg = new Batch();                   // ground-level group/batch for the gate opening
   if (wh){ buildRetaining(run, i, lay, grp, wh); const up = new THREE.Group(); up.position.y = wh; grp.add(up); grp = up; }
-  const B = new Batch(), H = run.height, chain = run.product === 'chain';
+  const fenceGrp = grp, Bf = new Batch(), H = run.height, chain = run.product === 'chain';
+  let B = Bf;
   const mF = chain ? mat('#a8adb1', 0.6, 0.45) : mat(run.colour, 0.3, 0.55);
   const mPost = chain ? mF : (run.product === 'colorbond' ? mat(run.colour, 0.3, 0.55) : mF);
   const mDark = mat('#26292c', 0.4, 0.5);
   lay.seq.forEach((n, idx) => {
     const cx = n.x + n.w/2;
+    const g0 = atGround(n); B = g0 ? Bg : Bf; grp = g0 ? base : fenceGrp;   // opening parts at ground level
     if (n.k === 'post'){
       if ((idx === 0 && JOINS[i].skipFirst) || (idx === lay.seq.length - 1 && JOINS[i].skipLast)) return;
       if (n.role === 'pier'){ buildPier(grp, cx, n.w, H); return; }
@@ -2150,7 +2180,7 @@ function buildRun(run, i, lay, grp){
     } else if (n.k === 'gate') buildGate(run, lay, n, grp, mF, mDark);
     if (PRODUCTS[run.product].topping) drawTopping(run, n, idx, lay, i, B, grp, H);
   });
-  B.flush(grp);
+  Bf.flush(fenceGrp); Bg.flush(base); grp = fenceGrp; B = Bf;
   if (state.view.dims){
     lay.seq.forEach(n => {
       if (n.k === 'bay'){ const s = label(fmt(n.w)); s.position.set(n.x + n.w/2, H + 260, 0); grp.add(s); }
