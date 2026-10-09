@@ -105,7 +105,7 @@ def scope_css(c, scope='#rjl-designer'):
 WEB_OVERRIDES = """
 /* ---- website theme: match rjlfencingandgates.com.au (navy / orange, site fonts) ---- */
 #rjl-designer{--accent:#c2461a;--accent-soft:#fbe9e0;--ink:#0b0d0f;--bg:transparent;--surface:#fff;--surface-2:#f4f1ea;
-  --line:#d9d3c7;--muted:#555d63;--scene:#e3e7ea;--ground:#c9cec4;--grid:#9aa39a;
+  --line:#d9d3c7;--muted:#555d63;--scene:#9fb0bf;--ground:#7b8579;--grid:#5c6559;
   --f-display:var(--display, inherit);--f-body:var(--body, inherit);
   padding:0;background:transparent;font-size:15px;color:var(--ink)}
 #rjl-designer .quote-cta{padding:16px;display:flex;flex-direction:column;gap:10px;border-top:4px solid var(--accent)}
@@ -113,6 +113,8 @@ WEB_OVERRIDES = """
 #rjl-designer .quote-cta p{margin:0}
 #rjl-designer .btn.primary{font-size:16px;padding:11px 18px;justify-content:center}
 #rjl-designer .btn.primary{color:#fff;font-weight:600}   /* white on orange, same as the site's own buttons */
+/* section headings stand out: bold, site orange */
+#rjl-designer legend,#rjl-designer .pgroup,#rjl-designer .panel>summary,#rjl-designer .quote-cta h2,#rjl-designer .sum h3{color:var(--accent)!important;font-weight:700!important;letter-spacing:.06em}
 #rjl-designer .v-fallback{margin:0}
 #rjl-designer .btn[aria-pressed="true"], #rjl-designer .chip.gate{color:#fff}
 #rjl-designer .toast{color:#fff}
