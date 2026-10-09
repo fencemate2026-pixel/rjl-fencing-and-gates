@@ -112,6 +112,7 @@ WEB_OVERRIDES = """
 #rjl-designer .quote-cta h2{font-size:22px}
 #rjl-designer .quote-cta p{margin:0}
 #rjl-designer .btn.primary{font-size:16px;padding:11px 18px;justify-content:center}
+#rjl-designer .btn.primary{color:#fff;font-weight:600}   /* white on orange, same as the site's own buttons */
 #rjl-designer .v-fallback{margin:0}
 #rjl-designer .btn[aria-pressed="true"], #rjl-designer .chip.gate{color:#fff}
 #rjl-designer .toast{color:#fff}
