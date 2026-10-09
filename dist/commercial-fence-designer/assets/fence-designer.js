@@ -992,7 +992,7 @@ function renderEditor(){
         <label class="f"><span>Paling width</span><select id="e-pw" data-k="palingW" data-num>${opt(125, '125 mm', r.palingW)}${opt(150, '150 mm', r.palingW)}</select></label>
         <label class="f"><span>Plinth</span><select id="e-plinth" data-k="plinths" data-num>${opt(1, 'Single plinth board', r.plinths)}${opt(2, 'Double plinth (+150 mm)', r.plinths)}</select></label>
         <label class="f"><span>Treated pine sleepers (200 × 50)</span><select id="e-slp" data-k="sleepers" data-num>${opt(0, 'None', r.sleepers)}${opt(1, '1 sleeper (+200 mm)', r.sleepers)}${opt(2, '2 sleepers (+400 mm)', r.sleepers)}</select></label>
-        <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="e-cap" data-k="capping"${r.capping ? ' checked' : ''}>Capping (+250 mm, e.g. 1650 palings = 1900 mm)</label>
+        <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="e-cap" data-k="capping"${r.capping ? ' checked' : ''}>Add capping (optional extra, +250 mm: 1650 palings = 1900 mm)</label>
         <label class="f"><span>Front of fence</span><select id="e-front" data-k="front">${opt('none','Full height to the end',r.front)}${opt('r1l1','1 raked + 1 low panel (900 mm)',r.front)}${opt('r1l2','1 raked + 2 low panels (900 mm)',r.front)}</select></label>
         ${r.front && r.front !== 'none' ? `<label class="f"><span>Front is at the</span><select id="e-fend" data-k="frontEnd">${opt('start','Start of the run',r.frontEnd)}${opt('end','End of the run',r.frontEnd)}</select></label>` : ''}
       </div>
