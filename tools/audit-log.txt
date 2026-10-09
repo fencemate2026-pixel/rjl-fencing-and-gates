@@ -578,4 +578,8 @@ fencing-greensborough.html	created suburb page (title 55, desc 149)	1
 2026-10-09T16:21:17 build_fence_designer: ok - css 14313 B, js 160144 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
 2026-10-09T16:23:12 build_fence_designer: ok - css 14313 B, js 160159 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
 2026-10-09T16:27:15 nav: removed 'Bundoora' desktop menu link and 'Bundoora fencing' mobile menu link on 33 pages; /fencing-bundoora page kept, still linked from footer and sitemap
+2026-10-09T16:43:51 build_fence_designer: website js: 160699 -> 116468 bytes minified, 9 price ranges removed, domain lock on
+2026-10-09T16:43:51 build_fence_designer: ok - css 14313 B, js 116703 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
 2026-10-09T16:47:15+11:00 font: Zing Sans Rust applied site-wide via overrides.css (+ /assets/fonts, preload on every page)
+2026-10-09T19:14:16 build_fence_designer: website js: 160699 -> 116468 bytes minified, 9 price ranges removed, domain lock on
+2026-10-09T19:14:16 build_fence_designer: ok - css 14313 B, js 116703 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
