@@ -583,3 +583,7 @@ fencing-greensborough.html	created suburb page (title 55, desc 149)	1
 2026-10-09T16:47:15+11:00 font: Zing Sans Rust applied site-wide via overrides.css (+ /assets/fonts, preload on every page)
 2026-10-09T19:14:16 build_fence_designer: website js: 160699 -> 116468 bytes minified, 9 price ranges removed, domain lock on
 2026-10-09T19:14:16 build_fence_designer: ok - css 14313 B, js 116703 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-09T21:59:11 build_fence_designer: website js: 163461 -> 118189 bytes minified, 9 price ranges removed, domain lock on
+2026-10-09T21:59:11 build_fence_designer: ok - css 14890 B, js 118424 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-09T22:01:07 build_fence_designer: website js: 163461 -> 118189 bytes minified, 9 price ranges removed, domain lock on
+2026-10-09T22:01:07 build_fence_designer: ok - css 15001 B, js 118424 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
