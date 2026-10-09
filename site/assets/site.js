@@ -4,6 +4,7 @@
  *  2. Email enquiry form: builds a pre-filled email (mailto + Gmail/Outlook
  *     fallbacks), identical wording to the original form. No data leaves the
  *     visitor's device; nothing is stored.
+ *  3. Prefills the enquiry with a design handed over from /fence-designer.
  */
 (function () {
   "use strict";
@@ -59,5 +60,24 @@
       document.dispatchEvent(new CustomEvent("rjl:enquiry-ready", { detail: { service: g("service") } }));
       window.location.href = mailto;
     });
+  }
+  // ---- 3. Design handed over from the 3D fence designer (/fence-designer) ----
+  // The designer stores a plain-text summary in sessionStorage and comes here.
+  // Prefill the project details once, then clear it. No data leaves the device.
+  if (form) {
+    try {
+      var handed = JSON.parse(sessionStorage.getItem("rjl-design-quote") || "null");
+      if (handed && handed.text) {
+        var ta = form.querySelector("#enquiry-message"), sel = form.querySelector("#enquiry-service");
+        if (ta) ta.value = handed.text.slice(0, 3900) + "\n\n";
+        if (sel && handed.service) { for (var i = 0; i < sel.options.length; i++) if (sel.options[i].text === handed.service) sel.selectedIndex = i; }
+        var note = document.createElement("p");
+        note.className = "form-note";
+        note.innerHTML = '<strong>Your 3D design has been added below.</strong> Add your details and send. <a href="/fence-designer">Back to the designer</a>';
+        form.insertBefore(note, form.firstChild);
+        sessionStorage.removeItem("rjl-design-quote");
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch (err) { /* storage blocked: the form still works normally */ }
   }
 })();

@@ -14,3 +14,10 @@ Plain static site (HTML + one CSS file + one small script). No build step.
 - `tools/audit-log.txt` - every automated edit, per page.
 
 Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
+
+## 3D fence designer (/fence-designer)
+- Master file: `tools/designer/rjl-fence-gate-designer.html` (the full internal RJL tool with materials and quote).
+- Build the website copy: `python3 tools/build_fence_designer.py` (first run: `THREE_SRC=/path/to/node_modules/three` for three@0.128.0).
+- Website mode hides materials, prices and rules. "Add to online quote" hands a plain-text design summary to `/contact-us`
+  via sessionStorage (prefilled by `site/assets/site.js`). Nothing is sent to a server.
+- `dist/commercial-fence-designer/` is a drop-in copy for rjlcommercialgroup.com (RJL Commercial logo, own email quote page).
