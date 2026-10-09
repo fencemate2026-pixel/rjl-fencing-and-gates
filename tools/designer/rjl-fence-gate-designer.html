@@ -2243,7 +2243,8 @@ function designSummary(){
   return lines.join('\n').slice(0, 3600);
 }
 function packDesign(){
-  const keep = ['product','name','length','height','maxBay','colour','style','gap','fixing','turn','joinPrev','gate','lattice','rails','barbed','razor','razorMount','electric','elecMount','elecStrands'];
+  const keep = ['product','name','length','height','maxBay','colour','style','gap','fixing','turn','joinPrev','gate','lattice','rails','barbed','razor','razorMount','electric','elecMount','elecStrands',
+                'palingLen','palingW','capping','plinths','sleepers','front','frontEnd','retain'];   // timber paling + retaining options must survive a share link
   const runs = state.runs.map(r => Object.fromEntries(keep.map(k => [k, r[k]])));
   return btoa(unescape(encodeURIComponent(JSON.stringify({r:runs, t:state.turnstiles})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
