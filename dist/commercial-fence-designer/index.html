@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en-AU"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>3D Fence &amp; Gate Designer | RJL Commercial</title><meta name="description" content="Design commercial fencing, security add-ons and automated gates in 3D, then add the design to an online quote."/>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f3f4f5;color:#111}
+.c-head{background:#fff;border-bottom:4px solid #c4161c}
+.c-wrap{max-width:1320px;margin:0 auto;padding:12px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.c-head img{height:56px;width:auto;max-width:100%}
+.c-head a.call{font-weight:700;color:#c4161c;text-decoration:none}
+.c-main{max-width:1320px;margin:0 auto;padding:20px 16px 48px}
+.c-main h1{font-size:clamp(24px,4vw,34px);margin:0 0 6px} .c-main .lead{margin:0 0 18px;color:#444;max-width:70ch}
+.c-foot{background:#fff;border-top:1px solid #ddd;padding:18px 16px;text-align:center;font-size:14px;color:#444}
+form.c-form{display:grid;gap:12px;max-width:640px} form.c-form label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:14px}
+form.c-form input,form.c-form textarea{font:inherit;padding:9px 10px;border:1px solid #ccc;border-radius:4px} form.c-form textarea{min-height:220px}
+form.c-form button{font:inherit;font-weight:700;padding:12px 18px;background:#c4161c;color:#fff;border:0;border-radius:4px;cursor:pointer}
+</style><link rel="stylesheet" href="assets/fence-designer.css?v=c94f7181"/></head><body>
+<header class="c-head"><div class="c-wrap"><a href="https://rjlcommercialgroup.com/"><img src="assets/rjl-commercial-logo.png" alt="RJL Commercial" width="800" height="192"/></a><a class="call" href="tel:+61400101132">24/7 Rapid Response 0400 101 132</a></div></header>
+<main class="c-main"><h1>Design your site fencing and gates in 3D.</h1><p class="lead">Choose a fence system, add security toppings, gates and automation, then send the design to RJL Commercial for a site measure and quote.</p>
+<div id="rjl-designer" data-mode="web" data-brand="commercial" data-quote-url="quote.html">
+  <div class="work">
+    <section class="controls" aria-label="Fence runs">
+      <div class="panel">
+        <div class="tabs" id="runTabs" role="tablist" aria-label="Runs"></div>
+        <div class="editor" id="runEditor"></div>
+      </div>
+      <details class="panel" id="turnPanel">
+        <summary>Turnstiles</summary>
+        <div class="inner">
+          <div class="grid2">
+            <label class="f"><span>Quantity</span><input type="number" id="t-count" data-t="count" min="0" max="20" step="1"></label>
+            <label class="f"><span>Type</span><select id="t-type" data-t="type"><option value="single">Single rotor</option><option value="double">Double rotor</option></select></label>
+          </div>
+          <label class="f"><span>Access control</span><select id="t-access" data-t="access"></select></label>
+        </div>
+      </details>
+    </section>
+    <section class="stage" aria-label="3D view">
+      <div class="toolbar" role="toolbar" aria-label="View controls">
+        <button class="btn" type="button" data-view="iso">3D view</button>
+        <button class="btn" type="button" data-view="front">Front</button>
+        <button class="btn" type="button" data-view="top">Plan</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="btn" type="button" id="btnOpen" aria-pressed="false">Open gates</button>
+        <button class="btn" type="button" id="btnDims" aria-pressed="true">Dimensions</button>
+      </div>
+      <div id="viewport"><span class="v-note">Drag to turn · scroll or pinch to zoom · right-drag to move</span></div>
+      <div class="summary" id="layoutSummary" aria-live="polite"></div>
+      <div class="warns" id="warns"></div>
+      <div class="panel quote-cta">
+        <h2>Happy with your design?</h2>
+        <p>Add it to an online quote. We measure on site and confirm the price before any work starts.</p>
+        <button type="button" class="btn primary" id="addToQuote">Add to online quote</button>
+        <p class="err-text" id="addMsg" hidden></p>
+      </div>
+    </section>
+  </div>
+</div></main><footer class="c-foot">RJL Commercial Fencing and Gates (VIC) Pty Ltd · ABN 37 652 237 431 · Unit 1/12 Merchant Avenue, Thomastown VIC 3074 · info@rjlcommercialgroup.com</footer><script src="assets/vendor/three.min.js?v=9274bbce" defer></script><script src="assets/vendor/OrbitControls.js?v=02bb4ade" defer></script><script src="assets/fence-designer.js?v=400e3e17" defer></script></body></html>

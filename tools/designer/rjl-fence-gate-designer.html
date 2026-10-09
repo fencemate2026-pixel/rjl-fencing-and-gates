@@ -1,0 +1,1939 @@
+<title>RJL Fence & Gate Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: two-pane workbench — job controls on the left, live 3D yard on the right,
+   materials list and quote full-width underneath. Steel-grey neutrals, RJL red accent. */
+:root{
+  --bg:#eceef0; --surface:#ffffff; --surface-2:#f5f6f7; --ink:#15181c; --muted:#5b636c; --line:#d5dade;
+  --accent:#c4161c; --accent-ink:#ffffff; --accent-soft:#fbe8e9;
+  --ok:#1f6e44; --warn:#8a5200; --warn-soft:#fff3dc; --bad:#b3261e; --bad-soft:#fdeceb;
+  --scene:#dde3e8; --ground:#c3c9bf; --grid:#9aa39a;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111316; --surface:#1a1d21; --surface-2:#20242a; --ink:#e7e9ec; --muted:#9aa2ab; --line:#2e333a;
+    --accent:#ec4a50; --accent-ink:#ffffff; --accent-soft:#3a1c1e;
+    --ok:#4cc38a; --warn:#e5a93a; --warn-soft:#33270f; --bad:#ff6b63; --bad-soft:#3a1a18;
+    --scene:#1d2227; --ground:#3a403a; --grid:#59615a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111316; --surface:#1a1d21; --surface-2:#20242a; --ink:#e7e9ec; --muted:#9aa2ab; --line:#2e333a;
+  --accent:#ec4a50; --accent-ink:#ffffff; --accent-soft:#3a1c1e;
+  --ok:#4cc38a; --warn:#e5a93a; --warn-soft:#33270f; --bad:#ff6b63; --bad-soft:#3a1a18;
+  --scene:#1d2227; --ground:#3a403a; --grid:#59615a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:0 40px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding-block:14px 12px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+.brand{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.brand .logo{height:46px;width:auto;max-width:100%;background:#fff;border-radius:4px;padding:3px 6px}
+.brand .wm{color:var(--accent);font-size:30px;letter-spacing:.02em}
+.brand .wm2{color:var(--accent);font-size:20px;letter-spacing:.06em}
+.brand .tag{font-family:var(--f-body);font-weight:500;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-left:8px}
+.app-name{font-size:24px}
+.proj{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;min-width:0}
+.proj input{width:12.5em;max-width:100%}
+
+.banner{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:9px 12px;margin-bottom:14px;border:1px solid var(--warn);background:var(--warn-soft);color:var(--ink);border-radius:var(--r);font-size:13px}
+.banner b{color:var(--warn)}
+
+/* ---------- inputs ---------- */
+input[type=text],input[type=number],select,textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--surface);min-width:0}
+input[type=number]{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:500;color:var(--muted);min-width:0}
+label.f > span{letter-spacing:.02em}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+.hint{font-size:12px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* ---------- workbench ---------- */
+.work{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:920px){.work{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.controls{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border-bottom:1px solid var(--line)}
+.tab{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:6px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);cursor:pointer;text-align:left;min-width:0}
+.tab b{font-family:var(--f-display);font-size:15px;font-weight:600;letter-spacing:.02em}
+.tab small{font-size:11px;color:var(--muted)}
+.tab[aria-selected="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 -3px 0 var(--accent)}
+.tab.err{border-color:var(--bad)}
+.tab.add{justify-content:center;align-items:center;color:var(--accent);font-weight:600;border-style:dashed;background:transparent}
+.editor{padding:12px;display:flex;flex-direction:column;gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+fieldset{border:0;padding:0;margin:0;min-width:0;display:flex;flex-direction:column;gap:10px}
+legend{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0;margin-bottom:8px}
+.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pgroup{margin:4px 0 -4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 7px;border:1px solid var(--line);border-radius:4px;cursor:pointer;text-align:center;font-size:11.5px;line-height:1.2;background:var(--surface-2)}
+.pcard input{position:absolute;opacity:0;pointer-events:none}
+.pcard svg{width:46px;height:28px;color:var(--muted)}
+.pcard.on{border-color:var(--accent);background:var(--accent-soft)}
+.pcard.on svg{color:var(--accent)}
+.pcard:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:1px}
+.swatches{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sw{position:relative;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
+.sw:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.sw-custom{width:38px;height:30px;padding:0;border:1px solid var(--line);border-radius:4px;background:var(--surface);cursor:pointer}
+.gatebox{border-top:1px solid var(--line);padding-top:12px}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+details.panel > summary{cursor:pointer;padding:10px 12px;font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.03em;list-style-position:inside}
+details.panel > .inner{padding:0 12px 12px;display:flex;flex-direction:column;gap:10px}
+
+/* ---------- 3D stage ---------- */
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0}
+@media (min-width:921px){.stage{position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px)}}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.toolbar .sep{width:1px;height:24px;background:var(--line);margin-inline:4px}
+#viewport{position:relative;height:clamp(340px,60vh,680px);max-width:100%;background:var(--scene);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;touch-action:none}
+#viewport canvas{display:block;width:100%;height:100%}
+.v-note{position:absolute;left:10px;bottom:8px;font-size:11px;color:var(--muted);pointer-events:none;background:color-mix(in srgb,var(--scene) 80%,transparent);padding:2px 6px;border-radius:3px}
+.v-fallback{padding:24px;color:var(--muted)}
+.summary{display:flex;flex-direction:column;gap:8px}
+.sum{padding:9px 11px;min-width:0}
+.sum-h{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-bottom:6px}
+.sum-h b{font-family:var(--f-display);font-size:16px;font-weight:600}
+.sum-h span{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-family:var(--f-mono);font-size:11.5px;padding:2px 6px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.chip.cut{border-color:var(--warn);color:var(--warn)}
+.chip.gate{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.post{background:transparent;border-style:dashed;color:var(--muted)}
+.err-text{color:var(--bad);font-size:13px}
+
+/* ---------- materials & quote ---------- */
+.bom{margin-top:22px;display:flex;flex-direction:column;gap:14px}
+.bom-head{display:flex;flex-wrap:wrap;gap:10px;align-items:end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.bom-head h2{font-size:26px}
+.bom-actions{display:flex;flex-wrap:wrap;gap:6px}
+.bom-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,330px);gap:16px;align-items:start}
+@media (max-width:920px){.bom-grid{grid-template-columns:minmax(0,1fr)}}
+.tbl-wrap{overflow-x:auto;min-width:0}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:640px}
+th{font-family:var(--f-display);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-align:left;color:var(--muted);padding:8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.code{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+td .basis{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.num{text-align:right;font-family:var(--f-mono);white-space:nowrap}
+tr.cat td{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;background:var(--surface-2);padding-top:9px}
+td input.rate{width:92px;text-align:right;padding:5px 7px}
+tr.unpriced td.num.tot{color:var(--warn)}
+.quote{padding:14px;display:flex;flex-direction:column;gap:10px}
+.quote h3{font-size:18px}
+.qrow{display:flex;justify-content:space-between;gap:10px;font-variant-numeric:tabular-nums}
+.qrow span:last-child{font-family:var(--f-mono)}
+.qrow.big{font-size:18px;font-weight:600;border-top:2px solid var(--ink);padding-top:8px}
+.qrow.big span:last-child{color:var(--accent)}
+.qrow.sub{color:var(--muted);font-size:13px}
+.qbox{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.pill{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.ok{color:var(--ok)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}.pill.src{color:var(--muted)}
+.warns{display:flex;flex-direction:column;gap:6px}
+.warns div{padding:7px 10px;border-left:3px solid var(--warn);background:var(--warn-soft);font-size:13px;border-radius:0 4px 4px 0}
+.evidence{display:flex;flex-direction:column;gap:10px;font-size:13px;max-width:78ch}
+.evidence p{margin:0}
+.evidence ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+textarea{font-family:var(--f-mono);font-size:12px;min-height:120px;resize:vertical}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:4px;font-size:13px;z-index:20}
+@media (max-width:480px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.proj input{width:100%}.proj{width:100%}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="brand"><img src="data:image/webp;base64,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" alt="RJL Commercial" class="logo"><img src="data:image/webp;base64,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" alt="RJL Fencing and Gates" class="logo"></div>
+  <h1 class="app-name">Fence &amp; Gate Designer</h1>
+  <div class="proj">
+    <input type="text" id="p-name" data-p="name" placeholder="Job name" aria-label="Job name">
+    <input type="text" id="p-client" data-p="client" placeholder="Client" aria-label="Client">
+    <input type="text" id="p-site" data-p="site" placeholder="Site address" aria-label="Site address">
+  </div>
+</header>
+
+<div class="banner" id="exampleBanner" hidden>
+  <span><b>Example job loaded.</b> Change the runs to suit your job. Prices stay blank until you enter your own supplier and labour rates in the materials list.</span>
+  <button class="btn" type="button" id="clearExample">Start a blank job</button>
+</div>
+
+<main class="work">
+  <section class="controls" aria-label="Fence runs">
+    <div class="panel">
+      <div class="tabs" id="runTabs" role="tablist" aria-label="Runs"></div>
+      <div class="editor" id="runEditor"></div>
+    </div>
+
+    <details class="panel" id="turnPanel">
+      <summary>Turnstiles</summary>
+      <div class="inner">
+        <div class="grid2">
+          <label class="f"><span>Quantity</span><input type="number" id="t-count" data-t="count" min="0" max="20" step="1"></label>
+          <label class="f"><span>Type</span>
+            <select id="t-type" data-t="type"><option value="single">Single rotor</option><option value="double">Double rotor</option></select></label>
+        </div>
+        <label class="f"><span>Access control</span><select id="t-access" data-t="access"></select></label>
+        <p class="hint">Shown beside the start of the first run. Position on site is indicative only.</p>
+      </div>
+    </details>
+
+    <details class="panel" id="rulesPanel">
+      <summary>Calculation rules</summary>
+      <div class="inner">
+        <p class="hint">These numbers drive every quantity. Change them to match your supplier or site.</p>
+        <div class="grid2" id="rulesGrid"></div>
+        <button class="btn" type="button" id="rulesReset">Restore default rules</button>
+      </div>
+    </details>
+  </section>
+
+  <section class="stage" aria-label="3D view">
+    <div class="toolbar" role="toolbar" aria-label="View controls">
+      <button class="btn" type="button" data-view="iso">3D view</button>
+      <button class="btn" type="button" data-view="front">Front</button>
+      <button class="btn" type="button" data-view="top">Plan</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" type="button" id="btnOpen" aria-pressed="false">Open gates</button>
+      <button class="btn" type="button" id="btnDims" aria-pressed="true">Dimensions</button>
+    </div>
+    <div id="viewport"><span class="v-note">Drag to orbit · scroll or pinch to zoom · right-drag to pan</span></div>
+    <div class="summary" id="layoutSummary" aria-live="polite"></div>
+  </section>
+</main>
+
+<section class="bom" aria-labelledby="bomTitle">
+  <div class="bom-head">
+    <h2 id="bomTitle">Materials &amp; quote</h2>
+    <div class="bom-actions">
+      <button class="btn" type="button" id="copyCsv">Copy materials (CSV)</button>
+      <button class="btn" type="button" id="copyQuote">Copy quote summary</button>
+    </div>
+  </div>
+  <div class="warns" id="warns"></div>
+  <div class="bom-grid">
+    <div class="panel tbl-wrap" id="bomTable"></div>
+    <aside class="panel quote" id="quote" aria-label="Quote"></aside>
+  </div>
+
+  <details class="panel">
+    <summary>How the numbers are worked out</summary>
+    <div class="inner evidence" id="evidence"></div>
+  </details>
+
+  <details class="panel">
+    <summary>Save or load a job</summary>
+    <div class="inner">
+      <p class="hint">Jobs save automatically in this browser. To move a job to another device, copy it here and paste it in there.</p>
+      <textarea id="ioText" aria-label="Job data" placeholder="Paste a copied job here, then press Load job."></textarea>
+      <div class="row-actions">
+        <button class="btn" type="button" id="ioCopy">Copy this job</button>
+        <button class="btn" type="button" id="ioLoad">Load job</button>
+        <button class="btn danger" type="button" id="ioReset">Reset to example job</button>
+      </div>
+      <p class="err-text" id="ioMsg" hidden></p>
+    </div>
+  </details>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+'use strict';
+/* ===========================================================================
+ * RJL Fence & Gate Designer
+ * Pipeline:  state → layoutRun() (bays/posts/gates per run)
+ *                  → buildBom()  (quantities + cut-optimised stock lengths)
+ *                  → totals()    (rates × qty, margin, GST, maintenance plan)
+ *                  → build3D()   (Three.js model, instanced geometry)
+ * All lengths are millimetres unless the name says otherwise.
+ * Evidence level of each rule is listed in the "How the numbers are worked out" panel.
+ * ========================================================================= */
+
+/* Website embed: a <div id="rjl-designer" data-mode="web" data-brand="residential|commercial" data-quote-url="/contact-us">
+ * hides materials, pricing and rules, and adds an "Add to online quote" button. Without that element this is the full RJL tool. */
+const HOST = document.getElementById('rjl-designer');
+const CFG = HOST ? {...HOST.dataset} : {};
+const WEB = CFG.mode === 'web';
+const STORE_KEY = WEB ? 'rjl-web-designer-' + (CFG.brand || 'residential') + '-v1' : 'rjl-fence-gate-designer-v1';
+const SHEET_COVER = 820;            // steel sheet effective cover (mm) — inferred, see evidence panel
+const CATS = ['Posts','Panels & infill','Gates','Hardware','Automation & access','Concrete & footings','Turnstiles','Labour'];
+const INT_UNITS = new Set(['ea','bag','len','roll','m','set','pair','pack']);
+
+const COLOURS = [
+  {name:'Black',hex:'#1d1d1d'},{name:'Charcoal',hex:'#3a3d40'},{name:'Slate grey',hex:'#5b6166'},
+  {name:'Stone grey',hex:'#8b8c86'},{name:'Off-white',hex:'#e3dfd3'},{name:'Bronze',hex:'#5a4632'},
+  {name:'Bush green',hex:'#4a5944'},{name:'Galvanised',hex:'#a8adb1'}
+];
+
+const DEFAULT_RULES = {
+  postEmbed: 600,       // FROM SOURCE: retail calculator "hole @ 600 mm deep"
+  bagsPerHole: 1.5,     // FROM SOURCE: retail calculator "1.5 bags per standard hole"
+  gatePostEmbed: 900,   // RJL default
+  bagsPerGateHole: 3,   // RJL default
+  hingeGap: 20,         // RJL default — clearance at hinge / latch / centre
+  slidingOverlap: 400,  // RJL default — sliding leaf longer than opening
+  heavyLeafWidth: 2000, // RJL default — leaves wider than this get 100×100 gate posts
+  kerf: 3,              // saw cut allowance per cut
+  elecZoneLen: 500,     // RJL default — metres of electric fence per energiser zone
+  signSpacing: 10       // RJL default — metres between electric fence warning signs
+};
+const RULE_LABELS = {
+  postEmbed:['Post depth in ground (mm)',0,1500,50], bagsPerHole:['Concrete bags per post hole',0,10,0.5],
+  gatePostEmbed:['Gate post depth in ground (mm)',0,2000,50], bagsPerGateHole:['Concrete bags per gate post',0,20,0.5],
+  hingeGap:['Gate clearance gap (mm)',5,60,1], slidingOverlap:['Sliding leaf overlap (mm)',0,1500,50],
+  heavyLeafWidth:['Heavy leaf width (mm)',800,6000,100], kerf:['Saw cut allowance (mm)',0,10,1],
+  elecZoneLen:['Electric fence per energiser zone (m)',50,3000,50], signSpacing:['Warning sign spacing (m)',5,50,1]
+};
+
+/* group: which heading the system sits under in the picker.
+ * market: typical installed residential price per metre [low, high] — FROM SOURCE whatsthedamage.com.au (fetched 8 Oct 2026). */
+const PRODUCTS = {
+  colorbond:{group:'Residential', label:'Colorbond® steel sheet', short:'Steel sheet', postW:50, strategy:'full', maxBayLimit:2400,
+    defaults:{height:1800,maxBay:2400,colour:'#e3dfd3',style:'standard',gap:0}, market:[80,190],
+    styles:[['standard','Standard'],['breezeway','Breezeway top'],['slatfx','Slat FX top'],['lattice','Lattice top']]},
+  paling:{group:'Residential', label:'Timber paling', short:'Paling', postW:75, postD:125, strategy:'full', maxBayLimit:2700,
+    defaults:{height:1800,maxBay:2400,colour:'#9c7650',style:'butted',gap:0}, market:[80,190],
+    styles:[['butted','Butted palings'],['lapcap','Lapped and capped']]},
+  picket:{group:'Residential', label:'Picket', short:'Picket', postW:75, strategy:'full', maxBayLimit:2700,
+    defaults:{height:1000,maxBay:2400,colour:'#f1efe8',style:'standard',gap:50}, gapLabel:'Gap between pickets (mm)', market:[60,250]},
+  hslat:{group:'Residential', label:'Aluminium horizontal slat', short:'Horiz. slat', postW:50, strategy:'equal', maxBayLimit:2900,
+    defaults:{height:1800,maxBay:1800,colour:'#3a3d40',style:'standard',gap:10}, gapLabel:'Gap between slats (mm)', market:[170,400]},
+  vslat:{group:'Residential', label:'Aluminium vertical slat', short:'Vert. slat', postW:50, strategy:'equal', maxBayLimit:3000,
+    defaults:{height:1800,maxBay:2400,colour:'#e3dfd3',style:'standard',gap:20}, gapLabel:'Gap between slats (mm)', market:[170,400]},
+  vblade:{group:'Residential', label:'Aluminium vertical blade', short:'Blade', postW:50, strategy:'equal', maxBayLimit:2400,
+    defaults:{height:1800,maxBay:2400,colour:'#3a3d40',style:'45',gap:0}, market:[170,400],
+    styles:[['45','Blades at 45°'],['60','Blades at 60° (more privacy)'],['90','Blades square to fence (open)']]},
+  sbatten:{group:'Residential', label:'Steel batten', short:'Batten', postW:50, strategy:'equal', maxBayLimit:2700,
+    defaults:{height:1800,maxBay:2400,colour:'#1d1d1d',style:'50',gap:20}, gapLabel:'Gap between battens (mm)',
+    styles:[['50','50 × 25 battens'],['65','65 × 25 battens'],['90','90 × 25 battens']]},
+  poolalu:{group:'Residential', label:'Aluminium pool fence', short:'Pool alu', postW:50, strategy:'full', maxBayLimit:2450, pool:true,
+    defaults:{height:1200,maxBay:2400,colour:'#1d1d1d',style:'standard',gap:0}, market:[100,350]},
+  glass:{group:'Residential', label:'Frameless glass pool fence', short:'Glass', postW:30, strategy:'equal', maxBayLimit:2000, pool:true, noPosts:true,
+    defaults:{height:1200,maxBay:1800,colour:'#a8adb1',style:'spigot',gap:0}, market:[300,800],
+    styles:[['spigot','Spigots'],['channel','Hidden base channel']]},
+  chain:{group:'Commercial', topping:true, label:'Chainmesh', short:'Chainmesh', postW:60, strategy:'equal', maxBayLimit:3000,
+    defaults:{height:1800,maxBay:3000,colour:'#a8adb1',style:'standard',gap:0}, market:[30,90], chainOpts:true},
+  mesh358:{group:'Commercial', topping:true, label:'358 welded mesh', short:'358 mesh', postW:60, strategy:'full', maxBayLimit:2500,
+    defaults:{height:2400,maxBay:2500,colour:'#3a3d40',style:'standard',gap:0}},
+  mesh868:{group:'Commercial', topping:true, label:'Double wire mesh (868)', short:'868 mesh', postW:60, strategy:'full', maxBayLimit:2500,
+    defaults:{height:2030,maxBay:2500,colour:'#3a3d40',style:'standard',gap:0}},
+  palisade:{group:'Commercial', topping:true, label:'Steel palisade', short:'Palisade', postW:100, strategy:'full', maxBayLimit:2750,
+    defaults:{height:2400,maxBay:2750,colour:'#3a3d40',style:'standard',gap:0}},
+  garrison:{group:'Commercial', topping:true, label:'Garrison spear-top', short:'Garrison', postW:65, strategy:'full', maxBayLimit:2400,
+    defaults:{height:2100,maxBay:2400,colour:'#1d1d1d',style:'standard',gap:0}},
+  tubular:{group:'Commercial', topping:true, label:'Tubular steel', short:'Tubular', postW:50, strategy:'full', maxBayLimit:2450,
+    defaults:{height:1800,maxBay:2450,colour:'#1d1d1d',style:'standard',gap:0}},
+  temp:{group:'Commercial', label:'Temporary fence', short:'Temp fence', postW:40, strategy:'full', maxBayLimit:2400, noPosts:true, temp:true,
+    defaults:{height:2100,maxBay:2400,colour:'#a8adb1',style:'standard',gap:0}}
+};
+
+/* forced: gate type is always motorised. allowed gate types per system are in GATES_FOR. */
+const GATE_TYPES = {
+  none:{label:'No gate'},
+  pedestrian:{label:'Pedestrian gate', def:1000, min:700, max:1500},
+  single:{label:'Single swing gate', def:3000, min:1000, max:4500},
+  double:{label:'Double swing gate', def:4000, min:2000, max:9000},
+  sliding:{label:'Sliding gate (on track)', def:5000, min:2000, max:12000},
+  cantilever:{label:'Cantilever sliding gate', def:6000, min:3000, max:14000},
+  bifold:{label:'Bi-fold speed gate', def:5000, min:3000, max:9000, forced:true},
+  boom:{label:'Boom gate', def:4500, min:2500, max:8000, forced:true}
+};
+/* Gate locks. RJL standard: lock / latch release installed 1500 mm above ground level. */
+const LOCK_H = 1500;
+const LOCKS = {
+  locklatch:{code:'DD-LOKKLATCH', label:'D&D LokkLatch (standard)'},
+  lever:{code:'DD-LEVER', label:'D&D lever-style lock'},
+  magna:{code:'DD-MAGNALATCH', label:'D&D MagnaLatch magnetic pull-up pool safety latch'}
+};
+const LOCKABLE = t => t === 'pedestrian' || t === 'single' || t === 'double' || t === 'sliding' || t === 'cantilever';
+const GATES_FOR = p => PRODUCTS[p].pool ? ['none','pedestrian']
+  : PRODUCTS[p].temp ? ['none','pedestrian','single','double']
+  : Object.keys(GATE_TYPES);
+const isAuto = g => g.auto || !!GATE_TYPES[g.type].forced;
+const ACCESS = {
+  none:{label:'None'},
+  keypad:{code:'ACC-KEYPAD', label:'Keypad (Wiegand)'},
+  gsm:{code:'ACC-GSM', label:'RJL GSM access module (phone call / MagicKeys)'},
+  sgpro:{code:'ACC-SGPRO', label:'RJL SG-PRO control interface'}
+};
+
+/* ---------------------------------------------------------------- helpers */
+const $ = (s, r=document) => r.querySelector(s);
+const on = (sel, ev, fn) => { const el = typeof sel === 'string' ? $(sel) : sel; if (el) el.addEventListener(ev, fn); };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Math.round(n).toLocaleString('en-AU');
+const money = n => n.toLocaleString('en-AU',{style:'currency',currency:'AUD'});
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const uid = () => Math.random().toString(36).slice(2,9);
+const runLetter = i => 'Run ' + String.fromCharCode(65 + (i % 26)) + (i >= 26 ? Math.floor(i/26) : '');
+function setPath(o, path, v){ const k = path.split('.'); let t = o; for (let i=0;i<k.length-1;i++) t = t[k[i]]; t[k[k.length-1]] = v; }
+function getPath(o, path){ return path.split('.').reduce((t,k)=>t?.[k], o); }
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; (document.getElementById('rjl-designer') || document.body).appendChild(t); setTimeout(()=>t.remove(), 2200); }
+async function copyText(text, fallbackEl){
+  try { await navigator.clipboard.writeText(text); toast('Copied'); }
+  catch(e){ if (fallbackEl){ fallbackEl.value = text; fallbackEl.closest('details').open = true; fallbackEl.focus(); fallbackEl.select(); toast('Copy blocked here — text selected below, press Ctrl+C'); } }
+}
+
+/* ---------------------------------------------------------------- state */
+function newRun(product='colorbond', name='Run'){
+  const d = PRODUCTS[product].defaults;
+  return { id:uid(), name, product, length:10, height:d.height, maxBay:d.maxBay, colour:d.colour, style:d.style, gap:d.gap,
+    fixing:'inground', turn:90, joinPrev:true,
+    lattice:'square',
+    rails:{top:true, mid:false, bot:false}, barbed:false, razor:false, razorMount:'arms',
+    electric:false, elecMount:'top', elecStrands:6,
+    gate:{ type:'none', width:3440, position:'start', piers:false, auto:false, access:'none', lock:PRODUCTS[product].pool ? 'magna' : 'locklatch' } };
+}
+function webExample(){
+  const commercial = CFG.brand === 'commercial';
+  const a = commercial ? newRun('mesh358','Run A') : newRun('colorbond','Run A');
+  a.turn = 0; a.joinPrev = false; a.length = commercial ? 20 : 12;
+  a.gate = commercial ? {type:'sliding', width:6000, position:'middle', piers:false, auto:true, access:'none'}
+                      : {type:'double', width:3440, position:'start', piers:false, auto:false, access:'none'};
+  return { v:1, project:{name:'', client:'', site:'', example:false}, runs:[a], sel:0,
+    turnstiles:{count:0, type:'single', access:'none'}, rules:{...DEFAULT_RULES}, rates:{},
+    pricing:{margin:30, gst:true, pmVisits:4, pmRate:0}, view:{dims:true} };
+}
+function exampleState(){
+  if (WEB) return webExample();
+  const a = newRun('colorbond','Run A'); a.style='breezeway'; a.turn=0; a.joinPrev=false;
+  a.gate = {type:'double', width:3440, position:'start', piers:false, auto:false, access:'none'};
+  const b = newRun('hslat','Run B');
+  const c = newRun('mesh358','Run C'); c.length = 12;
+  c.gate = {type:'sliding', width:5000, position:'middle', piers:false, auto:true, access:'gsm'};
+  return { v:1, project:{name:'Example job', client:'', site:'', example:true}, runs:[a,b,c], sel:0,
+    turnstiles:{count:1, type:'single', access:'none'}, rules:{...DEFAULT_RULES}, rates:{},
+    pricing:{margin:30, gst:true, pmVisits:4, pmRate:0}, view:{dims:true} };
+}
+function normalise(s){
+  if (!s || !Array.isArray(s.runs) || !s.runs.length) return null;
+  const ex = exampleState();
+  const runs = s.runs.filter(r => r && PRODUCTS[r.product]).map(r => {
+    const b = newRun(r.product, r.name || 'Run'), o = {...b, ...r, gate:{...b.gate, ...(r.gate||{})}, rails:{...b.rails, ...(r.rails||{})}};
+    if (r.style === 'barbed') o.barbed = true; if (r.style === 'razor') o.razor = true;   // v2 stored topping as a style
+    return o;
+  });
+  if (!runs.length) return null;
+  return { ...ex, ...s, runs,
+    project:{...ex.project, ...(s.project||{})}, rules:{...DEFAULT_RULES, ...(s.rules||{})},
+    pricing:{...ex.pricing, ...(s.pricing||{})}, turnstiles:{...ex.turnstiles, ...(s.turnstiles||{})},
+    rates:{...(s.rates||{})}, view:{...ex.view, ...(s.view||{})}, sel:clamp(s.sel|0, 0, runs.length-1) };
+}
+function loadState(){ try { const raw = localStorage.getItem(STORE_KEY); return raw ? normalise(JSON.parse(raw)) : null; } catch(e){ return null; } }
+function saveState(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
+
+let state = loadState() || exampleState();
+const curRun = () => state.runs[state.sel];
+
+/* ===================================================================== LAYOUT
+ * A run is laid out left→right as a sequence of nodes:
+ *   {k:'post', role:'end'|'line'|'corner'|'gate'|'guide'|'pier', w}
+ *   {k:'bay', w}   clear width between posts
+ *   {k:'gate', w, slideDir}   clear opening between gate posts
+ * Run length is measured outside-of-post to outside-of-post.
+ * ------------------------------------------------------------------------- */
+function gateLeaves(g, rules){
+  const G = g.width;
+  if (g.type === 'double')     return {n:2, w:(G - 3*rules.hingeGap)/2};
+  if (g.type === 'sliding')    return {n:1, w:G + rules.slidingOverlap};
+  if (g.type === 'cantilever') return {n:1, w:G*1.5};                       // 50% counterbalance tail — RJL default
+  if (g.type === 'bifold')     return {n:4, w:(G - 3*rules.hingeGap)/4};    // 2 leaves × 2 folding panels
+  if (g.type === 'boom')       return {n:0, w:G + 300};                     // boom arm = opening + 300 mm
+  return {n:1, w:G - 2*rules.hingeGap};
+}
+const SLIDES = t => t === 'sliding' || t === 'cantilever';
+function gatePostW(run, rules){
+  const g = run.gate, P = PRODUCTS[run.product]; if (g.type === 'none') return 0;
+  if (g.type === 'boom') return 350;                    // barrier cabinet footprint
+  if (P.noPosts) return P.postW;                        // glass hangs off glass panels; temp gates clamp to panels
+  if (g.piers) return 350;
+  if (g.type === 'bifold') return 150;
+  if (g.type === 'pedestrian') return P.pool ? 50 : 65;
+  if (SLIDES(g.type) || isAuto(g) || gateLeaves(g, rules).w > rules.heavyLeafWidth) return 100;
+  return 65;
+}
+/* Split a clear length into bays.
+ *  'full'  — as many full-width bays as fit, then one cut-down bay (sheet & panel systems; matches retail Colorbond output)
+ *  'equal' — equal bays no wider than max (slat systems; matches retail aluminium slat output) */
+function splitBays(clear, p, W, strategy){
+  if (clear <= 0.5) return [];
+  if (strategy === 'full'){
+    const k = Math.floor((clear + p)/(W + p) + 1e-9);
+    if (k === 0) return [clear];
+    const rem = clear - k*W - (k-1)*p;            // space left after k full bays and k-1 posts
+    if (rem < 1) return Array(k).fill(W);
+    const r = rem - p;                             // trailing bay after one more post
+    if (r >= 300) return [...Array(k).fill(W), r];
+    const two = (W + rem - p)/2;                   // trailing bay too short: share across last two bays
+    return [...Array(k-1).fill(W), two, two];
+  }
+  const n = Math.max(1, Math.ceil((clear + p)/(W + p) - 1e-9));
+  return Array(n).fill((clear - (n-1)*p)/n);
+}
+function layoutRun(run, rules){
+  const P = PRODUCTS[run.product], p = P.postW;
+  const W = clamp(run.maxBay, 300, P.maxBayLimit);
+  const L = Math.round(run.length*1000), g = run.gate, errs = [], seq = [];
+  const post = (role, w) => seq.push({k:'post', role, w});
+  const bays = clear => splitBays(clear, p, W, P.strategy).forEach((b,i) => { if (i) post('line', p); seq.push({k:'bay', w:b}); });
+  let gw = 0;
+  if (g.type === 'none'){
+    if (L < 2*p + 300) errs.push(`Run is too short. It needs at least ${fmt(2*p+300)} mm.`);
+    else { post('end', p); bays(L - 2*p); post('end', p); }
+  } else {
+    gw = gatePostW(run, rules);
+    const G = g.width, block = 2*gw + G, sliding = SLIDES(g.type);
+    const roleL = d => g.piers ? 'pier' : (sliding && d < 0 ? 'guide' : 'gate');
+    const roleR = d => g.piers ? 'pier' : (sliding && d > 0 ? 'guide' : 'gate');
+    const gateBlock = d => { post(roleL(d), gw); seq.push({k:'gate', w:G, slideDir:d}); post(roleR(d), gw); };
+    const fenceLen = L - block;
+    if (fenceLen < -0.5){
+      errs.push(`The gate and its posts need ${fmt(block)} mm but the run is ${fmt(L)} mm. Lengthen the run or narrow the gate.`);
+    } else if (g.position === 'middle'){
+      const side = fenceLen/2;
+      if (side < p + 300) errs.push(`Each side of the gate is only ${fmt(side)} mm. Put the gate at the start or end, or lengthen the run.`);
+      else { post('end', p); bays(side - p); gateBlock(1); bays(side - p); post('end', p); }
+    } else {
+      const atStart = g.position === 'start';
+      if (fenceLen < 1){ gateBlock(atStart ? 1 : -1); }
+      else if (fenceLen < p + 300) errs.push(`The fence beside the gate is only ${fmt(fenceLen)} mm. Make the run ${fmt(block)} mm (gate only) or at least ${fmt(block+p+300)} mm.`);
+      else if (atStart){ gateBlock(1); bays(fenceLen - p); post('end', p); }
+      else { post('end', p); bays(fenceLen - p); gateBlock(-1); }
+    }
+  }
+  let x = 0; seq.forEach(n => { n.x = x; x += n.w; });
+  return { L, W, p, gw, seq, errs };
+}
+function sections(seq){
+  const out = []; let cur = null;
+  for (const n of seq){
+    if (n.k === 'bay'){ if (!cur){ cur = {len:0, bays:0}; out.push(cur); } cur.len += n.w; cur.bays++; }
+    else if (n.k === 'post' && n.role === 'line' && cur) cur.len += n.w;
+    else cur = null;
+  }
+  return out;
+}
+
+/* ===================================================================== BOM */
+function cutPlan(lens, stock, kerf){
+  const sorted = [...lens].sort((a,b) => b-a), bins = []; let over = 0, used = 0;
+  for (const l of sorted){
+    if (l > stock){ over++; continue; }
+    used += l;
+    const b = bins.find(b => b.rem >= l + (b.n ? kerf : 0));
+    if (b){ b.rem -= l + (b.n ? kerf : 0); b.n++; } else bins.push({rem:stock - l, n:1});
+  }
+  const waste = bins.length ? (bins.length*stock - used)/(bins.length*stock)*100 : 0;
+  return { bins:bins.length, over, waste };
+}
+function naiveLengths(lens, stock, kerf){            // retail method: pack each length size separately
+  const m = new Map(); lens.forEach(l => m.set(l, (m.get(l)||0) + 1));
+  let n = 0; for (const [l,c] of m){ if (l > stock) continue; n += Math.ceil(c / Math.max(1, Math.floor((stock + kerf)/(l + kerf)))); }
+  return n;
+}
+class Bom {
+  constructor(){ this.lines = new Map(); this.pieces = new Map(); this.warn = []; }
+  add(cat, code, desc, qty, unit='ea', basis=''){
+    if (!(qty > 0)) return;
+    const l = this.lines.get(code);
+    if (l){ l.qty += qty; if (basis && !l.basis.includes(basis)) l.basis = l.basis ? l.basis + '; ' + basis : basis; }
+    else this.lines.set(code, {cat, code, desc, qty, unit, basis});
+  }
+  piece(cat, code, desc, stock, len, count=1, basis=''){
+    if (!(count > 0)) return;
+    let p = this.pieces.get(code);
+    if (!p){ p = {cat, code, desc, stock, lens:[], basis}; this.pieces.set(code, p); }
+    for (let i=0;i<count;i++) p.lens.push(Math.round(len));
+  }
+  finish(kerf){
+    for (const p of this.pieces.values()){
+      const plan = cutPlan(p.lens, p.stock, kerf), naive = naiveLengths(p.lens, p.stock, kerf);
+      let basis = `${p.lens.length} cuts, ${plan.waste.toFixed(1)}% offcut`;
+      if (naive > plan.bins) basis += `; saves ${naive - plan.bins} length${naive-plan.bins>1?'s':''} vs cutting each size separately`;
+      if (p.basis) basis = p.basis + '. ' + basis;
+      this.add(p.cat, p.code, `${p.desc}, ${(p.stock/1000).toFixed(1)} m lengths`, plan.bins, 'len', basis);
+      if (plan.over) this.warn.push(`${p.desc}: ${plan.over} piece(s) are longer than the ${p.stock} mm stock length and are not counted. Check the height or post depth.`);
+    }
+    this.list = [...this.lines.values()].map(l => {
+      let q = l.qty;
+      if (l.cat === 'Labour') q = Math.round(q*10)/10;
+      else if (INT_UNITS.has(l.unit)) q = Math.ceil(q - 1e-9);
+      else q = Math.ceil(q*10 - 1e-9)/10;
+      return {...l, qty:q};
+    }).sort((a,b) => CATS.indexOf(a.cat) - CATS.indexOf(b.cat));
+  }
+}
+
+function fixings(c, count, w, bagsEach, basis){
+  if (!count) return;
+  if (c.ground) c.bom.add('Concrete & footings','CONC-20','Concrete post mix, 20 kg bag', count*bagsEach, 'bag', basis || `${bagsEach} bags per post hole`);
+  else { c.bom.add('Hardware',`BASEPLATE-${w}`,`Base plate to suit ${w} mm post`, count, 'ea', '1 per post');
+         c.bom.add('Hardware','ANCHOR-M12','M12 chemical anchor', count*4, 'ea', '4 per base plate'); }
+}
+
+/* Colorbond top features. Lattice styles are generic trellis patterns; the lattice panel make-up follows Oxworks
+ * (2400 × 1500 panel = 3 × 1190 sheets, 3 rails, 1 × 2390 laser-cut lattice infill, 22 tek screws) — FROM SOURCE. */
+const LATTICE_STYLES = {square:'Square trellis', diamond:'Diamond trellis', hslat:'Horizontal slat trellis', vslat:'Vertical slat trellis', laser:'Laser-cut decorative'};
+const CB_TOP = st => st === 'breezeway' || st === 'slatfx' || st === 'lattice';
+function cbTopInfill(run, w, gate){
+  if (run.style === 'breezeway') return [gate ? `CB-GBWAY-${w}` : 'CB-BWAY-2390', gate ? `Breezeway gate infill, ${w} × 250` : 'Breezeway infill, 2390 × 250'];
+  if (run.style === 'slatfx')    return [gate ? `CB-GSLAT-${w}` : 'CB-SLATFX-2390', gate ? `Slat FX gate infill, ${w} × 250` : 'Slat FX infill, 2390 × 250'];
+  const k = run.lattice || 'square', n = LATTICE_STYLES[k] || 'Lattice';
+  return [gate ? `CB-GLAT-${k}-${w}` : `CB-LAT-${k}-2390`, gate ? `${n} gate lattice infill, ${w} × 310` : `${n} lattice infill, 2390 × 310`];
+}
+const BLADE_PITCH = {'45':60, '60':50, '90':100};   // blade centres by angle — RJL default
+const PRODUCT_BOM = {
+  colorbond(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const bw = CB_TOP(run.style), rows = bw ? 3 : 2, sheetH = H - (bw ? 310 : 10);
+    const ends = fencePosts.filter(p => p.role !== 'line').length, lines = fencePosts.length - ends;
+    const cut = bays.filter(b => b < 2390).length;
+    bom.add('Posts',`SHS50-${postLen}`,`50×50 SHS steel post, ${postLen} mm`, ends, 'ea', 'End and corner posts');
+    bom.add('Posts',`CB-CHPOST-${postLen}`,`Steel channel post, ${postLen} mm`, lines, 'ea', 'Line posts');
+    bom.add('Hardware','CAP-SHS50','50×50 post cap', ends, 'ea', 'End and corner posts');
+    bom.add('Hardware','CB-CHCAP','Channel post cap', lines, 'ea', 'Optional');
+    bom.add('Panels & infill','CB-RAIL-2400','Panel rail, 2400 mm', rows*bays.length, 'ea', `${rows} per bay` + (cut ? `; ${cut} bay(s) cut down` : ''));
+    bom.add('Panels & infill',`CB-SHEET-${sheetH}`,`Infill sheet, ${sheetH} mm`, bays.reduce((s,b) => s + Math.ceil(b/SHEET_COVER - 1e-9), 0), 'ea', `${SHEET_COVER} mm cover per sheet (estimate)`);
+    if (bw){ const [code, desc] = cbTopInfill(run, 2390, false); bom.add('Panels & infill', code, desc, bays.length, 'ea', '1 per bay'); }
+    if (run.style === 'lattice') bom.add('Hardware','TEK-10-16','10-16 × 16 tek screw', 22*bays.length, 'ea', '22 per lattice panel (Oxworks)');
+    else bom.add('Hardware','TEK-10-16','10-16 × 16 tek screw', rows*bays.length*4, 'ea', '4 per rail (estimate)');
+  },
+  hslat(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const pitch = 65 + run.gap, n = Math.floor(H/pitch);
+    const ends = fencePosts.filter(p => p.role === 'end').length;
+    bom.piece('Posts','AL-CH1','50×50 1-way channel post', 5800, postLen, ends, 'End posts');
+    bom.piece('Posts','AL-CH2','50×50 2-way channel post', 5800, postLen, fencePosts.length - ends, 'Line and corner posts');
+    bays.forEach(b => bom.piece('Panels & infill','AL-SLAT65','65×16 slat', 5800, b, n, `${n} slats per bay at ${pitch} mm pitch`));
+    bays.forEach(() => bom.piece('Panels & infill','AL-COVER','Snap-on channel cover', 5800, H, 2, '1 per channel face'));
+    bom.add('Hardware','AL-CHCAP','Channel cap (plastic)', 2*bays.length, 'ea', '2 per bay');
+    bom.add('Hardware','AL-PCAP','Post cap (plastic)', fencePosts.length, 'ea', '1 per post');
+    bom.add('Hardware','TEK-COL','Coloured tek screw', 2*n*bays.length, 'ea', '2 per slat');
+  },
+  vslat(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const pitch = 65 + run.gap, rows = H > 1500 ? 3 : 2, pl = H - 75;
+    let pk = 0;
+    bom.piece('Posts','AL-SHS50','50×50 aluminium SHS post', 6500, postLen, fencePosts.length, '1 per post');
+    bays.forEach(b => {
+      const n = Math.floor((b + run.gap)/pitch); pk += n;
+      bom.piece('Panels & infill','AL-RAIL5025','50×25 aluminium rail', 6500, b, rows, `${rows} rails per bay`);
+      bom.piece('Panels & infill','AL-PICKET65','65×16 vertical slat', 6500, pl, n, `${pl} mm long at ${pitch} mm pitch`);
+    });
+    bom.add('Hardware','AL-RBRKT','Rail bracket', rows*2*bays.length, 'ea', '2 per rail');
+    bom.add('Hardware','TEK-COL','Coloured tek screw', pk*rows + rows*4*bays.length, 'ea', '1 per slat per rail + 2 per bracket');
+    bom.add('Hardware','CAP-SHS50','50×50 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  chain(c){
+    const {run,H,bom,postLen,fencePosts,secs,rules,ground} = c;
+    const R = run.rails || {top:true};
+    const term = fencePosts.filter(p => p.role !== 'line').length, line = fencePosts.length - term;
+    const total = secs.reduce((a,s) => a + s.len, 0), ends = 2*secs.length;
+    const railLens = secs.reduce((a,s) => a + Math.ceil(s.len/6400), 0);
+    const railRows = ['top','mid','bot'].filter(k => R[k]);
+    const wireRows = ['top','mid','bot'].filter(k => !R[k]);               // a line wire wherever there is no rail
+    bom.add('Posts',`PIPE50-${postLen}`,`50 NB galvanised pipe terminal post, ${postLen} mm`, term, 'ea', 'End and corner posts');
+    bom.add('Posts',`PIPE40-${postLen}`,`40 NB galvanised pipe line post, ${postLen} mm`, line, 'ea', 'Line posts');
+    bom.add('Posts','STAY40','40 NB stay (brace)', ends, 'ea', '1 at each end of each mesh section');
+    const names = {top:'top', mid:'middle', bot:'bottom'};
+    railRows.forEach(k => bom.add('Panels & infill','PIPE32-6500','32 NB rail, 6.5 m lengths', railLens, 'len', `${railRows.map(r => names[r]).join(', ')} rail(s); 100 mm overlap at joins`));
+    if (railRows.length) bom.add('Hardware','RAIL-JOIN','Rail joiner sleeve', railRows.length*Math.max(0, railLens - secs.length), 'ea', '1 per rail join');
+    if (R.top) bom.add('Hardware','CAP-40LOOP','40 NB loop cap (carries top rail)', line, 'ea', 'Line posts');
+    else bom.add('Hardware','CAP-40NB','40 NB dome cap', line, 'ea', 'Line posts');
+    const clampRows = railRows.filter(k => k !== 'top').length;
+    if (clampRows) bom.add('Hardware','RAIL-CLAMP','Rail-to-post clamp (mid / bottom rail)', clampRows*line, 'ea', '1 per line post per rail');
+    if (railRows.length) bom.add('Hardware','RAIL-END','Rail end cup with band', railRows.length*ends, 'ea', '1 per rail end at terminals');
+    bom.add('Panels & infill',`CHAIN50-${H}`,`50 mm chainmesh, ${H} mm high, 15 m roll`, Math.ceil(total/15000 - 1e-9), 'roll', `${(total/1000).toFixed(1)} m of mesh`);
+    if (wireRows.length){
+      bom.add('Panels & infill','WIRE-LINE','Line wire', wireRows.length*total*1.1/1000, 'm', `${wireRows.length} strand(s) where there is no rail, + 10%`);
+      bom.add('Hardware','STRAINER','Wire strainer', ends*wireRows.length, 'ea', '1 per line wire at each mesh end');
+    }
+    bom.add('Hardware','TIE-WIRE','Mesh tie', line*Math.ceil(H/300) + railRows.length*Math.ceil(total/450), 'ea', 'Every 300 mm on posts, 450 mm on rails');
+    bom.add('Hardware',`TBAR-${H}`,`Tension bar, ${H} mm`, ends, 'ea', '1 at each mesh end');
+    bom.add('Hardware','TBAND','Tension band', ends*Math.ceil(H/350), 'ea', 'Every 350 mm on tension bars');
+    bom.add('Hardware','CAP-50NB','50 NB dome cap', term, 'ea', 'Terminal posts');
+    if (ground) bom.add('Concrete & footings','CONC-20','Concrete post mix, 20 kg bag', term*2 + line*rules.bagsPerHole + ends, 'bag', `Terminals 2, line posts ${rules.bagsPerHole}, stays 1`);
+    else fixings(c, fencePosts.length, 60, 0);
+  },
+  paling(c){
+    const {run,H,bom,postLen,fencePosts,bays,P} = c;
+    const lap = run.style === 'lapcap', rails = H > 1500 ? 3 : 2, pl = H - 150;
+    let pals = 0;
+    bom.add('Posts',`PINE125-${postLen}`,`125×75 H4 treated pine post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bays.forEach(b => {
+      const span = b + P.postW;                                   // rails and palings run past post centres
+      const n = lap ? Math.ceil(span/100 - 1e-9) : Math.ceil(span/150 - 1e-9); pals += n;
+      bom.piece('Panels & infill','PINE-RAIL7538','75×38 H3 pine rail', 4800, span, rails, `${rails} rails per bay`);
+      bom.piece('Panels & infill','PINE-PLINTH','150×25 H4 plinth board', 4800, span, 1, '1 per bay');
+      if (lap) bom.piece('Panels & infill','PINE-CAP','140×19 capping board', 4800, span, 1, '1 per bay');
+    });
+    bom.add('Panels & infill',`PALING-${pl}`,`150×16 paling, ${pl} mm`, pals, 'ea', lap ? 'Lapped and capped: 1 per 100 mm (two overlapping layers)' : 'Butted: 1 per 150 mm');
+    bom.add('Hardware','NAIL-GALV','Galvanised nail (pack of 500)', pals*rails*2/500, 'pack', '2 per paling per rail');
+  },
+  picket(c){
+    const {run,H,bom,postLen,fencePosts,bays,P} = c;
+    const pitch = 70 + run.gap, pl = H - 100; let n = 0;
+    bom.add('Posts',`POST75-${postLen}`,`75×75 post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bays.forEach(b => { const k = Math.floor((b + P.postW + run.gap)/pitch); n += k;
+      bom.piece('Panels & infill','PICKET-RAIL','70×35 picket rail', 4800, b + P.postW, 2, '2 rails per bay'); });
+    bom.add('Panels & infill',`PICKET-${pl}`,`70 mm picket, ${pl} mm`, n, 'ea', `${pitch} mm pitch`);
+    bom.add('Hardware','NAIL-GALV','Galvanised nail (pack of 500)', n*4/500, 'pack', '2 per picket per rail');
+    bom.add('Hardware','CAP-POST75','75×75 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  vblade(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const pitch = BLADE_PITCH[run.style] || 60, bl = H - 100; let n = 0;
+    bom.piece('Posts','AL-SHS50','50×50 aluminium SHS post', 6500, postLen, fencePosts.length, '1 per post');
+    bays.forEach(b => { const k = Math.floor(b/pitch); n += k;
+      bom.piece('Panels & infill','AL-BLADERAIL','Blade carrier rail (top and bottom)', 6500, b, 2, '2 per bay'); });
+    bom.piece('Panels & infill','AL-BLADE75','75 mm aluminium blade', 6500, bl, n, `${bl} mm long at ${pitch} mm pitch, angled ${run.style}°`);
+    bom.add('Hardware','AL-BLADECLIP','Blade clip / end cap', 2*n, 'ea', '2 per blade');
+    bom.add('Hardware','AL-RBRKT','Rail bracket', 4*bays.length, 'ea', '2 per rail');
+    bom.add('Hardware','TEK-COL','Coloured tek screw', 2*n + 8*bays.length, 'ea', '1 per clip + 2 per bracket');
+    bom.add('Hardware','CAP-SHS50','50×50 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  sbatten(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const bw = +run.style || 50, pitch = bw + run.gap, rows = H > 1500 ? 3 : 2, bl = H - 75; let n = 0;
+    bom.piece('Posts','SHS50-ST','50×50 SHS steel post', 6500, postLen, fencePosts.length, '1 per post');
+    bays.forEach(b => { const k = Math.floor((b + run.gap)/pitch); n += k;
+      bom.piece('Panels & infill','RHS5025-ST','50×25 RHS steel rail', 6500, b, rows, `${rows} rails per bay`); });
+    bom.piece('Panels & infill',`BATTEN${bw}-ST`,`${bw}×25 steel batten`, 6500, bl, n, `${bl} mm long at ${pitch} mm pitch`);
+    bom.add('Hardware','TEK-COL','Coloured tek screw', n*rows, 'ea', '1 per batten per rail');
+    bom.add('Hardware','ST-RBRKT','Rail bracket', rows*2*bays.length, 'ea', '2 per rail');
+    bom.add('Hardware','CAP-SHS50','50×50 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  poolalu(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const W = Math.min(run.maxBay, 2450), cut = bays.filter(b => b < W - 5).length;
+    bom.add('Posts',`AL-SHS50-${postLen}`,`50×50 aluminium post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bom.add('Panels & infill',`POOL-AL-${H}`,`Pool-compliant aluminium flat-top panel, ${W} × ${H}`, bays.length, 'ea', (cut ? `${cut} panel(s) cut to suit; ` : '') + 'gaps ≤ 100 mm');
+    bom.add('Hardware','AL-PBRKT','Panel bracket', 4*bays.length, 'ea', '4 per panel');
+    bom.add('Hardware','TEK-COL','Coloured tek screw', 8*bays.length, 'ea', '2 per bracket');
+    bom.add('Hardware','CAP-SHS50','50×50 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  glass(c){
+    const {run,H,bom,bays,ground} = c;
+    bays.forEach(b => { const w = Math.round(b/10)*10;
+      bom.add('Panels & infill',`GLASS12-${w}x${H}`,`12 mm toughened glass panel, ${w} × ${H}`, 1, 'ea', 'Equal panels, 30 mm gaps'); });
+    if (run.style === 'channel'){
+      const len = bays.reduce((a,b) => a + b + 30, 0);
+      bom.add('Hardware','GLASS-CHANNEL','Hidden base channel', len/1000, 'm', 'Full fence length');
+      bom.add('Hardware','GLASS-WEDGE','Channel wedge gasket set', bays.length*2, 'set', '2 per panel');
+    } else {
+      bom.add('Hardware', ground ? 'SPIGOT-CORE' : 'SPIGOT-BASE', ground ? 'Core-drilled spigot' : 'Base-plate spigot', 2*bays.length, 'ea', '2 per panel');
+      if (ground) bom.add('Concrete & footings','CORE-DRILL','Core drill and grout spigot hole', 2*bays.length, 'ea', '1 per spigot');
+    }
+  },
+  mesh868(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const W = Math.min(run.maxBay, 2500), cut = bays.filter(b => b < W - 5).length;
+    bom.add('Posts',`SHS60-${postLen}`,`60×60 SHS post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bom.add('Panels & infill',`MESH868-${H}`,`Double wire mesh panel 8/6/8, ${W} × ${H}`, bays.length, 'ea', cut ? `${cut} panel(s) cut to suit` : '1 per bay');
+    bom.add('Hardware','CLAMP868','Panel clamp with security bolt', fencePosts.length*(Math.ceil(H/600) + 1), 'ea', 'Every 600 mm per post');
+    bom.add('Hardware','CAP-SHS60','60×60 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  palisade(c){
+    const {H,bom,postLen,fencePosts,bays,P} = c;
+    const rows = H > 2000 ? 3 : 2; let pales = 0;
+    bom.add('Posts',`PAL-POST-${postLen}`,`100×55 palisade post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bays.forEach(b => { const n = Math.floor((b + 70)/140); pales += n;
+      bom.piece('Panels & infill','PAL-RAIL','50×50×6 angle rail', 6500, b + P.postW, rows, `${rows} rails per bay`); });
+    bom.add('Panels & infill',`PAL-PALE-${H}`,`W-section pale, triple-point top, ${H} mm`, pales, 'ea', '140 mm centres');
+    bom.add('Hardware','PAL-BOLT','Anti-tamper shear bolt', pales*rows, 'ea', '1 per pale per rail');
+    bom.add('Hardware','PAL-FISH','Rail fishplate', rows*2*bays.length, 'ea', '2 per rail');
+  },
+  garrison(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const W = Math.min(run.maxBay, 2400), cut = bays.filter(b => b < W - 5).length;
+    bom.add('Posts',`SHS65-${postLen}`,`65×65 SHS post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bom.add('Panels & infill',`GARR-${H}`,`Garrison spear-top security panel, ${W} × ${H}`, bays.length, 'ea', cut ? `${cut} panel(s) cut to suit` : '1 per bay');
+    bom.add('Hardware','GARR-BRKT','Security panel bracket', 6*bays.length, 'ea', '6 per panel (3 rails)');
+    bom.add('Hardware','SECBOLT','Security bolt', 6*bays.length, 'ea', '1 per bracket');
+    bom.add('Hardware','CAP-SHS65','65×65 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  temp(c){
+    const {bom,bays,secs} = c;
+    const feet = bays.length + secs.length, stays = Math.ceil(bays.length/4);
+    bom.add('Panels & infill','TEMP-PANEL','Temporary fence panel, 2400 × 2100', bays.length, 'ea', '1 per bay');
+    bom.add('Hardware','TEMP-FOOT','Temporary fence foot (block)', feet + stays, 'ea', '1 per panel join + 1 per stay');
+    bom.add('Hardware','TEMP-CLAMP','Panel coupler clamp', Math.max(0, bays.length - secs.length), 'ea', '1 per panel join');
+    bom.add('Hardware','TEMP-STAY','Bracing stay', stays, 'ea', '1 per 4 panels');
+    bom.add('Hardware','SANDBAG','Sandbag', stays*2, 'ea', '2 per stay');
+  },
+  mesh358(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const W = Math.min(run.maxBay, 2500), cut = bays.filter(b => b < W - 5).length;
+    bom.add('Posts',`SHS60-${postLen}`,`60×60 SHS post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bom.add('Panels & infill',`MESH358-${H}`,`358 welded mesh panel, ${W} × ${H}`, bays.length, 'ea', cut ? `${cut} panel(s) cut to suit` : '1 per bay');
+    bom.add('Hardware',`CLAMP358-${H}`,`Clamp bar, ${H} mm`, fencePosts.length, 'ea', '1 per post');
+    bom.add('Hardware','SECBOLT','Security bolt', fencePosts.length*Math.ceil(H/250), 'ea', 'Every 250 mm on clamp bars');
+    bom.add('Hardware','CAP-SHS60','60×60 post cap', fencePosts.length, 'ea', '1 per post');
+  },
+  tubular(c){
+    const {run,H,bom,postLen,fencePosts,bays} = c;
+    const W = Math.min(run.maxBay, 2450), cut = bays.filter(b => b < W - 5).length;
+    bom.add('Posts',`SHS50-${postLen}`,`50×50 SHS steel post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    bom.add('Panels & infill',`TUB-${H}`,`Tubular steel panel, ${W} × ${H}`, bays.length, 'ea', cut ? `${cut} panel(s) cut to suit` : '1 per bay');
+    bom.add('Hardware','TUB-BRKT','Panel bracket', 4*bays.length, 'ea', '4 per panel');
+    bom.add('Hardware','TEK-10-16','10-16 × 16 tek screw', 8*bays.length, 'ea', '2 per bracket');
+    bom.add('Hardware','CAP-SHS50','50×50 post cap', fencePosts.length, 'ea', '1 per post');
+  }
+};
+
+/* Security add-ons for commercial systems: barbed wire, razor coil (on arms or in line on post tops), electric fence.
+ * Electric fence totals are collected per job in ELEC so energisers, keypad, earths and signs are counted once. */
+let ELEC = {len:0};
+function toppingBom(c){
+  const {run,bom,fencePosts,bays,secs} = c;
+  const total = secs.reduce((a,s) => a + s.len, 0), ends = 2*secs.length, posts = fencePosts.length;
+  if (!total) return;
+  if (run.barbed || run.razor){
+    const inline = run.razor && run.razorMount === 'inline';
+    if (inline) bom.add('Hardware','POST-EXT-450','In-line razor post extension, 450 mm', posts, 'ea', '1 per post; coil sits on top of the fence line');
+    else bom.add('Hardware', run.razor ? 'ARM-Y' : 'ARM-45', run.razor ? 'Y-arm (razor coil + barbed strands)' : '45° extension arm (3-strand)', posts, 'ea', '1 per post');
+    const strands = run.barbed ? 3 : (inline ? 1 : 2);
+    bom.add('Panels & infill','WIRE-BARB','Barbed wire', strands*total*1.05/1000, 'm', run.barbed ? '3 strands + 5%' : `${strands} coil support strand${strands > 1 ? 's' : ''} + 5%`);
+    bom.add('Hardware','STRAINER','Wire strainer', ends*strands, 'ea', '1 per barbed strand at each section end');
+    if (run.razor){
+      bom.add('Panels & infill','RAZOR-450','Razor wire coil, 450 mm', total*1.05/1000, 'm', 'Fence length + 5%');
+      bom.add('Hardware','RAZOR-CLIP','Razor coil clip', Math.ceil(total/300), 'ea', 'Every 300 mm to support strands');
+    }
+  }
+  if (run.electric){
+    const k = clamp(run.elecStrands|0, 2, 30), top = run.elecMount === 'top';
+    const inter = bays.reduce((a,b) => a + Math.max(0, Math.ceil(b/3000 - 1e-9) - 1), 0);   // extra brackets on bays over 3 m
+    bom.add('Hardware', top ? 'EF-BRKT-TOP' : 'EF-BRKT-FACE', top ? 'Electric fence top bracket (outrigger)' : 'Electric fence face-mount bracket (Y-standard)', posts + inter, 'ea', '1 per post + 1 per 3 m on long bays');
+    bom.add('Hardware','EF-INSUL','Electric fence insulator', (posts + inter)*k, 'ea', `${k} per bracket`);
+    bom.add('Panels & infill','EF-WIRE','Electric fence wire', k*total*1.05/1000, 'm', `${k} strands + 5%`);
+    bom.add('Hardware','EF-TENS','Electric fence wire tensioner', k*ends, 'ea', '1 per strand at each section end');
+    bom.add('Hardware','EF-CLAMP','Line clamp / jumper', 2*secs.length*2, 'ea', 'Live and earth jumpers at each section end');
+    ELEC.len += total/1000;
+  }
+}
+function electricJobBom(bom, rules){
+  if (!ELEC.len) return;
+  const z = Math.ceil(ELEC.len/rules.elecZoneLen - 1e-9);
+  bom.add('Automation & access','EF-ENERGISER','JVA Z Range security energiser', z, 'ea', `1 per ${rules.elecZoneLen} m zone (e.g. Z14R: single zone, 4 J, networkable)`);
+  bom.add('Automation & access','EF-KEYPAD','JVA Z Range LCD keypad', 1, 'ea', 'Arm / disarm and programming');
+  bom.add('Automation & access','EF-BATT','12 V 7.2 Ah backup battery', z, 'ea', '1 per energiser');
+  bom.add('Automation & access','EF-SIREN','Siren and strobe', 1, 'set', 'Driven from energiser outputs');
+  bom.add('Automation & access','EF-ENCL','Energiser enclosure', z, 'ea', '1 per energiser');
+  bom.add('Automation & access','EF-CUTOUT','Cut-out switch', z, 'ea', '1 per zone');
+  bom.add('Automation & access','EF-LIGHTNING','Lightning diverter', z, 'ea', '1 per zone');
+  bom.add('Hardware','EF-EARTH','Earth spike', 3*z, 'ea', '3 per energiser (confirm to manufacturer)');
+  bom.add('Hardware','EF-HTCABLE','HT lead-out cable', 20*z, 'm', '20 m per energiser (estimate)');
+  bom.add('Hardware','EF-SIGN','Electric fence warning sign', Math.ceil(ELEC.len/rules.signSpacing - 1e-9), 'ea', `Every ${rules.signSpacing} m`);
+  bom.add('Labour','LAB-ELEC','Install electric fence', ELEC.len, 'm', 'All electrified fence');
+  bom.add('Labour','LAB-ELEC-COMM','Commission and test energiser zone', z, 'ea', '1 per zone');
+}
+function runBom(run, lay, join, bom, rules){
+  const P = PRODUCTS[run.product], H = run.height, ground = run.fixing === 'inground';
+  const postLen = H + (ground ? rules.postEmbed : 0);
+  const fencePosts = [];
+  lay.seq.forEach((n,i) => {
+    if (n.k !== 'post') return;
+    if ((i === 0 && join.skipFirst) || (i === lay.seq.length-1 && join.skipLast)) return;
+    if (n.role === 'end' || n.role === 'line' || n.role === 'corner') fencePosts.push(n);
+  });
+  const bays = lay.seq.filter(n => n.k === 'bay').map(n => n.w);
+  const c = {run, P, H, ground, postLen, fencePosts, bays, secs:sections(lay.seq), bom, rules};
+  if (bays.length) PRODUCT_BOM[run.product](c);
+  if (run.product !== 'chain' && !P.noPosts) fixings(c, fencePosts.length, P.postW, rules.bagsPerHole);
+  if (P.topping && bays.length) toppingBom(c);
+  const fenceMM = bays.reduce((a,b) => a+b, 0) + fencePosts.reduce((a,p) => a+p.w, 0);
+  bom.add('Labour',`LAB-FENCE-${run.product}`,`Install ${P.label} fence`, fenceMM/1000, 'm', 'Fence length, gate openings excluded');
+}
+
+function gateBom(run, lay, bom, rules){
+  const g = run.gate; if (g.type === 'none' || lay.errs.length) return;
+  const P = PRODUCTS[run.product], H = run.height, lv = gateLeaves(g, rules), gw = lay.gw, n = lv.n, ground = run.fixing === 'inground';
+  const leafW = Math.round(lv.w), leafH = SLIDES(g.type) ? H - 100 : H - 50;
+  const TYPE = GATE_TYPES[g.type].label, auto = isAuto(g);
+  const BEAMS = q => bom.add('Automation & access','BEAMS','Photo-electric safety beams (pair)', q, 'pair', 'Final count to site risk assessment');
+
+  // ---- boom gate: self-contained barrier, no leaves or gate posts
+  if (g.type === 'boom'){
+    bom.add('Automation & access','BOOM-BIONIK6','Bionik-6 boom barrier (brushless 36 V, 100% duty cycle)', 1, 'ea', 'RJL standard boom operator');
+    bom.add('Automation & access',`BOOM-ARM-${leafW}`,`Boom arm, ${leafW} mm`, 1, 'ea', 'Opening + 300 mm');
+    bom.add('Automation & access','BOOM-LIGHTS','Red / green flashing boom-arm lights', 1, 'set', 'RJL standard on all boom gates');
+    bom.add('Automation & access','BOOM-REST','Fixed boom rest', 1, 'ea');
+    bom.add('Automation & access','LOOP-DET','Vehicle loop detector', 1, 'ea', 'Safety and auto-close');
+    bom.add('Automation & access','LOOP','Inductive vehicle loop (cut in)', 2, 'ea', 'Safety loop + exit loop');
+    bom.add('Concrete & footings','BOOM-PAD','Boom barrier concrete pad', 1, 'ea', 'Size to manufacturer template');
+    if (g.access !== 'none') bom.add('Automation & access', ACCESS[g.access].code, ACCESS[g.access].label, 1, 'ea');
+    bom.add('Labour','LAB-AUTO','Install and commission gate automation', 1, 'ea');
+    bom.add('Labour','LAB-GATE-boom','Install boom gate', 1, 'ea');
+    return;
+  }
+
+  // ---- gate posts / piers
+  if (P.noPosts){ /* glass gate hangs off the next glass panel; temp gate clamps to panels */ }
+  else if (g.piers){
+    bom.add('Gates',`PIER-${H+200}`,`Brick pier 350 × 350 × ${H+200} mm, with cap`, 2, 'ea', 'Either side of the opening');
+    bom.add('Concrete & footings','PIER-FOOT','Pier footing, 600 × 600 × 600', 2, 'ea', '1 per pier');
+    bom.add('Labour','LAB-PIER','Build brick pier', 2, 'ea');
+  } else {
+    const pl = H + (ground ? rules.gatePostEmbed : 0);
+    bom.add('Posts',`SHS${gw}-${pl}`,`${gw}×${gw} SHS gate post, ${pl} mm`, 2, 'ea', SLIDES(g.type) ? 'Catch and guide posts' : 'Hinge and latch posts');
+    bom.add('Hardware',`CAP-SHS${gw}`,`${gw}×${gw} post cap`, 2, 'ea', 'Gate posts');
+    if (ground) bom.add('Concrete & footings','CONC-20','Concrete post mix, 20 kg bag', 2*rules.bagsPerGateHole, 'bag', `gate posts ${rules.bagsPerGateHole} bags each`);
+    else { bom.add('Hardware',`BASEPLATE-${gw}`,`Base plate to suit ${gw} mm post`, 2, 'ea', '1 per post'); bom.add('Hardware','ANCHOR-M12','M12 chemical anchor', 8, 'ea', '4 per base plate'); }
+  }
+
+  // ---- leaves: prefabricated, or steel-framed with product infill
+  const iw = leafW - 100, ih = leafH - 100;
+  if (run.product === 'colorbond'){
+    const bw = CB_TOP(run.style), rows = bw ? 3 : 2, sheetH = leafH - (bw ? 310 : 10);
+    bom.add('Gates',`CB-GRAIL-${leafW}`,`Gate rail, ${leafW} mm`, rows*n, 'ea', `${rows} per leaf`);
+    bom.add('Gates',`CB-STILE-${leafH}`,`Gate stile, ${leafH} mm`, 2*n, 'ea', '2 per leaf');
+    bom.add('Gates',`CB-SHEET-${sheetH}`,`Infill sheet, ${sheetH} mm`, n*Math.ceil(leafW/SHEET_COVER - 1e-9), 'ea', 'Gate infill');
+    if (bw){ const [code, desc] = cbTopInfill(run, leafW, true); bom.add('Gates', code, desc, n, 'ea', '1 per leaf'); }
+    bom.add('Hardware','CAP-SHS50','50×50 post cap', 2*n, 'ea', 'Gate stiles');
+    bom.add('Hardware','TEK-10-16','10-16 × 16 tek screw', 8*n, 'ea', '8 per leaf (estimate)');
+  } else if (run.product === 'poolalu'){
+    bom.add('Gates',`POOL-GATE-${leafW}x${leafH}`,`Pool-compliant aluminium gate, ${leafW} × ${leafH}`, n, 'ea', 'Prefabricated');
+  } else if (run.product === 'glass'){
+    bom.add('Gates',`GLASS-GATE-${leafW}x${leafH}`,`12 mm toughened glass gate, ${leafW} × ${leafH}`, n, 'ea', 'Hangs off the adjacent glass panel');
+  } else if (run.product === 'temp'){
+    bom.add('Gates','TEMP-GATE','Temporary fence gate panel', n, 'ea', '1 per leaf');
+    bom.add('Hardware','TEMP-FOOT','Temporary fence foot (block)', n + 1, 'ea', 'Gate feet');
+  } else {
+    for (let i=0;i<n;i++){
+      bom.piece('Gates','GATE-SHS50','50×50 SHS gate frame', 6500, leafW, 2, 'Leaf perimeter, plus mid rail on leaves over 1500 mm high');
+      bom.piece('Gates','GATE-SHS50','', 6500, leafH, 2);
+      if (leafH > 1500) bom.piece('Gates','GATE-SHS50','', 6500, iw, 1);
+    }
+    switch (run.product){
+      case 'hslat': { const pitch = 65 + run.gap, k = Math.floor(ih/pitch);
+        bom.piece('Panels & infill','AL-SLAT65','65×16 slat', 5800, iw, k*n); bom.add('Hardware','TEK-COL','Coloured tek screw', 2*k*n, 'ea', '2 per slat'); break; }
+      case 'vslat': { const pitch = 65 + run.gap, k = Math.floor((iw + run.gap)/pitch);
+        bom.piece('Panels & infill','AL-PICKET65','65×16 vertical slat', 6500, ih, k*n); bom.add('Hardware','TEK-COL','Coloured tek screw', 2*k*n, 'ea', '2 per gate slat'); break; }
+      case 'paling': { const k = Math.ceil(iw/(run.style === 'lapcap' ? 100 : 150) - 1e-9);
+        bom.add('Gates',`PALING-${ih}`,`150×16 paling, ${ih} mm (gate)`, k*n, 'ea', 'Fixed to steel gate frame'); break; }
+      case 'picket': { const k = Math.floor((iw + run.gap)/(70 + run.gap));
+        bom.add('Gates',`PICKET-${ih}`,`70 mm picket, ${ih} mm (gate)`, k*n, 'ea', 'Fixed to steel gate frame'); break; }
+      case 'vblade': { const pitch = BLADE_PITCH[run.style] || 60, k = Math.floor(iw/pitch);
+        bom.piece('Panels & infill','AL-BLADE75','75 mm aluminium blade', 6500, ih, k*n); bom.add('Hardware','AL-BLADECLIP','Blade clip / end cap', 2*k*n, 'ea', '2 per blade'); break; }
+      case 'sbatten': { const bw = +run.style || 50, k = Math.floor((iw + run.gap)/(bw + run.gap));
+        bom.piece('Panels & infill',`BATTEN${bw}-ST`,`${bw}×25 steel batten`, 6500, ih, k*n); bom.add('Hardware','TEK-COL','Coloured tek screw', 2*k*n, 'ea', '2 per gate batten'); break; }
+      case 'chain': bom.add('Gates','CHAIN-GATE','Chainmesh for gate infill', n*iw*ih/1e6, 'm²', 'Cut from roll'); break;
+      case 'mesh358': bom.add('Gates','MESH358-GATE','358 mesh panel cut to gate leaf', n*Math.ceil(iw/2500 - 1e-9), 'ea', 'Cut to suit'); break;
+      case 'mesh868': bom.add('Gates','MESH868-GATE','Double wire mesh panel cut to gate leaf', n*Math.ceil(iw/2500 - 1e-9), 'ea', 'Cut to suit'); break;
+      case 'palisade': bom.add('Gates',`PAL-PALE-${H}`,`W-section pale, triple-point top, ${H} mm`, n*Math.floor((iw + 70)/140), 'ea', 'Gate pales at 140 mm centres'); break;
+      case 'tubular': case 'garrison': { const k = Math.floor(iw/(run.product === 'garrison' ? 125 : 100));
+        bom.piece('Gates','SHS25-PICKET','25×25 SHS picket', 6500, ih + (run.product === 'garrison' ? 150 : 0), k*n, 'Gate pickets'); break; }
+    }
+  }
+
+  // ---- hardware
+  if (P.pool){
+    bom.add('Hardware','HINGE-POOL', run.product === 'glass' ? 'Self-closing glass-to-glass hinge pair' : 'Self-closing pool gate hinge pair', 1, 'set', 'Gate must self-close from any open position');
+
+  } else if (g.type === 'pedestrian'){
+    bom.add('Hardware','HINGE-SC','Self-closing hinge set', 1, 'set', 'Pedestrian gates');
+
+  } else if (g.type === 'single' || g.type === 'double'){
+    if (P.temp){ bom.add('Hardware','TEMP-CLAMP','Panel coupler clamp', 2*n, 'ea', 'Gate hinge clamps'); }
+    else bom.add('Hardware','HINGE-HD','Heavy-duty adjustable hinge', 2*n, 'ea', '2 per leaf');
+    if (g.type === 'double') bom.add('Hardware','GATE-STOP','Centre gate stop', 1, 'ea', 'Double gates');
+    if (!auto && g.type === 'double') bom.add('Hardware','DROPBOLT','Drop bolt', 1, 'ea', 'Double gates');
+  } else if (g.type === 'bifold'){
+    bom.add('Hardware','HINGE-HD','Heavy-duty adjustable hinge', 2*n, 'ea', '2 per panel (post and fold hinges)');
+    bom.add('Hardware','BIFOLD-GUIDE','Bi-fold top guide / pivot set', 2, 'set', '1 per leaf pair');
+    bom.add('Hardware','GATE-STOP','Centre gate stop', 1, 'ea');
+  } else if (g.type === 'sliding'){
+    const track = Math.ceil((2*g.width + rules.slidingOverlap)/1000 - 1e-9);
+    bom.add('Hardware','TRACK-V','V-track ground rail', track, 'm', 'Opening × 2 + overlap');
+    bom.add('Hardware','WHEEL-V','V-groove gate wheel', 2, 'ea', '2 per sliding leaf');
+    bom.add('Hardware','GUIDE-ROLL','Guide roller set', 1, 'set', '1 per sliding gate');
+    bom.add('Hardware','CATCH-SLIDE','Sliding gate catch / receiver', 1, 'ea');
+    bom.add('Hardware','TRACK-STOP','Track end stop', 2, 'ea');
+    bom.add('Concrete & footings','TRACK-FOOT','Track footing (concrete strip)', track, 'm', 'Full track length');
+  } else if (g.type === 'cantilever'){
+    bom.add('Gates','CANT-BEAM','Cantilever bottom track beam', Math.ceil(leafW/1000 - 1e-9), 'm', 'Full leaf length incl. counterbalance tail');
+    bom.add('Hardware','CANT-ROLLER','Cantilever roller carriage', 2, 'ea', '2 per gate');
+    bom.add('Hardware','CANT-GUIDE','Top guide roller', 1, 'set');
+    bom.add('Hardware','CANT-ENDWHEEL','End wheel and catcher', 1, 'set');
+    bom.add('Concrete & footings','CANT-FOOT','Roller carriage footing', 1, 'ea', 'Engineered to gate weight');
+  }
+
+  // ---- lock (manual gates; pool gates always get one)
+  if (LOCKABLE(g.type) && (!auto || P.pool)){
+    const L = LOCKS[g.lock] || LOCKS.locklatch;
+    bom.add('Hardware', L.code, L.label, 1, 'ea', `Release ${LOCK_H} mm above ground level (RJL standard)` + (P.pool ? '; self-latching, opens away from the pool' : ''));
+  }
+  // ---- automation and access
+  if (auto){
+    if (g.type === 'pedestrian'){
+      bom.add('Automation & access','OP-MAGNUS','Lockinox Magnus pedestrian gate operator', 1, 'ea', 'RJL standard for internal pedestrian gates'); BEAMS(1);
+    } else if (SLIDES(g.type)){
+      bom.add('Automation & access','OP-SLIDE','Sliding gate operator, sized to gate weight', 1, 'ea', 'Roger, FAAC, Beninca, Key or Alpha to suit');
+      bom.add('Automation & access','RACK','Gear rack', Math.ceil(leafW/1000 - 1e-9), 'm', 'Full leaf length'); BEAMS(2);
+    } else if (g.type === 'bifold'){
+      bom.add('Automation & access','OP-BIFOLD','Bi-fold gate operator', 2, 'ea', '1 per leaf pair'); BEAMS(2);
+      bom.add('Automation & access','SAFETY-EDGE','Safety edge on leading panel', 2, 'ea', 'Final count to site risk assessment');
+    } else {
+      bom.add('Automation & access','OP-SMARTY7','Roger Technology Smarty-7 swing operator', n, 'ea', '1 per leaf, rated to 700 kg per leaf'); BEAMS(2);
+    }
+    bom.add('Labour','LAB-AUTO','Install and commission gate automation', 1, 'ea');
+  }
+  if (g.access !== 'none'){
+    bom.add('Automation & access', ACCESS[g.access].code, ACCESS[g.access].label, 1, 'ea');
+    if (!auto) bom.add('Automation & access','MAGLOCK','Electric / magnetic gate lock', 1, 'ea', 'Needed for access control on a manual gate');
+  }
+  if (P.topping && run.electric){
+    bom.add('Automation & access','EF-GATECONTACT','Electric fence gate contact', 1, 'ea', '1 per gate in an electrified run');
+    bom.add('Hardware','EF-UGCABLE','Under-gate cable (live and earth)', 2*(g.width + 2000)/1000, 'm', '2 cores × (opening + 2 m)');
+  }
+  bom.add('Labour',`LAB-GATE-${g.type}`,`Install ${TYPE.toLowerCase()}`, 1, 'ea');
+}
+
+function turnstileBom(bom){
+  const t = state.turnstiles; if (!(t.count > 0)) return;
+  bom.add('Turnstiles',`TURN-FH-${t.type}`,`Full-height turnstile, ${t.type} rotor`, t.count, 'ea');
+  bom.add('Turnstiles','TURN-SLAB','Concrete pad for turnstile', t.count, 'ea', 'Size to manufacturer footprint');
+  if (t.access !== 'none') bom.add('Automation & access', ACCESS[t.access].code, ACCESS[t.access].label, t.count, 'ea');
+  bom.add('Labour','LAB-TURN','Install and commission turnstile', t.count, 'ea');
+}
+
+/* ===================================================================== COMPUTE */
+let LAYOUTS = [], JOINS = [], BOM = null;
+const isStrong = n => n.role !== 'end' && n.role !== 'line' && n.role !== 'corner';
+function compute(){
+  LAYOUTS = state.runs.map(r => layoutRun(r, state.rules));
+  JOINS = state.runs.map(() => ({skipFirst:false, skipLast:false}));
+  // Shared post where a run continues from the previous one: keep the stronger post (gate beats fence).
+  state.runs.forEach((r,i) => {
+    if (i === 0 || !r.joinPrev) return;
+    const lay = LAYOUTS[i], prev = LAYOUTS[i-1];
+    if (lay.errs.length || prev.errs.length || !lay.seq.length || !prev.seq.length) return;
+    const first = lay.seq[0], last = prev.seq[prev.seq.length-1];
+    if (isStrong(first) && !isStrong(last)) JOINS[i-1].skipLast = true;
+    else { JOINS[i].skipFirst = true; if (!isStrong(last)) last.role = (r.turn % 360) ? 'corner' : 'line'; }
+  });
+  BOM = new Bom(); ELEC = {len:0};
+  state.runs.forEach((r,i) => { const lay = LAYOUTS[i]; if (lay.errs.length) return; runBom(r, lay, JOINS[i], BOM, state.rules); gateBom(r, lay, BOM, state.rules); });
+  turnstileBom(BOM);
+  electricJobBom(BOM, state.rules);
+  BOM.finish(state.rules.kerf);
+}
+function totals(){
+  let mat = 0, lab = 0, unpriced = 0;
+  for (const l of BOM.list){
+    const r = +state.rates[l.code] || 0; if (!r) unpriced++;
+    if (l.cat === 'Labour') lab += r*l.qty; else mat += r*l.qty;
+  }
+  const cost = mat + lab, m = clamp(+state.pricing.margin || 0, 0, 90)/100;
+  const sell = cost/(1 - m), gst = state.pricing.gst ? sell*0.1 : 0;
+  const pm = (+state.pricing.pmVisits || 0) * (+state.pricing.pmRate || 0);
+  return {mat, lab, cost, sell, profit:sell - cost, gst, total:sell + gst, unpriced, pm};
+}
+
+/* ===================================================================== UI */
+function icon(k){
+  const posts = '<rect x="2" y="2" width="3" height="26" fill="currentColor"/><rect x="43" y="2" width="3" height="26" fill="currentColor"/>';
+  let body = '';
+  if (k === 'colorbond'){ body = '<rect x="5" y="5" width="38" height="20" fill="none" stroke="currentColor" stroke-width="1.6"/>'; for (let x=9;x<43;x+=4) body += `<line x1="${x}" y1="6" x2="${x}" y2="24" stroke="currentColor" stroke-width="1"/>`; }
+  if (k === 'hslat'){ for (let y=5;y<27;y+=3.2) body += `<rect x="5" y="${y}" width="38" height="2.2" fill="currentColor"/>`; }
+  if (k === 'vslat'){ for (let x=7;x<42;x+=4.2) body += `<rect x="${x}" y="4" width="2.6" height="22" fill="currentColor"/>`; body += '<rect x="5" y="8" width="38" height="1.4" fill="currentColor"/><rect x="5" y="21" width="38" height="1.4" fill="currentColor"/>'; }
+  if (k === 'chain'){ body = '<rect x="5" y="3" width="38" height="2" fill="currentColor"/>'; for (let x=-20;x<48;x+=6){ body += `<line x1="${x}" y1="5" x2="${x+22}" y2="27" stroke="currentColor" stroke-width=".9"/><line x1="${x+22}" y1="5" x2="${x}" y2="27" stroke="currentColor" stroke-width=".9"/>`; } body = `<svg x="5" y="0" width="38" height="30" viewBox="5 0 38 30">${body}</svg>`; }
+  if (k === 'mesh358'){ for (let x=6;x<43;x+=2.2) body += `<line x1="${x}" y1="3" x2="${x}" y2="27" stroke="currentColor" stroke-width=".7"/>`; for (let y=4;y<28;y+=6) body += `<line x1="5" y1="${y}" x2="43" y2="${y}" stroke="currentColor" stroke-width="1"/>`; }
+  if (k === 'tubular'){ body = '<rect x="5" y="6" width="38" height="2" fill="currentColor"/><rect x="5" y="23" width="38" height="2" fill="currentColor"/>'; for (let x=8;x<43;x+=4) body += `<rect x="${x}" y="3" width="1.6" height="25" fill="currentColor"/>`; }
+  if (k === 'paling'){ for (let x=5;x<43;x+=4.75) body += `<rect x="${x}" y="4" width="4.2" height="24" fill="currentColor" opacity=".85"/>`; }
+  if (k === 'picket'){ for (let x=6;x<42;x+=5) body += `<polygon points="${x},10 ${x+1.5},6 ${x+3},10 ${x+3},26 ${x},26" fill="currentColor"/>`; body += '<rect x="5" y="12" width="38" height="1.4" fill="currentColor"/><rect x="5" y="22" width="38" height="1.4" fill="currentColor"/>'; }
+  if (k === 'vblade'){ for (let x=6;x<43;x+=3.4) body += `<polygon points="${x},5 ${x+2.6},4 ${x+2.6},26 ${x},27" fill="currentColor"/>`; body += '<rect x="5" y="3" width="38" height="1.4" fill="currentColor"/><rect x="5" y="27" width="38" height="1.4" fill="currentColor"/>'; }
+  if (k === 'sbatten'){ for (let x=6;x<42;x+=5.4) body += `<rect x="${x}" y="3" width="3.8" height="25" fill="currentColor"/>`; body += '<rect x="5" y="8" width="38" height="1.2" fill="currentColor" opacity=".6"/><rect x="5" y="22" width="38" height="1.2" fill="currentColor" opacity=".6"/>'; }
+  if (k === 'poolalu'){ body = '<rect x="5" y="6" width="38" height="2" fill="currentColor"/><rect x="5" y="24" width="38" height="2" fill="currentColor"/>'; for (let x=8;x<43;x+=3.5) body += `<rect x="${x}" y="6" width="1.1" height="20" fill="currentColor"/>`; }
+  if (k === 'glass'){ return `<svg viewBox="0 0 48 30" aria-hidden="true"><rect x="3" y="5" width="20" height="20" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1"/><rect x="25" y="5" width="20" height="20" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="1"/><rect x="7" y="23" width="3" height="5" fill="currentColor"/><rect x="16" y="23" width="3" height="5" fill="currentColor"/><rect x="29" y="23" width="3" height="5" fill="currentColor"/><rect x="38" y="23" width="3" height="5" fill="currentColor"/></svg>`; }
+  if (k === 'mesh868'){ for (let x=6;x<43;x+=3) body += `<line x1="${x}" y1="3" x2="${x}" y2="27" stroke="currentColor" stroke-width=".8"/>`; for (let y=5;y<28;y+=7) body += `<line x1="5" y1="${y}" x2="43" y2="${y}" stroke="currentColor" stroke-width="1"/><line x1="5" y1="${y+1.6}" x2="43" y2="${y+1.6}" stroke="currentColor" stroke-width="1"/>`; }
+  if (k === 'palisade'){ for (let x=6;x<42;x+=5) body += `<polygon points="${x},6 ${x+1},3 ${x+2},6 ${x+3},3 ${x+4},6 ${x+4},28 ${x},28" fill="currentColor"/>`; body += '<rect x="5" y="9" width="38" height="1.2" fill="currentColor" opacity=".6"/><rect x="5" y="23" width="38" height="1.2" fill="currentColor" opacity=".6"/>'; }
+  if (k === 'garrison'){ body = '<rect x="5" y="8" width="38" height="2" fill="currentColor"/><rect x="5" y="17" width="38" height="2" fill="currentColor"/><rect x="5" y="25" width="38" height="2" fill="currentColor"/>'; for (let x=8;x<42;x+=4) body += `<rect x="${x}" y="5" width="1.6" height="23" fill="currentColor"/><polygon points="${x-.8},5 ${x+.8},1.5 ${x+2.4},5" fill="currentColor"/>`; }
+  if (k === 'temp'){ return `<svg viewBox="0 0 48 30" aria-hidden="true"><rect x="3" y="3" width="20" height="21" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="25" y="3" width="20" height="21" fill="none" stroke="currentColor" stroke-width="1.6"/>${[6,10,14,18].map(x=>`<line x1="${x}" y1="4" x2="${x}" y2="23" stroke="currentColor" stroke-width=".6"/><line x1="${x+22}" y1="4" x2="${x+22}" y2="23" stroke="currentColor" stroke-width=".6"/>`).join('')}<rect x="0" y="24" width="7" height="4" fill="currentColor"/><rect x="20.5" y="24" width="7" height="4" fill="currentColor"/><rect x="41" y="24" width="7" height="4" fill="currentColor"/></svg>`; }
+  return `<svg viewBox="0 0 48 30" aria-hidden="true">${posts}${body}</svg>`;
+}
+function opt(v, label, cur){ return `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(label)}</option>`; }
+
+function renderProject(){
+  if (!$('#p-name')) return;
+  ['name','client','site'].forEach(k => { const el = $('#p-' + k); if (document.activeElement !== el) el.value = state.project[k] || ''; });
+  if ($('#exampleBanner')) $('#exampleBanner').hidden = !state.project.example;
+}
+function renderTabs(){
+  $('#runTabs').innerHTML = state.runs.map((r,i) => {
+    const bad = LAYOUTS[i] && LAYOUTS[i].errs.length;
+    return `<button type="button" role="tab" class="tab${bad ? ' err' : ''}" data-tab="${i}" aria-selected="${i === state.sel}">
+      <b>${esc(r.name)}</b><small>${esc(PRODUCTS[r.product].short)} · ${(+r.length).toFixed(1)} m${r.gate.type !== 'none' ? ' · gate' : ''}</small></button>`;
+  }).join('') + `<button type="button" class="tab add" id="addRun" aria-label="Add a run">+ Add run</button>`;
+}
+function renderEditor(){
+  const r = curRun(), P = PRODUCTS[r.product], g = r.gate, gt = GATE_TYPES[g.type];
+  const custom = !COLOURS.some(c => c.hex === r.colour);
+  $('#runEditor').innerHTML = `
+    <label class="f"><span>Run name</span><input type="text" id="e-name" data-k="name" value="${esc(r.name)}"></label>
+    <fieldset><legend>Fence system</legend>
+      ${['Residential','Commercial'].map(grp => `<p class="pgroup">${grp}</p>
+      <div class="products">${Object.entries(PRODUCTS).filter(([,p]) => p.group === grp).map(([k,p]) => `
+        <label class="pcard${k === r.product ? ' on' : ''}"><input type="radio" name="product" value="${k}" data-k="product"${k === r.product ? ' checked' : ''}>${icon(k)}<span>${esc(p.label)}</span></label>`).join('')}
+      </div>`).join('')}
+    </fieldset>
+    <div class="grid2">
+      <label class="f"><span>Run length (m)</span><input type="number" id="e-length" data-k="length" min="1" max="500" step="0.1" value="${r.length}"></label>
+      <label class="f"><span>Height (mm)</span><input type="number" id="e-height" data-k="height" min="900" max="3600" step="50" value="${r.height}"></label>
+      <label class="f"><span>Max panel width (mm)</span><input type="number" id="e-maxBay" data-k="maxBay" min="300" max="${P.maxBayLimit}" step="10" value="${r.maxBay}"></label>
+      <label class="f"><span>Post fixing</span><select id="e-fixing" data-k="fixing">${opt('inground','Concreted in ground',r.fixing)}${opt('baseplate','Base plate on slab',r.fixing)}</select></label>
+      ${P.styles ? `<label class="f"><span>Panel style</span><select id="e-style" data-k="style">${P.styles.map(s => opt(s[0], s[1], r.style)).join('')}</select></label>` : ''}
+      ${r.product === 'colorbond' && r.style === 'lattice' ? `<label class="f"><span>Lattice style</span><select id="e-lat" data-k="lattice">${Object.entries(LATTICE_STYLES).map(([k,v]) => opt(k, v, r.lattice)).join('')}</select></label>` : ''}
+      ${P.gapLabel ? `<label class="f"><span>${P.gapLabel}</span><input type="number" id="e-gap" data-k="gap" min="0" max="100" step="1" value="${r.gap}"></label>` : ''}
+    </div>
+    ${P.chainOpts ? `<fieldset><legend>Rails and security topping</legend>
+      <div class="grid2">
+        <label class="chk"><input type="checkbox" id="e-rtop" data-k="rails.top"${r.rails.top ? ' checked' : ''}>Top rail</label>
+        <label class="chk"><input type="checkbox" id="e-rmid" data-k="rails.mid"${r.rails.mid ? ' checked' : ''}>Middle rail</label>
+        <label class="chk"><input type="checkbox" id="e-rbot" data-k="rails.bot"${r.rails.bot ? ' checked' : ''}>Bottom rail</label>
+      </div>
+      <p class="hint">Where a rail is unticked, a line wire is used instead.</p>
+    </fieldset>` : ''}
+    ${P.topping ? `<fieldset><legend>Security add-ons</legend>
+      <div class="grid2">
+        <label class="chk"><input type="checkbox" id="e-barb" data-k="barbed"${r.barbed ? ' checked' : ''}>Barbed wire (3 strands)</label>
+        <label class="chk"><input type="checkbox" id="e-razor" data-k="razor"${r.razor ? ' checked' : ''}>Razor wire coil</label>
+        ${r.razor ? `<label class="f" style="grid-column:1/-1"><span>Razor mounting</span><select id="e-rmount" data-k="razorMount">${opt('arms','On Y-arms, angled out',r.razorMount)}${opt('inline','In line on top of the posts',r.razorMount)}</select></label>` : ''}
+        <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="e-elec" data-k="electric"${r.electric ? ' checked' : ''}>Electric security fence (JVA)</label>
+        ${r.electric ? `<label class="f"><span>Mounting</span><select id="e-emount" data-k="elecMount">${opt('top','Top-mounted outriggers',r.elecMount)}${opt('face','Face-mounted on the fence',r.elecMount)}</select></label>
+        <label class="f"><span>Live strands</span><input type="number" id="e-estr" data-k="elecStrands" min="2" max="30" step="1" value="${r.elecStrands}"></label>` : ''}
+      </div>
+      <p class="hint">Barbed, razor and electric can be combined. Electric fence energisers, keypad, earths and warning signs are counted once for the whole job.</p>
+    </fieldset>` : ''}
+    <fieldset><legend>Colour</legend>
+      <div class="swatches">${COLOURS.map(c => `
+        <label class="sw${c.hex === r.colour ? ' on' : ''}" style="background:${c.hex}" title="${esc(c.name)}"><input type="radio" name="colour" value="${c.hex}" data-k="colour" aria-label="${esc(c.name)}"${c.hex === r.colour ? ' checked' : ''}></label>`).join('')}
+        <input type="color" class="sw-custom" id="e-colour" data-k="colour" value="${r.colour}" aria-label="Custom colour" title="Custom colour${custom ? ' (selected)' : ''}">
+      </div>
+    </fieldset>
+    ${state.sel > 0 ? `
+    <div class="grid2">
+      <label class="f"><span>Direction from previous run</span><select id="e-turn" data-k="turn" data-num>
+        ${[[0,'Straight on'],[90,'Turn left 90°'],[-90,'Turn right 90°'],[45,'Turn left 45°'],[-45,'Turn right 45°'],[135,'Turn left 135°'],[-135,'Turn right 135°']].map(t => opt(t[0], t[1], r.turn)).join('')}
+      </select></label>
+      <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="e-join" data-k="joinPrev"${r.joinPrev ? ' checked' : ''}>Shares a corner post</label>
+    </div>` : ''}
+    <fieldset class="gatebox"><legend>Gate in this run</legend>
+      <div class="grid2">
+        <label class="f"><span>Gate type</span><select id="e-gtype" data-k="gate.type">${GATES_FOR(r.product).map(k => opt(k, GATE_TYPES[k].label, g.type)).join('')}</select></label>
+        ${g.type !== 'none' ? `
+        <label class="f"><span>Clear opening (mm)</span><input type="number" id="e-gwidth" data-k="gate.width" min="${gt.min}" max="${gt.max}" step="10" value="${g.width}"></label>
+        <label class="f"><span>Position in run</span><select id="e-gpos" data-k="gate.position">${opt('start','Start',g.position)}${opt('middle','Middle',g.position)}${opt('end','End',g.position)}</select></label>
+        ${LOCKABLE(g.type) && (!isAuto(g) || P.pool) ? `<label class="f"><span>Lock</span><select id="e-glock" data-k="gate.lock">${Object.entries(LOCKS).filter(([k]) => !P.pool || k === 'magna' || k === 'locklatch').map(([k,l]) => opt(k, l.label, g.lock)).join('')}</select></label>` : ''}
+        <label class="f"><span>Access control</span><select id="e-gacc" data-k="gate.access">${Object.entries(ACCESS).map(([k,a]) => opt(k, a.label, g.access)).join('')}</select></label>` : ''}
+      </div>
+      ${g.type !== 'none' ? `
+      ${P.noPosts || g.type === 'boom' ? '' : `<label class="chk"><input type="checkbox" id="e-gpiers" data-k="gate.piers"${g.piers ? ' checked' : ''}>Brick piers instead of steel gate posts</label>`}
+      ${P.pool || P.temp ? '' : `<label class="chk"><input type="checkbox" id="e-gauto" data-k="gate.auto"${isAuto(g) ? ' checked' : ''}${gt.forced ? ' disabled' : ''}>Automate this gate (RJL operator, safety beams)${gt.forced ? ' — always motorised' : ''}</label>`}
+      ${P.pool ? `<p class="hint">Pool gate: self-closing, self-latching, latch release at least 1500 mm high, opens away from the pool. Hardware is included.</p>` : ''}` : ''}
+    </fieldset>
+    <div class="row-actions">
+      <button type="button" class="btn" data-act="dup">Duplicate run</button>
+      ${state.runs.length > 1 ? `<button type="button" class="btn danger" data-act="del">Delete run</button>` : ''}
+    </div>`;
+}
+function renderTurnstiles(){
+  if (!$('#t-count')) return;
+  const t = state.turnstiles;
+  $('#t-count').value = t.count; $('#t-type').value = t.type;
+  $('#t-access').innerHTML = Object.entries(ACCESS).map(([k,a]) => opt(k, a.label, t.access)).join('');
+  if (t.count > 0) $('#turnPanel').open = true;
+}
+function renderRules(){
+  if (!$('#rulesGrid')) return;
+  $('#rulesGrid').innerHTML = Object.entries(RULE_LABELS).map(([k,[label,min,max,step]]) =>
+    `<label class="f"><span>${label}</span><input type="number" id="r-${k}" data-rule="${k}" min="${min}" max="${max}" step="${step}" value="${state.rules[k]}"></label>`).join('');
+}
+function renderSummary(){
+  $('#layoutSummary').innerHTML = state.runs.map((r,i) => {
+    const lay = LAYOUTS[i], P = PRODUCTS[r.product];
+    const head = `<div class="sum-h"><b>${esc(r.name)}</b><span>${esc(P.label)}${cbStyleText(r, ', ')}${esc(chainDesc(r))} · ${(+r.length).toFixed(2)} m × ${fmt(r.height)} mm</span></div>`;
+    if (lay.errs.length) return `<div class="panel sum">${head}<p class="err-text">${lay.errs.map(esc).join('<br>')}</p></div>`;
+    const posts = lay.seq.filter((n,j) => n.k === 'post' && !((j === 0 && JOINS[i].skipFirst) || (j === lay.seq.length-1 && JOINS[i].skipLast))).length;
+    const chips = lay.seq.filter(n => n.k !== 'post').map(n => n.k === 'gate'
+      ? `<span class="chip gate">${esc(GATE_TYPES[r.gate.type].label)} ${fmt(n.w)}</span>`
+      : `<span class="chip${P.strategy === 'full' && n.w < lay.W - 5 ? ' cut' : ''}" title="${P.strategy === 'full' && n.w < lay.W - 5 ? 'Cut-down panel' : 'Panel'}">${fmt(n.w)}</span>`).join('');
+    const bays = lay.seq.filter(n => n.k === 'bay').length;
+    return `<div class="panel sum">${head}<div class="chips">${chips}<span class="chip post">${posts} posts · ${bays} panels</span></div></div>`;
+  }).join('');
+}
+function renderWarns(){
+  if (!$('#warns')) return;
+  const w = [...BOM.warn];
+  const bad = state.runs.filter((r,i) => LAYOUTS[i].errs.length).map(r => r.name);
+  if (bad.length) w.unshift(`${bad.join(', ')} ${bad.length > 1 ? 'have' : 'has'} a layout problem${(document.getElementById('rjl-designer')?.dataset.mode === 'web') ? '' : ` and ${bad.length > 1 ? 'are' : 'is'} left out of the materials list`}. See the note under the 3D view.`);
+  if (state.runs.some(r => r.height > 2100 && (r.product === 'colorbond' || r.product === 'hslat' || r.product === 'vslat')))
+    w.push('Solid or slatted fences over 2.1 m catch a lot of wind. Get post size and footing depth checked by an engineer before quoting.');
+  state.runs.forEach(r => {
+    if (PRODUCTS[r.product].pool && r.height < 1200) w.push(`${r.name}: pool fences must be at least 1200 mm high, measured from the outside ground level.`);
+    if (PRODUCTS[r.product].pool) w.push(`${r.name}: pool fence. No climbable surface wider than 10 mm within 900 mm of the top, and gaps no more than 100 mm. Check the site against AS 1926.1 and get a pool barrier certificate.`);
+    if (PRODUCTS[r.product].topping && r.electric) w.push(`${r.name}: electric security fence. Install, signage and permits must meet AS/NZS 3016 and council requirements. Energiser zone count is an estimate until the site layout is set.`);
+    if (PRODUCTS[r.product].topping && (r.barbed || r.razor) && r.height < 2000) w.push(`${r.name}: barbed or razor wire on a fence under 2 m is within easy reach. Check council rules and duty of care before quoting.`);
+    if (r.product === 'temp') w.push(`${r.name}: temporary fence is usually hired. Price it per week, or enter hire rates instead of purchase prices.`);
+  });
+  $('#warns').innerHTML = w.map(t => `<div>${esc(t)}</div>`).join('');
+}
+function renderBom(){
+  if (!$('#bomTable')) return;
+  let html = `<table><thead><tr><th>Item</th><th>Description</th><th class="num">Qty</th><th>Unit</th><th class="num">Unit cost</th><th class="num">Total</th></tr></thead><tbody>`;
+  let cat = '';
+  for (const l of BOM.list){
+    if (l.cat !== cat){ cat = l.cat; html += `<tr class="cat"><td colspan="6">${esc(cat)}</td></tr>`; }
+    const r = +state.rates[l.code] || 0;
+    html += `<tr class="${r ? '' : 'unpriced'}" data-row="${esc(l.code)}">
+      <td class="code">${esc(l.code)}</td>
+      <td>${esc(l.desc)}${l.basis ? `<span class="basis">${esc(l.basis)}</span>` : ''}</td>
+      <td class="num">${l.qty.toLocaleString('en-AU')}</td><td>${esc(l.unit)}</td>
+      <td class="num"><input type="number" class="rate" min="0" step="0.01" data-rate="${esc(l.code)}" value="${r || ''}" placeholder="0.00" aria-label="Unit cost for ${esc(l.desc)}"></td>
+      <td class="num tot">${r ? money(r*l.qty) : '—'}</td></tr>`;
+  }
+  if (!BOM.list.length) html += `<tr><td colspan="6">Nothing to list yet. Fix the layout notes under the 3D view.</td></tr>`;
+  $('#bomTable').innerHTML = html + '</tbody></table>';
+}
+function renderQuote(){
+  if (!$('#quote')) return;
+  const t = totals(), pr = state.pricing;
+  const anyAuto = state.runs.some(r => r.gate.type !== 'none' && isAuto(r.gate));
+  $('#quote').innerHTML = `
+    <h3>Quote</h3>
+    ${t.unpriced ? `<span class="pill warn">${t.unpriced} of ${BOM.list.length} items have no price</span>` : `<span class="pill ok">All items priced</span>`}
+    <div class="qrow"><span>Materials</span><span>${money(t.mat)}</span></div>
+    <div class="qrow"><span>Labour</span><span>${money(t.lab)}</span></div>
+    <div class="qrow sub"><span>Cost to RJL</span><span>${money(t.cost)}</span></div>
+    <label class="f"><span>Margin (% of sell price)</span><input type="number" id="q-margin" data-q="margin" min="0" max="90" step="1" value="${pr.margin}"></label>
+    <p class="hint">A 30% margin means 30 cents of every dollar charged is profit. The sell price is cost ÷ (1 − margin).</p>
+    <div class="qrow sub"><span>Profit</span><span>${money(t.profit)}</span></div>
+    <div class="qrow"><span>Sell price ex GST</span><span>${money(t.sell)}</span></div>
+    <label class="chk"><input type="checkbox" id="q-gst" data-q="gst"${pr.gst ? ' checked' : ''}>Add GST (10%)</label>
+    ${pr.gst ? `<div class="qrow sub"><span>GST</span><span>${money(t.gst)}</span></div>` : ''}
+    <div class="qrow big"><span>Total${pr.gst ? ' inc GST' : ''}</span><span>${money(t.total)}</span></div>
+    <div class="qbox">
+      <h3>Preventative maintenance</h3>
+      <div class="grid2">
+        <label class="f"><span>Visits per year</span><input type="number" id="q-pmv" data-q="pmVisits" min="0" max="52" step="1" value="${pr.pmVisits}"></label>
+        <label class="f"><span>Price per visit ($)</span><input type="number" id="q-pmr" data-q="pmRate" min="0" step="1" value="${pr.pmRate || ''}" placeholder="0"></label>
+      </div>
+      <div class="qrow"><span>Annual plan ex GST</span><span>${money(t.pm)}</span></div>
+      ${anyAuto ? `<p class="hint">Automation warranty: 4 years standard, 7 years with a preventative maintenance plan in place.</p>` : ''}
+    </div>
+    ${(() => { const used = [...new Set(state.runs.map(r => r.product))].filter(k => PRODUCTS[k].market);
+      return used.length ? `<div class="qbox"><h3>Market price check</h3>
+        ${used.map(k => `<div class="qrow sub"><span>${esc(PRODUCTS[k].label)}</span><span>$${PRODUCTS[k].market[0]}–$${PRODUCTS[k].market[1]}/m</span></div>`).join('')}
+        <p class="hint">Typical installed residential prices per metre (whatsthedamage.com.au, Oct 2026). Use them to sense-check your sell price per metre, not as RJL rates.</p></div>` : ''; })()}
+    <p class="hint">Draft only. Not for construction until measured on site.</p>`;
+}
+function renderEvidence(){
+  if (!$('#evidence')) return;
+  $('#evidence').innerHTML = `
+    <p><span class="pill ok">Verified</span> Checked against the quantities in your two retail calculator screenshots:</p>
+    <ul>
+      <li>Aluminium horizontal slat, 10 m × 1800: panel count and width (6 × 1608 mm), 24 slats per panel at 75 mm pitch, post lengths (1 + 3), slat lengths (48), channel caps (12), post caps (7), covers (4), screws (288). All match.</li>
+      <li>Steel sheet with breezeway and a 3440 mm double gate: run closes at 10,000 mm, bays 2400 / 2400 / 1480, panel rails (9), gate rails (6), gate stiles (4), breezeway infills (3 + 2) and fence sheets (8) all match.</li>
+      <li>Two deliberate differences on that job. Gate sheets come to 6, not the retail 4, because RJL's 20 mm gate clearances make each leaf 1690 mm wide instead of the retail 1620 mm. Concrete comes to 11 bags, not 9, because RJL gate posts get 3 bags each. Change either one under Calculation rules.</li>
+      <li>The retail no-gate screen showed a 2700 mm bay, which doesn't add up to 10 m and is wider than a 2400 mm rail. This tool lays that run out as 2400 / 2400 / 2400 / 1250 / 1250.</li>
+    </ul>
+    <p><span class="pill src">From source</span> 600 mm post holes and 1.5 bags of concrete per hole come from the retail calculator's own note.</p>
+    <p><span class="pill warn">RJL default — confirm</span> Not checked against a supplier. Adjust under Calculation rules, or tell me the supplier's figures:</p>
+    <ul>
+      <li>Steel sheet cover of ${SHEET_COVER} mm. It reproduces the retail sheet count, but confirm it against your supplier's sheet width.</li>
+      <li>Tek screw counts for steel sheet fences and gates. The retail calculator showed 92 and its rule could not be worked out.</li>
+      <li>All rules for vertical slat, chainmesh, 358 mesh and tubular fences. That covers post sizes, rails, mesh rolls (15 m), clamps, ties and stays.</li>
+      <li>Gate posts: 65 × 65, or 100 × 100 for sliding, automated or wide leaves. Gate posts go 900 mm in the ground with 3 bags each.</li>
+      <li>Sliding track length (opening × 2 + overlap) and 2 pairs of safety beams per automated vehicle gate. The final safety device count comes from the site risk assessment.</li>
+    </ul>
+    <p><span class="pill src">From source</span> Pool fence rules: at least 1200 mm high, gaps no more than 100 mm, no climbable surface wider than 10 mm within 900 mm of the top, and gates that self-close, self-latch, open away from the pool with the latch at least 1500 mm high (Fencing Components pool fence guide). Market price ranges per metre come from whatsthedamage.com.au.</p>
+    <p><span class="pill warn">RJL default — confirm</span> Every rule for the systems added from market research: timber paling (125×75 posts, palings every 150 mm butted or 100 mm lapped), picket, aluminium pool, frameless glass (12 mm panels, 30 mm gaps, 2 spigots per panel), 868 mesh, palisade (pales at 140 mm centres), Garrison, temporary fence (2400 × 2100 panels, 1 stay per 4 panels), chainmesh rails, barbed and razor topping, aluminium vertical blade (75 mm blades at 60 / 50 / 100 mm centres for 45° / 60° / 90°), steel batten (50, 65 or 90 × 25 battens on 50 × 25 rails), cantilever gates (50% tail), bi-fold speed gates and boom gate loops.</p>
+    <p><span class="pill src">From source</span> Electric fence parts follow JVA's own product categories (store.jva-fence.com.au): Z Range energisers and keypads, insulators, fence wire, brackets (stays, free-standing, Y-standard), warning signs, earth spikes, lightning diverters, gate contacts, cut-out switches, enclosures, line clamps, tensioners and under-gate cable. The JVA Z14R spec (single zone, 4 J, 12 V 7.2 Ah backup battery, siren and strobe outputs) comes from a reseller listing.</p>
+    <p><span class="pill warn">RJL default — confirm</span> Electric fence quantities: ${state.rules.elecZoneLen} m per energiser zone, 3 earth spikes per energiser, warning signs every ${state.rules.signSpacing} m, 20 m of lead-out cable per energiser, brackets at every post plus every 3 m. Confirm with JVA for the actual site. In-line razor uses 450 mm post extensions.</p>
+    <p><span class="pill src">Your spec</span> Gate locks: D&amp;D LokkLatch (standard), D&amp;D lever-style lock, or D&amp;D MagnaLatch magnetic pull-up pool safety latch, always installed with the release 1500 mm above ground level. Pool gates default to the MagnaLatch.</p>
+    <p><span class="pill src">From source</span> Colorbond lattice panel make-up from Oxworks: a 2400 × 1500 lattice panel is 3 × 1190 mm sheets, 2 × 2100 mm channel posts, 3 × 2400 mm rails, 1 × 2390 mm laser-cut lattice infill and 22 tek screws. Lattice style names (square, diamond, slat, laser-cut) are generic; match them to your supplier's range.</p>
+    <p><span class="pill src">Your spec</span> Bionik-6 boom barrier (brushless 36 V, 100% duty cycle) with red and green flashing boom-arm lights.</p>
+    <p><span class="pill src">Your spec</span> Roger Technology Smarty-7 swing operators (up to 700 kg per leaf) and the Lockinox Magnus pedestrian operator. Automation warranty is 4 years, or 7 years with a maintenance plan.</p>
+    <p><span class="pill bad">Not covered</span> Raked or stepped panels on slopes, retaining and sleepers, rock or underground services, engineering for wind load, and council or building approvals.</p>
+    <p>Stock lengths are worked out with a cutting optimiser. It mixes cut sizes from all runs and gates in each length, so it usually orders fewer lengths than retail calculators that pack each panel separately.</p>`;
+}
+function renderAll(){ compute(); renderProject(); renderTabs(); renderEditor(); renderTurnstiles(); renderRules(); renderSummary(); renderWarns(); renderBom(); renderQuote(); renderEvidence(); build3D(); }
+
+let timer = null;
+function refresh(opts={}){
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    compute(); renderTabs(); renderSummary(); renderWarns(); renderBom(); renderQuote(); build3D(); saveState();
+    if (opts.editor) renderEditor();
+  }, 120);
+}
+
+/* ---------------------------------------------------------------- events */
+const LIMITS = { length:[1,500], height:[900,3600], gap:[0,100], elecStrands:[2,30] };
+function onEdit(e){
+  const t = e.target, k = t.dataset.k; if (!k) return;
+  const r = curRun();
+  let v = t.type === 'checkbox' ? t.checked : t.value;
+  if (t.type === 'number' || 'num' in t.dataset){
+    v = parseFloat(v); if (!isFinite(v)) return;
+    if (e.type === 'change'){
+      let lim = LIMITS[k];
+      if (k === 'maxBay') lim = [300, PRODUCTS[r.product].maxBayLimit];
+      if (k === 'gate.width') lim = [GATE_TYPES[r.gate.type].min, GATE_TYPES[r.gate.type].max];
+      if (lim){ const c = clamp(v, lim[0], lim[1]); if (c !== v){ v = c; t.value = c; toast(`Kept within ${fmt(lim[0])}–${fmt(lim[1])}`); } }
+    }
+  }
+  if (e.type === 'input' && (t.type === 'radio' || t.tagName === 'SELECT' || t.type === 'checkbox')) return; // handled on change
+  setPath(r, k, v);
+  let rebuildEditor = false;
+  if (k === 'product'){
+    const d = PRODUCTS[v].defaults; Object.assign(r, {height:d.height, maxBay:d.maxBay, colour:d.colour, style:d.style, gap:d.gap}); rebuildEditor = true;
+    if (!GATES_FOR(v).includes(r.gate.type)){ r.gate.type = 'none'; toast('Gate removed — not available on this fence system'); }
+    if (PRODUCTS[v].noPosts) r.gate.piers = false;
+    if (PRODUCTS[v].pool || PRODUCTS[v].temp) r.gate.auto = false;
+    if (PRODUCTS[v].pool) r.gate.lock = 'magna';
+  }
+  if (k === 'gate.auto') rebuildEditor = true;
+  if (k === 'gate.type'){ const gt = GATE_TYPES[v]; if (gt.def && (r.gate.width < gt.min || r.gate.width > gt.max)) r.gate.width = gt.def; rebuildEditor = true; }
+  if (k === 'colour' && e.type === 'change') rebuildEditor = true;
+  if ((k === 'razor' || k === 'electric' || k === 'style') && e.type === 'change') rebuildEditor = true;
+  if (k === 'name') { renderTabs(); }
+  state.project.example = state.project.example && true;
+  refresh({editor: rebuildEditor});
+}
+on('#runEditor', 'input', onEdit);
+on('#runEditor', 'change', onEdit);
+on('#runEditor', 'click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  if (b.dataset.act === 'dup'){ const c = JSON.parse(JSON.stringify(curRun())); c.id = uid(); c.name = runLetter(state.runs.length); state.runs.splice(state.sel+1, 0, c); state.sel++; }
+  if (b.dataset.act === 'del'){
+    if (b.dataset.confirm !== '1'){ b.dataset.confirm = '1'; b.textContent = 'Press again to delete'; return; }
+    state.runs.splice(state.sel, 1); state.sel = clamp(state.sel - 1, 0, state.runs.length - 1);
+  }
+  compute(); renderTabs(); renderEditor(); refresh();
+});
+on('#runTabs', 'click', e => {
+  if (e.target.closest('#addRun')){
+    const prev = state.runs[state.runs.length - 1], r = newRun(prev.product, runLetter(state.runs.length));
+    Object.assign(r, {height:prev.height, maxBay:prev.maxBay, colour:prev.colour, style:prev.style, gap:prev.gap});
+    state.runs.push(r); state.sel = state.runs.length - 1;
+  } else { const t = e.target.closest('[data-tab]'); if (!t) return; state.sel = +t.dataset.tab; }
+  compute(); renderTabs(); renderEditor(); refresh();
+});
+on('.proj', 'input', e => { const k = e.target.dataset.p; if (!k) return; state.project[k] = e.target.value; saveState(); });
+on('#clearExample', 'click', () => {
+  const r = newRun('colorbond','Run A'); r.turn = 0; r.joinPrev = false;
+  state.runs = [r]; state.sel = 0; state.turnstiles.count = 0; state.project = {name:'', client:'', site:'', example:false};
+  renderAll(); saveState();
+});
+on('#turnPanel', 'change', e => {
+  const k = e.target.dataset.t; if (!k) return;
+  state.turnstiles[k] = k === 'count' ? clamp(parseInt(e.target.value) || 0, 0, 20) : e.target.value;
+  if (k === 'count') e.target.value = state.turnstiles.count;
+  refresh();
+});
+on('#rulesGrid', 'change', e => {
+  const k = e.target.dataset.rule; if (!k) return;
+  const [, min, max] = RULE_LABELS[k]; let v = parseFloat(e.target.value);
+  if (!isFinite(v)) v = DEFAULT_RULES[k]; v = clamp(v, min, max); e.target.value = v;
+  state.rules[k] = v; refresh();
+});
+on('#rulesReset', 'click', () => { state.rules = {...DEFAULT_RULES}; renderRules(); refresh(); });
+
+on('#bomTable', 'input', e => {
+  const code = e.target.dataset.rate; if (!code) return;
+  const v = parseFloat(e.target.value);
+  if (isFinite(v) && v > 0) state.rates[code] = v; else delete state.rates[code];
+  const row = e.target.closest('tr'), line = BOM.list.find(l => l.code === code);
+  row.classList.toggle('unpriced', !state.rates[code]);
+  row.querySelector('.tot').textContent = state.rates[code] ? money(state.rates[code]*line.qty) : '—';
+  renderQuote(); saveState();
+});
+on('#quote', 'change', e => {
+  const k = e.target.dataset.q; if (!k) return;
+  state.pricing[k] = e.target.type === 'checkbox' ? e.target.checked : (parseFloat(e.target.value) || 0);
+  if (k === 'margin') state.pricing.margin = clamp(state.pricing.margin, 0, 90);
+  renderQuote(); saveState();
+});
+
+function csv(){
+  const q = s => `"${String(s).replace(/"/g,'""')}"`;
+  const rows = [['Category','Code','Description','Qty','Unit','Unit cost','Line total','Basis']];
+  for (const l of BOM.list){ const r = +state.rates[l.code] || 0; rows.push([l.cat, l.code, l.desc, l.qty, l.unit, r ? r.toFixed(2) : '', r ? (r*l.qty).toFixed(2) : '', l.basis]); }
+  return rows.map(r => r.map(q).join(',')).join('\n');
+}
+function cbStyleText(r, pre){
+  if (r.product !== 'colorbond' || !CB_TOP(r.style)) return '';
+  return pre + (r.style === 'lattice' ? `lattice top (${(LATTICE_STYLES[r.lattice] || 'lattice').toLowerCase()})` : r.style === 'slatfx' ? 'Slat FX top' : 'breezeway top');
+}
+function chainDesc(r){
+  const P = PRODUCTS[r.product], t = [];
+  if (P.chainOpts){ const R = r.rails || {}, rails = ['top','mid','bot'].filter(k => R[k]).map(k => ({top:'top',mid:'middle',bot:'bottom'}[k]));
+    t.push(rails.length ? rails.join(', ') + ' rail' + (rails.length > 1 ? 's' : '') : 'no rails'); }
+  if (P.topping){ if (r.barbed) t.push('barbed wire'); if (r.razor) t.push(r.razorMount === 'inline' ? 'in-line razor wire' : 'razor wire on arms');
+    if (r.electric) t.push(`${r.elecStrands}-strand electric fence, ${r.elecMount === 'top' ? 'top-mounted' : 'face-mounted'}`); }
+  return t.length ? ' (' + t.join(', ') + ')' : '';
+}
+function quoteText(){
+  const t = totals(), p = state.project, lines = [];
+  lines.push('RJL COMMERCIAL — Fencing · Gates · Automation', `Quote summary (DRAFT — not for construction)`, '');
+  if (p.name) lines.push(`Job: ${p.name}`); if (p.client) lines.push(`Client: ${p.client}`); if (p.site) lines.push(`Site: ${p.site}`);
+  lines.push('', 'Scope:');
+  state.runs.forEach((r,i) => {
+    const lay = LAYOUTS[i]; if (lay.errs.length) return;
+    let s = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}, ${(+r.length).toFixed(2)} m long × ${r.height} mm high`;
+    if (r.gate.type !== 'none') s += `, ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening${r.gate.piers ? ' on brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}`;
+    lines.push(s);
+  });
+  if (state.turnstiles.count) lines.push(`- ${state.turnstiles.count} × full-height turnstile (${state.turnstiles.type} rotor)`);
+  lines.push('', `Price ex GST: ${money(t.sell)}`);
+  if (state.pricing.gst) lines.push(`GST: ${money(t.gst)}`, `Total inc GST: ${money(t.total)}`);
+  if (t.pm) lines.push('', `Preventative maintenance plan: ${state.pricing.pmVisits} visits per year, ${money(t.pm)} ex GST per year`);
+  if (state.runs.some(r => r.gate.type !== 'none' && isAuto(r.gate))) lines.push('Automation warranty: 4 years standard, 7 years with the maintenance plan in place.');
+  if (t.unpriced) lines.push('', `NOTE: ${t.unpriced} items are not yet priced. Do not send until complete.`);
+  return lines.join('\n');
+}
+on('#copyCsv', 'click', () => copyText(csv(), $('#ioText')));
+on('#copyQuote', 'click', () => copyText(quoteText(), $('#ioText')));
+on('#ioCopy', 'click', () => copyText(JSON.stringify(state), $('#ioText')));
+on('#ioLoad', 'click', () => {
+  const msg = $('#ioMsg');
+  try { const s = normalise(JSON.parse($('#ioText').value)); if (!s) throw new Error(); state = s; renderAll(); saveState(); msg.hidden = true; toast('Job loaded'); }
+  catch(e){ msg.textContent = 'That text is not a copied job. Use "Copy this job" on the other device and paste the whole thing.'; msg.hidden = false; }
+});
+on('#ioReset', 'click', e => {
+  const b = e.currentTarget;
+  if (b.dataset.confirm !== '1'){ b.dataset.confirm = '1'; b.textContent = 'Press again to replace this job'; setTimeout(() => { b.dataset.confirm = ''; b.textContent = 'Reset to example job'; }, 4000); return; }
+  const rates = state.rates; state = exampleState(); state.rates = rates; renderAll(); saveState(); b.dataset.confirm = ''; b.textContent = 'Reset to example job';
+});
+
+/* ===================================================================== 3D
+ * Scene units are metres; the model root is scaled 0.001 so everything inside is built in mm.
+ * Repeated parts (posts, rails, slats, pickets) are batched into InstancedMesh per material.
+ * ------------------------------------------------------------------------- */
+let renderer, scene, camera, controls, root, sun, ground, grid, TEX = {}, anims = [], openT = 0, openTarget = 0, view = 'iso';
+const sceneBox = { min:[0,0,0], max:[1,1,1] };
+let three = typeof THREE !== 'undefined' && THREE.OrbitControls;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function init3D(){
+  const host = $('#viewport');
+  if (!three){ host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">The 3D view could not load. The materials list and quote still work.</p>'); return; }
+  try { renderer = new THREE.WebGLRenderer({antialias:true}); }
+  catch(e){ three = false; host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">3D needs WebGL, which is turned off in this browser. The materials list and quote still work.</p>'); return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  host.prepend(renderer.domElement);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(38, 1, 0.05, 600);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.maxPolarAngle = Math.PI*0.495; controls.minDistance = 1; controls.maxDistance = 250;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f86, 0.75));
+  sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005;
+  scene.add(sun); scene.add(sun.target);
+  ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({roughness:1, metalness:0}));
+  ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+  grid = new THREE.GridHelper(200, 200); grid.material.transparent = true; grid.material.opacity = 0.22; grid.position.y = 0.001; scene.add(grid);
+  root = new THREE.Group(); root.scale.setScalar(0.001); scene.add(root);
+  makeTextures(); applySceneTheme();
+  new ResizeObserver(resize).observe(host); resize();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applySceneTheme);
+  new MutationObserver(applySceneTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+  let last = performance.now();
+  (function loop(now){
+    const dt = Math.min(0.05, (now - last)/1000); last = now;
+    openT = reduceMotion ? openTarget : openT + (openTarget - openT)*Math.min(1, dt*2.5);
+    for (const a of anims){
+      if (a.type === 'swing') a.obj.rotation.y = a.sign*openT*1.4;
+      else if (a.type === 'fold'){ a.a.rotation.y = a.sign*openT*1.35; a.b.rotation.y = -a.sign*openT*2.7; }
+      else if (a.type === 'boom') a.obj.rotation.z = openT*Math.PI*0.48;
+      else a.obj.position.x = a.base + a.shift*openT;
+    }
+    controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
+  })(last);
+}
+function resize(){ const h = $('#viewport'); const w = h.clientWidth, ht = h.clientHeight; if (!w || !ht) return; renderer.setSize(w, ht, false); camera.aspect = w/ht; camera.updateProjectionMatrix(); }
+function applySceneTheme(){
+  if (!scene) return;
+  scene.background = new THREE.Color(css('--scene') || '#dde3e8');
+  ground.material.color.set(css('--ground') || '#c3c9bf');
+  grid.material.color = new THREE.Color(css('--grid') || '#9aa39a');
+}
+function canvasTex(w, h, draw){
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t;
+}
+function makeTextures(){
+  TEX.ribs = canvasTex(64, 8, (x,w,h) => { const g = x.createLinearGradient(0,0,w,0); g.addColorStop(0,'#ffffff'); g.addColorStop(.12,'#bdbdbd'); g.addColorStop(.24,'#ffffff'); g.addColorStop(.62,'#f0f0f0'); g.addColorStop(1,'#ffffff'); x.fillStyle = g; x.fillRect(0,0,w,h); });
+  TEX.chain = canvasTex(128, 128, (x,w,h) => { x.clearRect(0,0,w,h); x.strokeStyle = '#fff'; x.lineWidth = 7; x.beginPath(); x.moveTo(0,0); x.lineTo(w,h); x.moveTo(w,0); x.lineTo(0,h); x.stroke(); });
+  TEX.m358 = canvasTex(32, 192, (x,w,h) => { x.clearRect(0,0,w,h); x.fillStyle = '#fff'; x.fillRect(13,0,6,h); x.fillRect(0,0,w,6); });
+  TEX.m868 = canvasTex(32, 128, (x,w,h) => { x.clearRect(0,0,w,h); x.fillStyle = '#fff'; x.fillRect(14,0,4,h); x.fillRect(0,0,w,5); x.fillRect(0,9,w,5); });
+  // lattice patterns (white on transparent, tinted by the fence colour)
+  TEX.lat_square = canvasTex(64, 64, (x,w,h) => { x.clearRect(0,0,w,h); x.fillStyle = '#fff'; x.fillRect(0,0,w,12); x.fillRect(0,0,12,h); });
+  TEX.lat_diamond = canvasTex(64, 64, (x,w,h) => { x.clearRect(0,0,w,h); x.strokeStyle = '#fff'; x.lineWidth = 9; x.beginPath(); x.moveTo(0,0); x.lineTo(w,h); x.moveTo(w,0); x.lineTo(0,h); x.stroke(); });
+  TEX.lat_hslat = canvasTex(16, 64, (x,w,h) => { x.clearRect(0,0,w,h); x.fillStyle = '#fff'; x.fillRect(0,0,w,40); });
+  TEX.lat_vslat = canvasTex(64, 16, (x,w,h) => { x.clearRect(0,0,w,h); x.fillStyle = '#fff'; x.fillRect(0,0,40,h); });
+  TEX.lat_laser = canvasTex(128, 128, (x,w,h) => { x.fillStyle = '#fff'; x.fillRect(0,0,w,h); x.globalCompositeOperation = 'destination-out';
+    [[32,32],[96,96],[96,32],[32,96]].forEach(([cx,cy]) => { x.beginPath(); x.ellipse(cx,cy,22,10,Math.PI/4,0,7); x.fill(); x.beginPath(); x.ellipse(cx,cy,22,10,-Math.PI/4,0,7); x.fill(); });
+    [[64,64],[0,0],[128,0],[0,128],[128,128]].forEach(([cx,cy]) => { x.beginPath(); x.arc(cx,cy,9,0,7); x.fill(); }); });
+  TEX.brick = canvasTex(256, 128, (x,w,h) => {
+    x.fillStyle = '#cdc5b8'; x.fillRect(0,0,w,h);
+    const reds = ['#8e3b2b','#9b4430','#7e3426','#a24c36','#8a3f2e'];
+    for (let row=0; row<2; row++) for (let i=-1; i<3; i++){ x.fillStyle = reds[(row*3+i+5)%reds.length]; x.fillRect(i*128 + (row ? 64 : 0) + 4, row*64 + 4, 120, 56); }
+  });
+}
+const UNIT_BOX = typeof THREE !== 'undefined' ? new THREE.BoxGeometry(1,1,1) : null;
+const UNIT_CYL = typeof THREE !== 'undefined' ? new THREE.CylinderGeometry(0.5,0.5,1,14) : null;
+const matCache = new Map();
+function mat(hex, metal=0.3, rough=0.55){
+  const k = hex + metal + rough; if (!matCache.has(k)) matCache.set(k, new THREE.MeshStandardMaterial({color:hex, metalness:metal, roughness:rough}));
+  return matCache.get(k);
+}
+class Batch {
+  constructor(){ this.g = new Map(); }
+  _add(geo, m, x,y,z, sx,sy,sz, rx=0, ry=0, rz=0){
+    const key = geo + '|' + m.uuid; let e = this.g.get(key);
+    if (!e){ e = {geo, m, list:[]}; this.g.set(key, e); }
+    e.list.push(new THREE.Matrix4().compose(new THREE.Vector3(x,y,z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz)), new THREE.Vector3(sx,sy,sz)));
+  }
+  box(m, x,y,z, sx,sy,sz, ry=0){ this._add('box', m, x,y,z, sx,sy,sz, 0, ry, 0); }
+  boxR(m, x,y,z, sx,sy,sz, rx,ry,rz){ this._add('box', m, x,y,z, sx,sy,sz, rx, ry, rz); }
+  cylY(m, x,y,z, d, len){ this._add('cyl', m, x,y,z, d,len,d); }
+  cylH(m, x,y,z, d, len, ang=0){ this._add('cyl', m, x,y,z, d,len,d, 0, ang, Math.PI/2); }
+  flush(parent){
+    for (const e of this.g.values()){
+      const im = new THREE.InstancedMesh(e.geo === 'box' ? UNIT_BOX : UNIT_CYL, e.m, e.list.length);
+      e.list.forEach((m,i) => im.setMatrixAt(i, m)); im.instanceMatrix.needsUpdate = true;
+      im.castShadow = im.receiveShadow = true; im.frustumCulled = false; parent.add(im);
+    }
+    this.g.clear();
+  }
+}
+function texturedPlane(parent, tex, rx, ry, colour, w, h, x, y, z, transparent){
+  const t = tex.clone(); t.needsUpdate = true; t.repeat.set(rx, ry);
+  const m = new THREE.MeshStandardMaterial({map:t, color:colour, side:THREE.DoubleSide, transparent, depthWrite:!transparent, metalness:transparent ? 0.5 : 0.25, roughness:0.55});
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m);
+  mesh.position.set(x, y, z); mesh.castShadow = !transparent; mesh.receiveShadow = true; mesh.userData.own = true;
+  parent.add(mesh); return mesh;
+}
+function label(text, small){
+  const pad = 22, fs = small ? 44 : 52, c = document.createElement('canvas'), x = c.getContext('2d');
+  x.font = `600 ${fs}px "IBM Plex Mono", ui-monospace, monospace`;
+  c.width = Math.ceil(x.measureText(text).width + pad*2); c.height = fs + 30;
+  x.font = `600 ${fs}px "IBM Plex Mono", ui-monospace, monospace`;
+  x.fillStyle = small ? 'rgba(196,22,28,.92)' : 'rgba(255,255,255,.93)'; x.fillRect(0,0,c.width,c.height);
+  x.fillStyle = small ? '#ffffff' : '#15181c'; x.textBaseline = 'middle'; x.fillText(text, pad, c.height/2 + 2);
+  const t = new THREE.CanvasTexture(c), s = new THREE.Sprite(new THREE.SpriteMaterial({map:t, depthTest:false, transparent:true}));
+  const hmm = small ? 170 : 190; s.scale.set(hmm*c.width/c.height, hmm, 1); s.renderOrder = 10; s.userData.own = true; return s;
+}
+function clearRoot(){
+  root.traverse(o => {
+    if (o.isInstancedMesh){ o.dispose && o.dispose(); }
+    else if (o.userData.own){ o.geometry && o.geometry.dispose(); if (o.material){ o.material.map && o.material.map.dispose(); o.material.dispose(); } }
+  });
+  while (root.children.length) root.remove(root.children[0]);
+  anims = [];
+}
+
+/* Infill between x0..x1, y0..y1 on plane z — shared by fence bays and gate leaves */
+function infill(run, B, parent, x0, x1, y0, y1, z, mF){
+  const w = x1 - x0, cx = (x0 + x1)/2;
+  if (w <= 0 || y1 <= y0) return;
+  switch (run.product){
+    case 'colorbond': {
+      const bw = CB_TOP(run.style), top = bw ? y1 - 250 : y1;
+      B.box(mF, cx, y0 + 20, z, w, 40, 34); B.box(mF, cx, top - 20, z, w, 40, 34);
+      texturedPlane(parent, TEX.ribs, w/110, 1, run.colour, w, top - y0 - 40, cx, (y0 + top)/2, z, false);
+      if (bw){
+        B.box(mF, cx, y1 - 15, z, w, 30, 34);
+        if (run.style === 'breezeway') for (let y = top + 22; y < y1 - 35; y += 34) B.box(mF, cx, y, z, w, 12, 20);
+        else if (run.style === 'slatfx') for (let y = top + 30; y < y1 - 40; y += 55) B.box(mF, cx, y, z, w, 38, 14);
+        else { const k = run.lattice || 'square', t = TEX['lat_' + k], hb = 250 - 30, rep = {square:[w/90, hb/90], diamond:[w/80, hb/80], hslat:[1, hb/60], vslat:[w/60, 1], laser:[w/160, hb/160]}[k];
+          const m = texturedPlane(parent, t, rep[0], rep[1], run.colour, w, hb, cx, top + hb/2, z, true); m.material.depthWrite = true; m.material.alphaTest = 0.4; m.material.transparent = false; m.castShadow = true; }
+      }
+      break; }
+    case 'hslat': {
+      const pitch = 65 + run.gap, n = Math.floor((y1 - y0)/pitch);
+      for (let i=0;i<n;i++) B.box(mF, cx, y0 + i*pitch + 32.5, z, w, 65, 16);
+      break; }
+    case 'vslat': {
+      const pitch = 65 + run.gap, n = Math.floor((w + run.gap)/pitch), span = n*pitch - run.gap, xs = x0 + (w - span)/2;
+      const rows = (y1 - y0) > 1450 ? [y0 + 120, (y0 + y1)/2, y1 - 120] : [y0 + 120, y1 - 120];
+      rows.forEach(y => B.box(mF, cx, y, z - 22, w, 50, 25));
+      for (let i=0;i<n;i++) B.box(mF, xs + i*pitch + 32.5, (y0 + y1)/2, z, 65, y1 - y0, 16);
+      break; }
+    case 'chain':
+      texturedPlane(parent, TEX.chain, w/55, (y1 - y0)/55, '#b9bec2', w, y1 - y0, cx, (y0 + y1)/2, z, true); break;
+    case 'mesh358':
+      texturedPlane(parent, TEX.m358, w/12.7, (y1 - y0)/76.2, run.colour, w, y1 - y0, cx, (y0 + y1)/2, z, true); break;
+    case 'paling': {
+      const lap = run.style === 'lapcap', mT = mat(run.colour, 0, 0.9);
+      B.box(mT, cx, y0 + 75, z + 4, w, 150, 25);                                  // plinth
+      [y0 + 300, (y0 + y1)/2, y1 - 300].forEach((y, i) => { if (i === 1 && y1 - y0 <= 1500) return; B.box(mT, cx, y, z - 32, w, 75, 38); });
+      if (lap){ for (let x = x0; x < x1 - 1; x += 100) B.box(mT, Math.min(x + 75, x1 - 75), (y0 + 150 + y1)/2, z + ((Math.round((x - x0)/100) % 2) ? 12 : 0), 150, y1 - y0 - 150, 14);
+                B.box(mT, cx, y1 + 10, z + 4, w, 20, 140); }
+      else for (let x = x0; x < x1 - 1; x += 150) B.box(mT, Math.min(x + 75, x1 - 75), (y0 + 150 + y1)/2, z, 146, y1 - y0 - 150, 16);
+      break; }
+    case 'picket': {
+      const mT = mat(run.colour, 0, 0.8), pitch = 70 + run.gap, n = Math.floor((w + run.gap)/pitch), xs = x0 + (w - (n*pitch - run.gap))/2;
+      [y0 + 150, y1 - 200].forEach(y => B.box(mT, cx, y, z - 26, w, 70, 35));
+      for (let i=0;i<n;i++){ const px = xs + i*pitch + 35; B.box(mT, px, (y0 + 50 + y1 - 60)/2, z, 70, y1 - y0 - 110, 19); B.boxR(mT, px, y1 - 60, z, 49, 49, 19, 0, 0, Math.PI/4); }
+      break; }
+    case 'vblade': {
+      const pitch = BLADE_PITCH[run.style] || 60, ang = (+run.style || 45)*Math.PI/180, n = Math.floor(w/pitch), xs = x0 + (w - (n - 1)*pitch)/2;
+      B.box(mF, cx, y0 + 30, z, w, 50, 50); B.box(mF, cx, y1 - 25, z, w, 50, 50);
+      for (let i=0;i<n;i++) B.box(mF, xs + i*pitch, (y0 + y1)/2, z, 75, y1 - y0 - 100, 8, ang);
+      break; }
+    case 'sbatten': {
+      const bw = +run.style || 50, pitch = bw + run.gap, n = Math.floor((w + run.gap)/pitch), xs = x0 + (w - (n*pitch - run.gap))/2;
+      const rows = (y1 - y0) > 1450 ? [y0 + 120, (y0 + y1)/2, y1 - 120] : [y0 + 120, y1 - 120];
+      rows.forEach(y => B.box(mF, cx, y, z - 25, w, 50, 25));
+      for (let i=0;i<n;i++) B.box(mF, xs + i*pitch + bw/2, (y0 + y1)/2, z, bw, y1 - y0, 25);
+      break; }
+    case 'poolalu': {
+      B.box(mF, cx, y1 - 20, z, w, 40, 25); B.box(mF, cx, y0 + 100, z, w, 40, 25);
+      const n = Math.floor(w/115), xs = x0 + (w - (n - 1)*115)/2;
+      for (let i=0;i<n;i++) B.box(mF, xs + i*115, (y0 + 80 + y1)/2, z, 16, y1 - y0 - 80, 16);
+      break; }
+    case 'glass': {
+      const gm = new THREE.MeshStandardMaterial({color:'#cfe9ea', transparent:true, opacity:0.32, metalness:0.1, roughness:0.05, side:THREE.DoubleSide, depthWrite:false});
+      const base = run.style === 'channel' ? 0 : 100;
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, y1 - y0 - base + 50, 12), gm); m.position.set(cx, (y0 - 50 + base + y1)/2, z); m.userData.own = true; parent.add(m);
+      const mS = mat('#c9cdd1', 0.85, 0.25);
+      if (run.style === 'channel') B.box(mS, cx, 30, z, w + 30, 60, 60);
+      else [x0 + w*0.22, x1 - w*0.22].forEach(sx => B.cylY(mS, sx, 110, z, 50, 220));
+      break; }
+    case 'mesh868':
+      texturedPlane(parent, TEX.m868, w/50, (y1 - y0)/200, run.colour, w, y1 - y0, cx, (y0 + y1)/2, z, true); break;
+    case 'palisade': {
+      const rows = (y1 - y0) > 2000 ? [y0 + 300, (y0 + y1)/2, y1 - 300] : [y0 + 300, y1 - 300];
+      rows.forEach(y => B.box(mF, cx, y, z - 35, w, 50, 50));
+      const n = Math.floor((w + 70)/140), xs = x0 + (w - (n - 1)*140)/2;
+      for (let i=0;i<n;i++){ const px = xs + i*140; B.box(mF, px, (y0 + y1 - 40)/2, z, 70, y1 - y0 - 40, 10);
+        [-23, 0, 23].forEach(dx => B.boxR(mF, px + dx, y1 - 30, z, 17, 17, 10, 0, 0, Math.PI/4)); }
+      break; }
+    case 'garrison': {
+      [y0 + 120, (y0 + y1)/2, y1 - 200].forEach(y => B.box(mF, cx, y, z, w, 40, 40));
+      const n = Math.floor(w/125), xs = x0 + (w - (n - 1)*125)/2;
+      for (let i=0;i<n;i++){ const px = xs + i*125; B.box(mF, px, (y0 + 40 + y1)/2, z, 25, y1 - y0 - 40, 25); B.boxR(mF, px, y1 + 10, z, 30, 30, 25, 0, 0, Math.PI/4); }
+      break; }
+    case 'temp': {
+      const mT = mat('#b5babd', 0.6, 0.4);
+      B.cylH(mT, cx, y0 + 30, z, 32, w); B.cylH(mT, cx, y1 - 20, z, 32, w);
+      B.cylY(mT, x0 + 20, (y0 + y1)/2, z, 32, y1 - y0); B.cylY(mT, x1 - 20, (y0 + y1)/2, z, 32, y1 - y0);
+      texturedPlane(parent, TEX.m358, (w - 40)/60, (y1 - y0 - 50)/150, '#c4c8cb', w - 40, y1 - y0 - 50, cx, (y0 + y1)/2, z, true);
+      break; }
+    case 'tubular': {
+      B.box(mF, cx, y0 + 110, z, w, 40, 40); B.box(mF, cx, y1 - 70, z, w, 40, 40);
+      const n = Math.floor(w/100), xs = x0 + (w - (n - 1)*100)/2;
+      for (let i=0;i<n;i++) B.box(mF, xs + i*100, (y0 + 40 + y1)/2, z, 25, y1 - y0 - 40, 25);
+      break; }
+  }
+}
+function leaf(run, parent, w, h, y0, mF, mDark, xOff, latchRight){
+  const B = new Batch(), x0 = xOff, x1 = xOff + w;
+  B.box(mF, x0 + 25, y0 + h/2, 0, 50, h, 50); B.box(mF, x1 - 25, y0 + h/2, 0, 50, h, 50);
+  if (run.product !== 'colorbond'){ B.box(mF, (x0 + x1)/2, y0 + 25, 0, w - 100, 50, 50); B.box(mF, (x0 + x1)/2, y0 + h - 25, 0, w - 100, 50, 50); }
+  if (h > 1500 && run.product !== 'colorbond' && run.product !== 'hslat') B.box(mF, (x0 + x1)/2, y0 + h/2, 0, w - 100, 40, 40);
+  const inset = run.product === 'colorbond' ? 0 : 50;
+  infill(run, B, parent, x0 + 50, x1 - 50, y0 + inset, y0 + h - inset, 0, mF);
+  const g = run.gate, auto = isAuto(g), P = PRODUCTS[run.product];
+  if (latchRight !== null && LOCKABLE(g.type) && (!auto || P.pool)){
+    // lock release at LOCK_H above ground (RJL standard) — drawn on the latch stile
+    const lx = latchRight ? x1 - 25 : x0 + 25, sx = latchRight ? 1 : -1, mL = mat('#2a2c2e', 0.5, 0.4), mS = mat('#b9bdc1', 0.85, 0.3);
+    const type = g.lock || 'locklatch';
+    if (type === 'magna'){ B.box(mL, lx + sx*45, LOCK_H - 160, -40, 45, 320, 45); B.cylY(mS, lx + sx*45, LOCK_H + 15, -40, 34, 30); }
+    else { B.box(mL, lx, LOCK_H, -45, 60, 130, 40); B.box(mL, lx, LOCK_H, 45, 60, 130, 40);
+      if (type === 'lever') [-1, 1].forEach(sz => B.box(mS, lx - sx*55, LOCK_H - 20, sz*75, 110, 18, 18));
+      else [-1, 1].forEach(sz => B.cylY(mS, lx, LOCK_H - 20, sz*75, 30, 26)); }
+  }
+  B.flush(parent);
+}
+function buildGate(run, lay, n, grp, mF, mDark){
+  const g = run.gate, lv = gateLeaves(g, state.rules), H = run.height, gap = state.rules.hingeGap, B = new Batch();
+  if (g.type === 'boom'){
+    // cabinet sits in the first gate-post slot, boom rest in the second
+    const mC = mat('#e8e9ea', 0.2, 0.5), mR = mat('#c4161c', 0.2, 0.5);
+    const cabX = n.x - lay.gw/2, restX = n.x + n.w + lay.gw/2;
+    B.box(mC, cabX, 525, 0, 320, 1050, 300); B.box(mDark, cabX, 1060, 0, 330, 20, 310);
+    B.box(mC, restX, 400, 0, 80, 800, 80); B.box(mDark, restX, 820, 0, 160, 40, 80);
+    const pv = new THREE.Group(); pv.position.set(cabX, 950, -170); grp.add(pv);
+    const ab = new Batch(), len = lv.w;
+    ab.box(mC, len/2, 0, 0, len, 90, 45);
+    for (let x = 300; x < len - 150; x += 600) ab.box(mR, x, 0, 0, 300, 92, 47);
+    ab.flush(pv);
+    anims.push({type:'boom', obj:pv});
+    B.flush(grp); return;
+  }
+  if (g.type === 'bifold'){
+    // two leaves, each two panels: inner panel hinged on the post, outer panel folds back on it
+    const leafH = H - 50, y0 = 50, pw = lv.w;
+    [[n.x + gap, 1, 0, true], [n.x + n.w - gap, -1, -pw, false]].forEach(([px, sign, xOff, latchRight]) => {
+      const a = new THREE.Group(); a.position.set(px, 0, 0); grp.add(a);
+      leaf(run, a, pw, leafH, y0, mF, mDark, xOff, false);
+      const b = new THREE.Group(); b.position.set(sign > 0 ? pw + gap : -pw - gap, 0, 0); a.add(b);
+      leaf(run, b, pw, leafH, y0, mF, mDark, xOff, latchRight);
+      const ob = new Batch(); ob.box(mat('#2b2e31',0.2,0.6), sign > 0 ? 300 : -300, leafH + 120, 0, 420, 140, 140); ob.flush(a);
+      anims.push({type:'fold', a, b, sign});
+    });
+    B.flush(grp); return;
+  }
+  if (SLIDES(g.type)){
+    const dir = n.slideDir, leafH = H - 100, z = -(lay.gw/2 + 60), cant = g.type === 'cantilever';
+    const closedX0 = dir > 0 ? n.x : n.x + n.w - lv.w;
+    const lg = new THREE.Group(); lg.position.set(closedX0, 0, z); grp.add(lg);
+    leaf(run, lg, lv.w, leafH, cant ? 160 : 70, mF, mDark, 0, dir < 0);
+    const lo = Math.min(closedX0, closedX0 + dir*n.w), hi = Math.max(closedX0 + lv.w, closedX0 + lv.w + dir*n.w);
+    if (cant){
+      const tb = new Batch(); tb.box(mDark, lv.w/2, 100, 0, lv.w, 120, 90); tb.flush(lg);   // bottom track beam travels with the leaf
+      const cxr = dir > 0 ? n.x + n.w + lay.gw + 400 : n.x - lay.gw - 400;
+      [0, 1].forEach(k => B.box(mDark, cxr + dir*k*900, 25, z, 260, 50, 200));               // roller carriages on footings
+    } else B.box(mDark, (lo + hi)/2, 8, z, hi - lo, 16, 30);
+    if (isAuto(g)){ const mx = dir > 0 ? n.x + n.w + lay.gw + 420 : n.x - lay.gw - 420; B.box(mat('#2b2e31',0.2,0.6), mx, 180, z - 260, 320, 360, 220); }
+    anims.push({type:'slide', obj:lg, base:closedX0, shift:dir*n.w});
+  } else {
+    const leafH = H - 50, y0 = 50;
+    const mkPivot = (px, sign, xOff, latchRight) => {
+      const pv = new THREE.Group(); pv.position.set(px, 0, 0); grp.add(pv);
+      leaf(run, pv, lv.w, leafH, y0, mF, mDark, xOff, latchRight);
+      const hx = xOff < 0 ? -10 : 10;
+      B.box(mDark, px - hx, y0 + 250, 0, 30, 120, 60); B.box(mDark, px - hx, y0 + leafH - 250, 0, 30, 120, 60);
+      if (isAuto(g)){ const ob = new Batch(); ob.box(mat('#2b2e31',0.2,0.6), xOff < 0 ? -420 : 420, y0 + 650, -150, 820, 110, 110); ob.flush(pv); }
+      anims.push({type:'swing', obj:pv, sign});
+    };
+    if (lv.n === 1) mkPivot(n.x + gap, 1, 0, true);
+    else { mkPivot(n.x + gap, 1, 0, true); mkPivot(n.x + n.w - gap, -1, -lv.w, null); }   // one lock per double gate
+  }
+  B.flush(grp);
+}
+function buildPier(grp, cx, w, H){
+  const ph = H + 200;
+  const t = TEX.brick.clone(); t.needsUpdate = true; t.repeat.set(w/480, ph/172);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, ph, w), new THREE.MeshStandardMaterial({map:t, roughness:0.95}));
+  m.position.set(cx, ph/2, 0); m.castShadow = m.receiveShadow = true; m.userData.own = true; grp.add(m);
+  const cap = new THREE.Mesh(new THREE.BoxGeometry(w + 100, 80, w + 100), new THREE.MeshStandardMaterial({color:'#d9d4c8', roughness:0.9}));
+  cap.position.set(cx, ph + 40, 0); cap.castShadow = true; cap.userData.own = true; grp.add(cap);
+}
+function buildRun(run, i, lay, grp){
+  const B = new Batch(), H = run.height, chain = run.product === 'chain';
+  const mF = chain ? mat('#a8adb1', 0.6, 0.45) : mat(run.colour, 0.3, 0.55);
+  const mPost = chain ? mF : (run.product === 'colorbond' ? mat(run.colour, 0.3, 0.55) : mF);
+  const mDark = mat('#26292c', 0.4, 0.5);
+  lay.seq.forEach((n, idx) => {
+    const cx = n.x + n.w/2;
+    if (n.k === 'post'){
+      if ((idx === 0 && JOINS[i].skipFirst) || (idx === lay.seq.length - 1 && JOINS[i].skipLast)) return;
+      if (n.role === 'pier'){ buildPier(grp, cx, n.w, H); return; }
+      if (run.gate.type === 'boom' && (n.role === 'gate' || n.role === 'guide')) return;   // drawn by buildGate
+      const P = PRODUCTS[run.product];
+      if (P.glass) return;                                                                    // glass: spigots belong to panels
+      if (P.temp){ B.box(mat('#d0632a', 0, 0.8), cx, 70, 0, 620, 140, 200); return; }       // temp fence foot block
+      const ph = H + 40, pd = P.postD || n.w;
+      if (run.product === 'paling' || run.product === 'picket'){ const mT = mat(run.colour, 0, 0.9); B.box(mT, cx, ph/2, -20, n.w, ph, pd); return; }
+      if (chain){ const d = n.role === 'line' ? 48 : 60; B.cylY(mF, cx, ph/2, 0, d, ph); B.cylY(mDark, cx, ph + 8, 0, d + 6, 16); }
+      else { B.box(mPost, cx, ph/2, 0, n.w, ph, n.w); B.box(mDark, cx, ph + 6, 0, n.w + 4, 12, n.w + 4); }
+    } else if (n.k === 'bay'){
+      infill(run, B, grp, n.x, n.x + n.w, 50, H, 0, mF);
+      if (chain){ const R = run.rails || {top:true};
+        [['top', H - 20], ['mid', H/2], ['bot', 120]].forEach(([k, y]) => R[k] ? B.cylH(mF, cx, y, 0, 42, n.w + 60) : B.cylH(mF, cx, y, 0, 5, n.w));
+      }
+    } else if (n.k === 'gate') buildGate(run, lay, n, grp, mF, mDark);
+    if (PRODUCTS[run.product].topping) drawTopping(run, n, idx, lay, i, B, grp, H);
+  });
+  B.flush(grp);
+  if (state.view.dims){
+    lay.seq.forEach(n => {
+      if (n.k === 'bay'){ const s = label(fmt(n.w)); s.position.set(n.x + n.w/2, H + 260, 0); grp.add(s); }
+      if (n.k === 'gate'){ const s = label(`${GATE_TYPES[run.gate.type].label} ${fmt(n.w)}`); s.position.set(n.x + n.w/2, H + 480, 0); grp.add(s); }
+    });
+    const s = label(run.name, true); s.position.set(Math.min(600, lay.L/2), H + 760, 0); grp.add(s);
+  }
+}
+/* Security add-ons in 3D. Fence plane is z = 0; outside (street side) is +z. */
+function drawTopping(run, n, idx, lay, i, B, grp, H){
+  const mW = mat('#9da3a8', 0.7, 0.35), mI = mat('#1d1d1d', 0.1, 0.6), mE = mat('#d9c46a', 0.5, 0.4);
+  const inline = run.razor && run.razorMount === 'inline', cx = n.x + n.w/2;
+  const isFencePost = n.k === 'post' && (n.role === 'end' || n.role === 'line' || n.role === 'corner')
+    && !((idx === 0 && JOINS[i].skipFirst) || (idx === lay.seq.length - 1 && JOINS[i].skipLast));
+  const elecTop = run.electric && run.elecMount === 'top';
+  const base = H + 40;
+  if (isFencePost){
+    if (inline){ B.box(mW, cx, base + 225, 0, 40, 450, 40); }
+    else if (run.razor){ B.boxR(mW, cx, base + 180, -150, 40, 460, 40, Math.PI/4, 0, 0); B.boxR(mW, cx, base + 180, 150, 40, 460, 40, -Math.PI/4, 0, 0); }
+    else if (run.barbed){ B.boxR(mW, cx, base + 160, 130, 40, 420, 40, Math.PI/4, 0, 0); }
+    if (run.electric){
+      const k = clamp(run.elecStrands|0, 2, 30);
+      if (elecTop){ const top = (run.barbed || run.razor) ? base + 520 : base; B.box(mI, cx, top + (k*110)/2, 0, 50, k*110 + 60, 50); }
+      else B.box(mI, cx, H*0.55, 90, 40, H*0.9, 40);
+    }
+  }
+  if (n.k !== 'bay') return;
+  const L = n.w + 60;
+  if (run.razor){
+    const coil = new THREE.Mesh(new THREE.CylinderGeometry(225, 225, L, 18, Math.max(2, Math.round(n.w/90)), true),
+      new THREE.MeshBasicMaterial({color:'#b9bec2', wireframe:true, transparent:true, opacity:0.75}));
+    coil.rotation.z = Math.PI/2; coil.position.set(cx, inline ? base + 450 + 10 : base + 260, inline ? 0 : -120); coil.userData.own = true; grp.add(coil);
+    if (inline) B.cylH(mW, cx, base + 440, 0, 6, L); else if (!run.barbed) [-1, 1].forEach(k => B.cylH(mW, cx, base + 300, 300*k, 6, L));
+  }
+  if (run.barbed){ if (inline) [1, 2, 3].forEach(k => B.cylH(mW, cx, base + 140*k, 0, 6, L)); else [1, 2, 3].forEach(k => B.cylH(mW, cx, base + 110*k, (run.razor ? 110 : 85)*k, 6, L)); }
+  if (run.electric){
+    const k = clamp(run.elecStrands|0, 2, 30);
+    if (elecTop){ const top = (run.barbed || run.razor) ? base + 520 : base; for (let j=0;j<k;j++) B.cylH(mE, cx, top + 60 + j*110, 0, 4, L); }
+    else for (let j=0;j<k;j++) B.cylH(mE, cx, 150 + j*((H - 200)/Math.max(1, k - 1)), 110, 4, L);
+  }
+}
+function buildTurnstiles(){
+  const t = state.turnstiles; if (!(t.count > 0)) return [];
+  const W = t.type === 'double' ? 2700 : 1500, D = 1400, Ht = 2300, out = [];
+  const mFrame = mat('#55595d', 0.5, 0.5), mSS = mat('#c9cdd1', 0.85, 0.28);
+  for (let i=0; i<t.count; i++){
+    const g = new THREE.Group(), cx = -W/2 - 300 - i*(W + 300);
+    g.position.set(cx, 0, 0); root.add(g); out.push([cx - W/2, cx + W/2]);
+    const B = new Batch();
+    B.box(mFrame, 0, Ht - 110, 0, W, 220, D);
+    [-1, 1].forEach(sx => [-1, 1].forEach(sz => B.box(mFrame, sx*(W/2 - 50), (Ht - 220)/2, sz*(D/2 - 50), 100, Ht - 220, 100)));
+    const rotors = t.type === 'double' ? [-W/4, W/4] : [W/2 - 650];
+    rotors.forEach(rx => {
+      B.cylY(mSS, rx, (Ht - 220)/2, 0, 80, Ht - 220);
+      for (let y = 200; y < Ht - 350; y += 135) for (let k=0; k<3; k++){
+        const a = k*2*Math.PI/3 + Math.PI/6, len = 560;
+        B.cylH(mSS, rx + Math.cos(a)*(len/2 + 40), y, -Math.sin(a)*(len/2 + 40), 32, len, a);
+      }
+      const comb = rx - 700;
+      B.box(mFrame, comb, (Ht - 220)/2, 0, 70, Ht - 220, 70);
+      for (let y = 267; y < Ht - 350; y += 135) B.cylH(mSS, comb + 180, y, 0, 32, 300, 0);
+    });
+    B.flush(g);
+    if (state.view.dims){ const s = label('Turnstile', true); s.position.set(0, Ht + 300, 0); g.add(s); }
+  }
+  return out;
+}
+function build3D(){
+  if (!three || !renderer) return;
+  clearRoot();
+  const pts = [];
+  let ox = 0, oz = 0, head = 0, prevEnd = null, prevDir = null, prevW = 0;
+  state.runs.forEach((r, i) => {
+    const lay = LAYOUTS[i];
+    if (i > 0) head += (r.turn || 0)*Math.PI/180;
+    const dir = [Math.cos(head), -Math.sin(head)];
+    if (prevEnd){
+      if (r.joinPrev && lay.seq.length){ const fw = lay.seq[0].w; ox = prevEnd[0] - prevDir[0]*prevW/2 - dir[0]*fw/2; oz = prevEnd[1] - prevDir[1]*prevW/2 - dir[1]*fw/2; }
+      else { ox = prevEnd[0] + dir[0]*1000; oz = prevEnd[1] + dir[1]*1000; }
+    }
+    if (!lay.errs.length){
+      const grp = new THREE.Group(); grp.position.set(ox, 0, oz); grp.rotation.y = head; root.add(grp);
+      buildRun(r, i, lay, grp);
+    }
+    const L = lay.L, H = r.height + 900;
+    pts.push([ox, oz, H], [ox + dir[0]*L, oz + dir[1]*L, H]);
+    prevEnd = [ox + dir[0]*L, oz + dir[1]*L]; prevDir = dir; prevW = lay.seq.length ? lay.seq[lay.seq.length - 1].w : 0;
+  });
+  buildTurnstiles().forEach(([a,b]) => pts.push([a, -700, 2600], [b, 700, 2600]));
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, maxY = 0;
+  pts.forEach(([x,z,y]) => { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); maxY = Math.max(maxY, y); });
+  if (!isFinite(minX)){ minX = maxX = minZ = maxZ = 0; maxY = 2000; }
+  sceneBox.min = [minX/1000 - 1, 0, minZ/1000 - 1]; sceneBox.max = [maxX/1000 + 1, maxY/1000, maxZ/1000 + 1];
+  fitCamera(view, true);
+}
+function fitCamera(v, keepIfUserMoved){
+  if (!camera) return;
+  if (keepIfUserMoved && fitCamera.userMoved) { placeSun(); return; }
+  view = v;
+  const [x0,y0,z0] = sceneBox.min, [x1,y1,z1] = sceneBox.max;
+  const c = new THREE.Vector3((x0 + x1)/2, (y0 + y1)/3, (z0 + z1)/2);
+  const r = Math.max(x1 - x0, z1 - z0, y1 - y0)/2 + 0.5;
+  const dist = r/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*(camera.aspect < 1 ? 1.25 : 0.78);
+  const dirs = {iso:[0.62, 0.48, 0.78], front:[0, 0.12, 1], top:[0, 1, 0.0001]};
+  const d = new THREE.Vector3(...dirs[v]).normalize();
+  camera.position.copy(c).addScaledVector(d, dist); controls.target.copy(c); controls.update();
+  placeSun(); fitCamera.userMoved = false;
+}
+function placeSun(){
+  const [x0,,z0] = sceneBox.min, [x1,,z1] = sceneBox.max, cx = (x0 + x1)/2, cz = (z0 + z1)/2, r = Math.max(x1 - x0, z1 - z0)/2 + 3;
+  sun.position.set(cx + r*0.6, r*1.6 + 6, cz + r*0.9); sun.target.position.set(cx, 0, cz);
+  const sc = sun.shadow.camera; sc.left = -r*1.3; sc.right = r*1.3; sc.top = r*1.3; sc.bottom = -r*1.3; sc.near = 0.5; sc.far = r*5 + 20; sc.updateProjectionMatrix();
+}
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => fitCamera(b.dataset.view)));
+on('#btnOpen', 'click', e => { openTarget = openTarget ? 0 : 1; e.currentTarget.setAttribute('aria-pressed', String(!!openTarget)); e.currentTarget.textContent = openTarget ? 'Close gates' : 'Open gates'; });
+on('#btnDims', 'click', e => { state.view.dims = !state.view.dims; e.currentTarget.setAttribute('aria-pressed', String(state.view.dims)); fitCamera.userMoved = true; build3D(); saveState(); });
+
+/* ---------------------------------------------------------------- website: add to online quote */
+function designSummary(){
+  const lines = ['Design from the online 3D fence designer:'];
+  state.runs.forEach((r,i) => {
+    const lay = LAYOUTS[i];
+    let t = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}, ${(+r.length).toFixed(1)} m long × ${fmt(r.height)} mm high, colour ${(COLOURS.find(c => c.hex === r.colour) || {name:r.colour}).name}`;
+    if (i > 0) t += `, ${r.turn ? (r.turn > 0 ? 'turns left ' : 'turns right ') + Math.abs(r.turn) + '°' : 'straight on'} from the previous run`;
+    if (r.gate.type !== 'none') t += `; ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening at the ${r.gate.position}${r.gate.piers ? ', brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}${LOCKABLE(r.gate.type) && (!isAuto(r.gate) || PRODUCTS[r.product].pool) ? ', ' + (LOCKS[r.gate.lock] || LOCKS.locklatch).label + ' at ' + LOCK_H + ' mm' : ''}`;
+    if (lay.errs.length) t += ' (layout needs checking)';
+    lines.push(t);
+  });
+  if (state.turnstiles.count) lines.push(`- ${state.turnstiles.count} × full-height turnstile (${state.turnstiles.type} rotor)`);
+  const total = state.runs.reduce((a,r) => a + (+r.length || 0), 0);
+  lines.push(`Total length: ${total.toFixed(1)} m. Sizes are the customer's own estimates, to be measured on site.`);
+  const link = shareLink(); if (link) lines.push('', 'Open this design: ' + link);
+  return lines.join('\n').slice(0, 3600);
+}
+function packDesign(){
+  const keep = ['product','name','length','height','maxBay','colour','style','gap','fixing','turn','joinPrev','gate','lattice','rails','barbed','razor','razorMount','electric','elecMount','elecStrands'];
+  const runs = state.runs.map(r => Object.fromEntries(keep.map(k => [k, r[k]])));
+  return btoa(unescape(encodeURIComponent(JSON.stringify({r:runs, t:state.turnstiles})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function shareLink(){
+  try { const url = location.origin + location.pathname + '#d=' + packDesign(); return url.length < 1800 ? url : ''; } catch(e){ return ''; }
+}
+function loadFromHash(){
+  const m = /[#&]d=([A-Za-z0-9_-]+)/.exec(location.hash || ''); if (!m) return false;
+  try {
+    const j = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));
+    const s = normalise({...webExample(), runs:j.r, turnstiles:j.t || {count:0, type:'single', access:'none'}});
+    if (s){ state = s; return true; }
+  } catch(e){}
+  return false;
+}
+if (WEB){
+  loadFromHash();
+  on('#addToQuote', 'click', () => {
+    compute();
+    const bad = state.runs.filter((r,i) => LAYOUTS[i].errs.length);
+    const msg = $('#addMsg');
+    if (bad.length && msg && msg.dataset.ok !== '1'){ msg.textContent = `${bad.map(r => r.name).join(', ')} has a layout problem (see the note under the 3D view). Press again to send it anyway.`; msg.hidden = false; msg.dataset.ok = '1'; return; }
+    try { sessionStorage.setItem('rjl-design-quote', JSON.stringify({text:designSummary(), service:quoteService()})); } catch(e){}
+    location.href = CFG.quoteUrl || '/contact-us';
+  });
+}
+function quoteService(){
+  const p = state.runs.map(r => r.product), g = state.runs.map(r => r.gate.type);
+  if (state.runs.some(r => r.gate.type !== 'none' && isAuto(r.gate))) return 'Automatic gates';
+  if (p.some(k => PRODUCTS[k].pool)) return 'Pool fencing';
+  if (p.every(k => k === 'colorbond' || k === 'paling')) return g.some(t => t === 'sliding' || t === 'double') ? 'Sliding & double gates' : 'Timber & Colorbond fencing';
+  return 'Steel & feature fencing';
+}
+
+/* ---------------------------------------------------------------- boot */
+init3D();
+if (controls) controls.addEventListener('start', () => { fitCamera.userMoved = true; });
+$('#btnDims').setAttribute('aria-pressed', String(state.view.dims));
+renderAll();
+// expose for testing
+window.__rjl = { get state(){ return state; }, compute, layoutRun, cutPlan, get BOM(){ return BOM; } };
+})();
+</script>
