@@ -1329,6 +1329,13 @@ function makeTextures(){
 }
 const UNIT_BOX = typeof THREE !== 'undefined' ? new THREE.BoxGeometry(1,1,1) : null;
 const UNIT_CYL = typeof THREE !== 'undefined' ? new THREE.CylinderGeometry(0.5,0.5,1,14) : null;
+/* Unit wedge for timber post tops: top face slopes from the front (+z, full height) down to the back (-z). */
+const UNIT_WEDGE = (() => {
+  if (typeof THREE === 'undefined') return null;
+  const g = new THREE.BoxGeometry(1,1,1), pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) if (pos.getY(i) > 0 && pos.getZ(i) < 0) pos.setY(i, -0.5);
+  g.computeVertexNormals(); return g;
+})();
 const matCache = new Map();
 function mat(hex, metal=0.3, rough=0.55){
   const k = hex + metal + rough; if (!matCache.has(k)) matCache.set(k, new THREE.MeshStandardMaterial({color:hex, metalness:metal, roughness:rough}));
@@ -1343,11 +1350,12 @@ class Batch {
   }
   box(m, x,y,z, sx,sy,sz, ry=0){ this._add('box', m, x,y,z, sx,sy,sz, 0, ry, 0); }
   boxR(m, x,y,z, sx,sy,sz, rx,ry,rz){ this._add('box', m, x,y,z, sx,sy,sz, rx, ry, rz); }
+  wedge(m, x,y,z, sx,sy,sz){ this._add('wedge', m, x,y,z, sx,sy,sz); }
   cylY(m, x,y,z, d, len){ this._add('cyl', m, x,y,z, d,len,d); }
   cylH(m, x,y,z, d, len, ang=0){ this._add('cyl', m, x,y,z, d,len,d, 0, ang, Math.PI/2); }
   flush(parent){
     for (const e of this.g.values()){
-      const im = new THREE.InstancedMesh(e.geo === 'box' ? UNIT_BOX : UNIT_CYL, e.m, e.list.length);
+      const im = new THREE.InstancedMesh(e.geo === 'box' ? UNIT_BOX : e.geo === 'wedge' ? UNIT_WEDGE : UNIT_CYL, e.m, e.list.length);
       e.list.forEach((m,i) => im.setMatrixAt(i, m)); im.instanceMatrix.needsUpdate = true;
       im.castShadow = im.receiveShadow = true; im.frustumCulled = false; parent.add(im);
     }
@@ -1609,8 +1617,10 @@ function buildRun(run, i, lay, grp){
       if (P.temp){ B.box(mat('#d0632a', 0, 0.8), cx, 70, 0, 620, 140, 200); return; }       // temp fence foot block
       const ph = H + 40, pd = P.postD || n.w;
       if (palingSteel(run)){ const ps = H + 30; B.box(mat('#2b2e31', 0.45, 0.5), cx, ps/2, -10, 100, ps, 100); B.box(mDark, cx, ps + 6, -10, 106, 12, 106); return; }
-      if (run.product === 'paling' || run.product === 'picket'){ const mT = mat(run.colour, 0, 0.9), pt = H + 70;
-        B.box(mT, cx, pt/2, -20, n.w, pt, pd); B.box(mT, cx, pt + 12, -20, n.w + 16, 24, pd + 16); return; }
+      if (run.product === 'paling' || run.product === 'picket'){
+        // timber post, top cut on a downward angle (weathered) so water runs off — 45 mm fall across the post
+        const mT = mat(run.colour, 0, 0.9), pt = H + 40, fall = 45;
+        B.box(mT, cx, pt/2, -20, n.w, pt, pd); B.wedge(mT, cx, pt + fall/2, -20, n.w, fall, pd); return; }
       if (chain){ const d = n.role === 'line' ? 48 : 60; B.cylY(mF, cx, ph/2, 0, d, ph); B.cylY(mDark, cx, ph + 8, 0, d + 6, 16); }
       else { B.box(mPost, cx, ph/2, 0, n.w, ph, n.w); B.box(mDark, cx, ph + 6, 0, n.w + 4, 12, n.w + 4); }
     } else if (n.k === 'bay'){
