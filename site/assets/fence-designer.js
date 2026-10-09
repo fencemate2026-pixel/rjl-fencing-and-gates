@@ -103,8 +103,17 @@ const GATE_TYPES = {
   sliding:{label:'Sliding gate (on track)', def:5000, min:2000, max:12000},
   cantilever:{label:'Cantilever sliding gate', def:6000, min:3000, max:14000},
   bifold:{label:'Bi-fold speed gate', def:5000, min:3000, max:9000, forced:true},
-  boom:{label:'Boom gate', def:4500, min:2500, max:8000, forced:true}
+  boom:{label:'Boom gate', def:4500, min:2500, max:8000, forced:true},
+  bollards:{label:'Automated rising bollards', def:3600, min:1200, max:12000, forced:true}
 };
+/* Vehicle-lane accessories (RJL Commercial):
+ *  spikes:  none | surface (Tiger Teeth one-way, surface mounted) | auto (automated in-ground spikes)
+ *  tlights: 0 | 1 (approach side) | 2 (both sides) red/green traffic lights on the posts
+ *  beacon:  amber flashing beacon on automated gates
+ *  Photocell safety beams are always included on automated gates (safety interlock, not optional). */
+const VEHICLE = t => t !== 'none' && t !== 'pedestrian';
+const BOLLARD_D = 275, BOLLARD_CC = 1200;          // RJL default — bollard diameter and max centres
+const bollardCount = G => Math.max(1, Math.round(G/BOLLARD_CC));
 /* Gate locks. RJL standard: lock / latch release installed 1500 mm above ground level. */
 const LOCK_H = 1500;
 const LOCKS = {
@@ -151,7 +160,8 @@ function newRun(product='colorbond', name='Run'){
     retain:{on:false, height:600},
     rails:{top:true, mid:false, bot:false}, barbed:false, razor:false, razorMount:'arms',
     electric:false, elecMount:'top', elecStrands:6,
-    gate:{ type:'none', width:3440, position:'start', piers:false, auto:false, access:'none', lock:PRODUCTS[product].pool ? 'magna' : 'locklatch' } };
+    gate:{ type:'none', width:3440, position:'start', piers:false, auto:false, access:'none', lock:PRODUCTS[product].pool ? 'magna' : 'locklatch',
+           spikes:'none', tlights:0, beacon:true, bollardH:800 } };
 }
 function webExample(){
   const commercial = CFG.brand === 'commercial';
@@ -210,12 +220,14 @@ function gateLeaves(g, rules){
   if (g.type === 'cantilever') return {n:1, w:G*1.5};                       // 50% counterbalance tail — RJL default
   if (g.type === 'bifold')     return {n:4, w:(G - 3*rules.hingeGap)/4};    // 2 leaves × 2 folding panels
   if (g.type === 'boom')       return {n:0, w:G + 300};                     // boom arm = opening + 300 mm
+  if (g.type === 'bollards')   return {n:0, w:0};
   return {n:1, w:G - 2*rules.hingeGap};
 }
 const SLIDES = t => t === 'sliding' || t === 'cantilever';
 function gatePostW(run, rules){
   const g = run.gate, P = PRODUCTS[run.product]; if (g.type === 'none') return 0;
   if (g.type === 'boom') return 350;                    // barrier cabinet footprint
+  if (g.type === 'bollards') return P.noPosts ? P.postW : (P.postW || 50);   // lane ends on ordinary fence posts
   if (P.noPosts) return P.postW;                        // glass hangs off glass panels; temp gates clamp to panels
   if (g.piers) return 350;
   if (g.type === 'bifold') return 150;
@@ -665,6 +677,22 @@ function gateBom(run, lay, bom, rules){
   const TYPE = GATE_TYPES[g.type].label, auto = isAuto(g);
   const BEAMS = q => bom.add('Automation & access','BEAMS','Photo-electric safety beams (pair)', q, 'pair', 'Final count to site risk assessment');
 
+  // ---- automated rising bollards
+  if (g.type === 'bollards'){
+    const nb = bollardCount(g.width), bh = +g.bollardH || 800, pl = H + (ground ? rules.postEmbed : 0);
+    bom.add('Posts',`SHS${gw}-${pl}`,`${gw}×${gw} SHS end post, ${pl} mm`, 2, 'ea', 'Fence ends either side of the bollard lane');
+    bom.add('Automation & access',`BOLLARD-AUTO-${bh}`,`Automated rising bollard, ${BOLLARD_D} mm dia × ${bh} mm rise, LED crown`, nb, 'ea',
+      `${nb} at ≤ ${BOLLARD_CC} mm centres; LED crown green when fully down, red rising and up`);
+    bom.add('Automation & access','BOLLARD-CTRL','Bollard control panel and power unit', 1, 'ea', 'Runs all bollards in the lane');
+    bom.add('Automation & access','LOOP-DET','Vehicle loop detector', 1, 'ea', 'Safety and auto-raise');
+    bom.add('Automation & access','LOOP','Inductive vehicle loop (cut in)', 2, 'ea', 'Safety loop + exit loop');
+    bom.add('Concrete & footings','BOLLARD-FOOT','Bollard footing and sleeve, with drainage soak pit', nb, 'ea', '1 per bollard');
+    bom.add('Concrete & footings','DUCT-50','50 mm conduit, control panel to bollards', Math.ceil(g.width/1000 + 6), 'm', 'Opening + 6 m to panel');
+    if (g.access !== 'none') bom.add('Automation & access', ACCESS[g.access].code, ACCESS[g.access].label, 1, 'ea');
+    laneAccessories(run, g, bom, true);
+    bom.add('Labour','LAB-BOLLARD','Install and commission rising bollard', nb, 'ea');
+    return;
+  }
   // ---- boom gate: self-contained barrier, no leaves or gate posts
   if (g.type === 'boom'){
     bom.add('Automation & access','BOOM-BIONIK6','Bionik-6 boom barrier (brushless 36 V, 100% duty cycle)', 1, 'ea', 'RJL standard boom operator');
@@ -675,6 +703,7 @@ function gateBom(run, lay, bom, rules){
     bom.add('Automation & access','LOOP','Inductive vehicle loop (cut in)', 2, 'ea', 'Safety loop + exit loop');
     bom.add('Concrete & footings','BOOM-PAD','Boom barrier concrete pad', 1, 'ea', 'Size to manufacturer template');
     if (g.access !== 'none') bom.add('Automation & access', ACCESS[g.access].code, ACCESS[g.access].label, 1, 'ea');
+    laneAccessories(run, g, bom, true);
     bom.add('Labour','LAB-AUTO','Install and commission gate automation', 1, 'ea');
     bom.add('Labour','LAB-GATE-boom','Install boom gate', 1, 'ea');
     return;
@@ -796,6 +825,7 @@ function gateBom(run, lay, bom, rules){
     bom.add('Automation & access', ACCESS[g.access].code, ACCESS[g.access].label, 1, 'ea');
     if (!auto) bom.add('Automation & access','MAGLOCK','Electric / magnetic gate lock', 1, 'ea', 'Needed for access control on a manual gate');
   }
+  if (VEHICLE(g.type)) laneAccessories(run, g, bom, auto);
   if (P.topping && run.electric){
     bom.add('Automation & access','EF-GATECONTACT','Electric fence gate contact', 1, 'ea', '1 per gate in an electrified run');
     bom.add('Hardware','EF-UGCABLE','Under-gate cable (live and earth)', 2*(g.width + 2000)/1000, 'm', '2 cores × (opening + 2 m)');
@@ -803,6 +833,33 @@ function gateBom(run, lay, bom, rules){
   bom.add('Labour',`LAB-GATE-${g.type}`,`Install ${TYPE.toLowerCase()}`, 1, 'ea');
 }
 
+/* Spikes, traffic lights, beacon and photocell posts for a vehicle lane. */
+function laneAccessories(run, g, bom, auto){
+  const mL = Math.ceil(g.width/1000 - 1e-9);
+  if (g.spikes === 'surface'){
+    bom.add('Automation & access','SPIKE-TT','Tiger Teeth one-way tyre spikes, surface mounted', mL, 'm', 'Full lane width; yellow chequer-plate ramp');
+    bom.add('Hardware','SPIKE-ANCHOR','Spike anchor bolt (chemical)', mL*6, 'ea', '6 per metre (estimate)');
+    bom.add('Automation & access','SPIKE-SIGN','Warning sign: one-way spikes, severe tyre damage', 2, 'ea', 'Both approaches');
+    bom.add('Labour','LAB-SPIKE','Install surface tyre spikes', mL, 'm');
+  }
+  if (g.spikes === 'auto'){
+    bom.add('Automation & access','SPIKE-AUTO','Automated in-ground tyre spike unit', mL, 'm', 'Full lane width; synchronised with the gate');
+    bom.add('Automation & access','SPIKE-CTRL','Spike control and gate interlock', 1, 'ea', 'Spikes lower only when the gate is open');
+    bom.add('Concrete & footings','SPIKE-PIT','Spike pit, drainage and concrete surround', mL, 'm');
+    bom.add('Automation & access','SPIKE-SIGN','Warning sign: tyre spikes, severe tyre damage', 2, 'ea', 'Both approaches');
+    bom.add('Labour','LAB-SPIKE-AUTO','Install and commission automated spikes', mL, 'm');
+  }
+  const tl = g.tlights|0;
+  if (tl){
+    bom.add('Automation & access','TL-RG','Red / green LED traffic light (2-aspect)', tl, 'ea', tl > 1 ? 'Both sides' : 'Approach side');
+    if (g.type === 'boom' || g.type === 'bollards') bom.add('Posts','TL-POLE','Traffic light pole, 2.4 m, base-plated', tl, 'ea', 'No gate post to mount on');
+    else bom.add('Hardware','TL-BRKT','Traffic light post bracket', tl, 'ea', 'Mounted on the gate post');
+    bom.add('Automation & access','TL-RELAY','Traffic light relay interface', 1, 'ea', 'Green only when the lane is fully open');
+  }
+  if (auto && g.beacon !== false) bom.add('Automation & access','BEACON-AMBER','Amber flashing beacon (LED)', 1, 'ea', 'Flashes while the gate moves');
+  if (auto && (g.type === 'boom' || g.type === 'bollards')) bom.add('Posts','BEAM-POST','Photocell post (stainless, 500 mm)', 4, 'ea', '2 pairs of beams, posts both sides');
+  if (auto && (g.type === 'bollards' || g.type === 'boom')) bom.add('Automation & access','BEAMS','Photo-electric safety beams (pair)', 2, 'pair', 'Final count to site risk assessment');
+}
 function turnstileBom(bom){
   const t = state.turnstiles; if (!(t.count > 0)) return;
   bom.add('Turnstiles',`TURN-FH-${t.type}`,`Full-height turnstile, ${t.type} rotor`, t.count, 'ea');
@@ -961,6 +1018,14 @@ function renderEditor(){
       ${g.type !== 'none' ? `
       ${P.noPosts || g.type === 'boom' ? '' : `<label class="chk"><input type="checkbox" id="e-gpiers" data-k="gate.piers"${g.piers ? ' checked' : ''}>Brick piers instead of steel gate posts</label>`}
       ${P.pool || P.temp ? '' : `<label class="chk"><input type="checkbox" id="e-gauto" data-k="gate.auto"${isAuto(g) ? ' checked' : ''}${gt.forced ? ' disabled' : ''}>Automate this gate (RJL operator, safety beams)${gt.forced ? ' — always motorised' : ''}</label>`}
+      ${g.type === 'bollards' ? `<label class="f"><span>Bollard rise</span><select id="e-bh" data-k="gate.bollardH" data-num>${[600,800,1000,1200].map(h => opt(h, h + ' mm', g.bollardH || 800)).join('')}</select></label>
+        <p class="hint">${bollardCount(g.width)} bollards at up to ${BOLLARD_CC} mm centres. LED crown shows green when fully down, red while rising and when up.</p>` : ''}
+      ${VEHICLE(g.type) && !P.pool && !P.temp ? `<div class="grid2">
+        <label class="f"><span>Tyre spikes</span><select id="e-spk" data-k="gate.spikes">${opt('none','None',g.spikes)}${opt('surface','Tiger Teeth (surface, one-way)',g.spikes)}${opt('auto','Automated in-ground spikes',g.spikes)}</select></label>
+        <label class="f"><span>Traffic lights</span><select id="e-tl" data-k="gate.tlights" data-num>${opt(0,'None',g.tlights)}${opt(1,'1 (approach side)',g.tlights)}${opt(2,'2 (both sides)',g.tlights)}</select></label>
+      </div>
+      ${isAuto(g) ? `<label class="chk"><input type="checkbox" id="e-bcn" data-k="gate.beacon"${g.beacon !== false ? ' checked' : ''}>Amber flashing beacon</label>
+      <p class="hint">Photocell safety beams are always included on automated gates.</p>` : ''}` : ''}
       ${P.pool ? `<p class="hint">Pool gate: self-closing, self-latching, latch release at least 1500 mm high, opens away from the pool. Hardware is included.</p>` : ''}` : ''}
     </fieldset>
     <div class="row-actions">
@@ -1087,6 +1152,7 @@ function renderEvidence(){
     <p><span class="pill warn">RJL default — confirm</span> Retaining wall: H-beams go into the ground at least as deep as the retained height (900 mm minimum), 6 bags of concrete per H-beam, 2000 or 2400 mm concrete sleepers to suit the bay, ag pipe, 300 mm of drainage gravel and geofabric. Get walls over 1 m engineered.</p>
     <p><span class="pill src">Your spec</span> Gate locks: D&amp;D LokkLatch (standard), D&amp;D lever-style lock, or D&amp;D MagnaLatch magnetic pull-up pool safety latch, always installed with the release 1500 mm above ground level. Pool gates default to the MagnaLatch.</p>
     <p><span class="pill src">From source</span> Colorbond lattice panel make-up from Oxworks: a 2400 × 1500 lattice panel is 3 × 1190 mm sheets, 2 × 2100 mm channel posts, 3 × 2400 mm rails, 1 × 2390 mm laser-cut lattice infill and 22 tek screws. Lattice style names (square, diamond, slat, laser-cut) are generic; match them to your supplier's range.</p>
+    <p><span class="pill warn">RJL default — confirm</span> Vehicle lane devices: rising bollards 275 mm diameter at up to 1200 mm centres (rise 600 to 1200 mm), one control panel per lane, 2 loops per boom or bollard lane, Tiger Teeth surface spikes priced per metre of lane with 6 anchors per metre, 4 stainless photocell posts per boom or bollard lane, traffic lights green only when the lane is fully open.</p>
     <p><span class="pill src">Your spec</span> Bionik-6 boom barrier (brushless 36 V, 100% duty cycle) with red and green flashing boom-arm lights.</p>
     <p><span class="pill src">Your spec</span> Roger Technology Smarty-7 swing operators (up to 700 kg per leaf) and the Lockinox Magnus pedestrian operator. Automation warranty is 4 years, or 7 years with a maintenance plan.</p>
     <p><span class="pill bad">Not covered</span> Raked or stepped panels on slopes, retaining and sleepers, rock or underground services, engineering for wind load, and council or building approvals.</p>
@@ -1198,6 +1264,15 @@ function csv(){
   for (const l of BOM.list){ const r = +state.rates[l.code] || 0; rows.push([l.cat, l.code, l.desc, l.qty, l.unit, r ? r.toFixed(2) : '', r ? (r*l.qty).toFixed(2) : '', l.basis]); }
   return rows.map(r => r.map(q).join(',')).join('\n');
 }
+function laneText(g){
+  const t = [];
+  if (g.type === 'bollards') t.push(`${bollardCount(g.width)} bollards, ${g.bollardH || 800} mm rise`);
+  if (g.spikes === 'surface') t.push('Tiger Teeth surface tyre spikes'); if (g.spikes === 'auto') t.push('automated in-ground tyre spikes');
+  if (g.tlights) t.push(`${g.tlights} traffic light${g.tlights > 1 ? 's' : ''}`);
+  if (isAuto(g) && VEHICLE(g.type)) t.push('photocell safety beams');
+  if (isAuto(g) && g.beacon !== false && VEHICLE(g.type)) t.push('amber beacon');
+  return t.length ? ', ' + t.join(', ') : '';
+}
 function palingText(r){
   if (r.product !== 'paling') return '';
   const t = [`${r.style === 'butted' ? 'butted' : 'lapped'} ${r.palingW || 150} mm palings ${r.palingLen || 1650} mm`];
@@ -1292,6 +1367,15 @@ function init3D(){
       if (a.type === 'swing') a.obj.rotation.y = a.sign*openT*1.4;
       else if (a.type === 'fold'){ a.a.rotation.y = a.sign*openT*1.35; a.b.rotation.y = -a.sign*openT*2.7; }
       else if (a.type === 'boom') a.obj.rotation.z = openT*Math.PI*0.48;
+      else if (a.type === 'bollard'){
+        a.obj.position.y = -a.h*openT;                                  // open lane = bollards down
+        const down = openT > 0.97, flash = 0.55 + 0.45*Math.sin(now/110);
+        a.led.color.set(down ? '#1fd65a' : '#ff2a2a'); a.led.emissive.set(down ? '#00d84a' : '#ff0000');
+        a.led.emissiveIntensity = (Math.abs(openTarget - openT) > 0.02 && !down) ? flash : 0.9;   // flashes while moving
+      }
+      else if (a.type === 'tlight'){ const go = openT > 0.97; a.red.emissiveIntensity = go ? 0 : 1.1; a.green.emissiveIntensity = go ? 1.1 : 0; }
+      else if (a.type === 'beacon') a.m.emissiveIntensity = Math.abs(openTarget - openT) > 0.02 ? 0.4 + 0.6*(Math.sin(now/90) > 0 ? 1 : 0) : 0.15;
+      else if (a.type === 'spikes') a.obj.position.y = -90*openT;
       else a.obj.position.x = a.base + a.shift*openT;
     }
     controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
@@ -1330,6 +1414,7 @@ function makeTextures(){
 const UNIT_BOX = typeof THREE !== 'undefined' ? new THREE.BoxGeometry(1,1,1) : null;
 const UNIT_CYL = typeof THREE !== 'undefined' ? new THREE.CylinderGeometry(0.5,0.5,1,14) : null;
 /* Unit wedge for timber post tops: top face slopes from the front (+z, full height) down to the back (-z). */
+const UNIT_CONE = typeof THREE !== 'undefined' ? new THREE.CylinderGeometry(0, 0.5, 1, 4) : null;   // pyramid spike
 const UNIT_WEDGE = (() => {
   if (typeof THREE === 'undefined') return null;
   const g = new THREE.BoxGeometry(1,1,1), pos = g.attributes.position;
@@ -1350,12 +1435,14 @@ class Batch {
   }
   box(m, x,y,z, sx,sy,sz, ry=0){ this._add('box', m, x,y,z, sx,sy,sz, 0, ry, 0); }
   boxR(m, x,y,z, sx,sy,sz, rx,ry,rz){ this._add('box', m, x,y,z, sx,sy,sz, rx, ry, rz); }
-  wedge(m, x,y,z, sx,sy,sz){ this._add('wedge', m, x,y,z, sx,sy,sz); }
+  wedge(m, x,y,z, sx,sy,sz, ry=0){ this._add('wedge', m, x,y,z, sx,sy,sz, 0, ry, 0); }
+  cone(m, x,y,z, d, h){ this._add('cone', m, x,y,z, d,h,d, 0, Math.PI/4, 0); }
+  cylZ(m, x,y,z, d, len){ this._add('cyl', m, x,y,z, d,len,d, Math.PI/2, 0, 0); }
   cylY(m, x,y,z, d, len){ this._add('cyl', m, x,y,z, d,len,d); }
   cylH(m, x,y,z, d, len, ang=0){ this._add('cyl', m, x,y,z, d,len,d, 0, ang, Math.PI/2); }
   flush(parent){
     for (const e of this.g.values()){
-      const im = new THREE.InstancedMesh(e.geo === 'box' ? UNIT_BOX : e.geo === 'wedge' ? UNIT_WEDGE : UNIT_CYL, e.m, e.list.length);
+      const im = new THREE.InstancedMesh({box:UNIT_BOX, wedge:UNIT_WEDGE, cone:UNIT_CONE}[e.geo] || UNIT_CYL, e.m, e.list.length);
       e.list.forEach((m,i) => im.setMatrixAt(i, m)); im.instanceMatrix.needsUpdate = true;
       im.castShadow = im.receiveShadow = true; im.frustumCulled = false; parent.add(im);
     }
@@ -1514,19 +1601,117 @@ function leaf(run, parent, w, h, y0, mF, mDark, xOff, latchRight){
   B.flush(parent);
 }
 function buildGate(run, lay, n, grp, mF, mDark){
+  buildGateBody(run, lay, n, grp, mF, mDark);
+  if (VEHICLE(run.gate.type)) buildLaneAccessories(run, lay, n, grp);
+}
+/* Traffic lights, photocell beams, beacon, loops and tyre spikes around a vehicle opening.
+ * Fence line is z = 0; inside (where gates swing to) is -z, street side is +z. */
+function buildLaneAccessories(run, lay, n, grp){
+  const g = run.gate, auto = isAuto(g), B = new Batch(), mBlk = mat('#141516', 0.3, 0.5), mSS = mat('#c9cdd1', 0.85, 0.28);
+  const leftX = n.x - lay.gw/2, rightX = n.x + n.w + lay.gw/2, onPosts = g.type !== 'boom' && g.type !== 'bollards';
+  // traffic lights: 2-aspect head on the post (or on its own pole beside a boom / bollard lane), facing the street
+  const tl = g.tlights|0;
+  [[leftX, 1], [rightX, -1]].slice(0, tl).forEach(([px, side], idx) => {
+    const z = idx === 0 ? 230 : -230, face = idx === 0 ? 1 : -1, x = onPosts ? px : px - side*450;
+    if (!onPosts){ B.cylY(mBlk, x, 1200, z - face*60, 76, 2400); }
+    const hy = onPosts ? Math.min(run.height - 150, 2000) : 2150;
+    B.box(mBlk, x, hy, z, 260, 560, 200);
+    const red = new THREE.MeshStandardMaterial({color:'#5a0d0d', emissive:'#ff1a1a', emissiveIntensity:0, roughness:0.3});
+    const green = new THREE.MeshStandardMaterial({color:'#0d3a17', emissive:'#18e05a', emissiveIntensity:0, roughness:0.3});
+    [[red, hy + 130], [green, hy - 130]].forEach(([m, y]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(85, 85, 30, 24), m);
+      l.rotation.x = Math.PI/2; l.position.set(x, y, z + face*105); l.userData.own = true; grp.add(l); });
+    anims.push({type:'tlight', red, green});
+  });
+  // photocell beams (automated): emitters both faces at 500 mm; posts for boom / bollard lanes
+  if (auto){
+    const mLens = new THREE.MeshStandardMaterial({color:'#330000', emissive:'#ff2020', emissiveIntensity:0.7});
+    [450, -450].forEach(z => {
+      [leftX, rightX].forEach(px => {
+        const x = onPosts ? px : px + (px < n.x ? 250 : -250);
+        if (!onPosts) B.box(mSS, x, 280, z, 90, 560, 90);
+        B.box(mBlk, x, 500, onPosts ? z/9 : z, 70, 130, 70);
+      });
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(n.w + (onPosts ? lay.gw : 0), 6, 6), new THREE.MeshBasicMaterial({color:'#ff3030', transparent:true, opacity:0.35}));
+      beam.position.set(n.x + n.w/2, 500, onPosts ? z/9 : z); beam.userData.own = true; grp.add(beam);
+    });
+    if (g.beacon !== false && g.type !== 'boom'){
+      const mA = new THREE.MeshStandardMaterial({color:'#ff9a1a', emissive:'#ff7a00', emissiveIntensity:0.6, roughness:0.4});
+      const bc = new THREE.Mesh(new THREE.CylinderGeometry(35, 40, 80, 16), mA); bc.position.set(rightX, Math.min(run.height, 2100) + 90, 0); bc.userData.own = true; grp.add(bc);
+      anims.push({type:'beacon', m:mA});
+    }
+  }
+  // inductive loops (boom, bollards, automated spikes): outlines cut in the road both sides
+  if (g.type === 'boom' || g.type === 'bollards' || g.spikes === 'auto'){
+    const mLoop = mat('#3a3d40', 0, 1), lw = Math.min(n.w - 400, 2400);
+    [1500, -1500].forEach(z => { const cx = n.x + n.w/2;
+      B.box(mLoop, cx, 2, z - 450, lw, 3, 12); B.box(mLoop, cx, 2, z + 450, lw, 3, 12);
+      B.box(mLoop, cx - lw/2, 2, z, 12, 3, 900); B.box(mLoop, cx + lw/2, 2, z, 12, 3, 900); });
+  }
+  // tyre spikes across the opening on the street side
+  const spikeZ = g.type === 'boom' ? -205 : 1100;                 // boom: in line with the arm
+  if (g.spikes === 'surface'){
+    const mY = mat('#e8b21c', 0.35, 0.55), z0 = spikeZ, L = n.w;
+    B.box(mY, n.x + L/2, 25, z0, L, 50, 260);                      // centre plate
+    B.wedge(mY, n.x + L/2, 25, z0 + 230, L, 50, 200, 0);           // ramp up from the street side
+    B.wedge(mY, n.x + L/2, 25, z0 - 230, L, 50, 200, Math.PI);     // ramp down on the inside
+    for (let x = n.x + 75; x < n.x + L - 40; x += 150) B.cone(mSS, x, 85, z0, 40, 70);   // one-way teeth
+  }
+  if (g.spikes === 'auto'){
+    const z0 = spikeZ, L = n.w, sp = new THREE.Group(); sp.position.set(n.x, 0, z0); grp.add(sp);
+    B.box(mBlk, n.x + L/2, 3, z0, L, 6, 300);
+    const sb = new Batch(); for (let x = 75; x < L - 40; x += 150) sb.cone(mSS, x, 45, 0, 40, 90); sb.flush(sp);
+    anims.push({type:'spikes', obj:sp});
+  }
+  B.flush(grp);
+}
+function buildGateBody(run, lay, n, grp, mF, mDark){
   const g = run.gate, lv = gateLeaves(g, state.rules), H = run.height, gap = state.rules.hingeGap, B = new Batch();
   if (g.type === 'boom'){
-    // cabinet sits in the first gate-post slot, boom rest in the second
-    const mC = mat('#e8e9ea', 0.2, 0.5), mR = mat('#c4161c', 0.2, 0.5);
+    // Boom operator: red cabinet with cream stripe and black top, amber beacon, white hub cover,
+    // round white arm with red bands and a red end cap. Cabinet in the first gate-post slot, boom rest in the second.
+    const mRed = mat('#c4161c', 0.25, 0.45), mCream = mat('#efe6c4', 0.1, 0.6), mW = mat('#f2f2f0', 0.2, 0.4), mBlk = mat('#1b1c1e', 0.3, 0.5);
     const cabX = n.x - lay.gw/2, restX = n.x + n.w + lay.gw/2;
-    B.box(mC, cabX, 525, 0, 320, 1050, 300); B.box(mDark, cabX, 1060, 0, 330, 20, 310);
-    B.box(mC, restX, 400, 0, 80, 800, 80); B.box(mDark, restX, 820, 0, 160, 40, 80);
-    const pv = new THREE.Group(); pv.position.set(cabX, 950, -170); grp.add(pv);
+    B.box(mRed, cabX, 30, 0, 360, 60, 330);                         // plinth
+    B.box(mRed, cabX, 560, 0, 320, 1040, 290);                      // cabinet
+    B.box(mCream, cabX, 540, 147, 60, 960, 4);                      // front stripe
+    B.box(mCream, cabX, 540, -147, 60, 960, 4);                     // rear stripe
+    B.box(mBlk, cabX, 1086, 0, 324, 14, 294);                       // black top
+    if (g.beacon !== false){ const mA = new THREE.MeshStandardMaterial({color:'#ff9a1a', emissive:'#ff7a00', emissiveIntensity:0.6, roughness:0.4});
+      const bc = new THREE.Mesh(new THREE.CylinderGeometry(35, 40, 80, 16), mA); bc.position.set(cabX + 90, 1133, 60); bc.userData.own = true; grp.add(bc);
+      anims.push({type:'beacon', m:mA}); }
+    B.box(mRed, restX, 420, 0, 90, 840, 90); B.box(mBlk, restX, 860, 0, 200, 40, 110);   // boom rest
+    const pv = new THREE.Group(); pv.position.set(cabX, 960, -205); grp.add(pv);
     const ab = new Batch(), len = lv.w;
-    ab.box(mC, len/2, 0, 0, len, 90, 45);
-    for (let x = 300; x < len - 150; x += 600) ab.box(mR, x, 0, 0, 300, 92, 47);
+    ab.cylZ(mW, 0, 0, 0, 170, 120);                                  // hub cover
+    ab.box(mW, -60, 0, 0, 260, 150, 110);
+    ab.cylH(mW, len/2, 0, 0, 95, len);                               // round arm
+    for (let x = 450; x < len - 250; x += 700) ab.cylH(mRed, x, 0, 0, 97, 260);   // red bands
+    ab.cylH(mRed, len + 30, 0, 0, 100, 60);                          // end cap
     ab.flush(pv);
     anims.push({type:'boom', obj:pv});
+    B.flush(grp); return;
+  }
+  if (g.type === 'bollards'){
+    // Rising bollard to RJL reference: stainless body, yellow reflective band, LED band around the top,
+    // yellow chequer-plate square base frame flush with the ground.
+    // Rising bollard to RJL reference: stainless body, yellow reflective band, LED band around the top,
+    // yellow chequer-plate square base frame flush with the ground.
+    const nb = bollardCount(n.w), bh = +g.bollardH || 800, mSS = mat('#dfe3e6', 0.35, 0.3), mY = mat('#e8b21c', 0.3, 0.55);
+    for (let i = 0; i < nb; i++){
+      const bx = n.x + (i + 0.5)*n.w/nb;
+      B.box(mY, bx, 5, 0, 520, 10, 520);                                   // base frame (stays at ground level)
+      const grpB = new THREE.Group(); grpB.position.set(bx, 0, 0); grp.add(grpB);
+      const bb = new Batch();
+      bb.cylY(mSS, 0, bh/2, 0, BOLLARD_D, bh);                             // stainless body
+      bb.cylY(mY, 0, bh - 170, 0, BOLLARD_D + 3, 110);                     // yellow reflective band
+      bb.cylY(mSS, 0, bh + 6, 0, BOLLARD_D + 4, 14);                       // top cap
+      bb.flush(grpB);
+      // LED band just under the cap: green when fully down, red while rising and when up (set in the render loop)
+      const led = new THREE.MeshStandardMaterial({color:'#ff2a2a', emissive:'#ff0000', emissiveIntensity:0.9, roughness:0.3});
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(BOLLARD_D/2 + 2, BOLLARD_D/2 + 2, 26, 32, 1, true), led);
+      ring.position.y = bh - 22; ring.userData.own = true; grpB.add(ring);
+      anims.push({type:'bollard', obj:grpB, h:bh, led});
+    }
     B.flush(grp); return;
   }
   if (g.type === 'bifold'){
@@ -1757,7 +1942,7 @@ function designSummary(){
     let t = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}${palingText(r)}, ${(+r.length).toFixed(1)} m long × ${fmt(r.height)} mm high, colour ${(COLOURS.find(c => c.hex === r.colour) || {name:r.colour}).name}`;
     t += retainText(r);
     if (i > 0) t += `, ${r.turn ? (r.turn > 0 ? 'turns left ' : 'turns right ') + Math.abs(r.turn) + '°' : 'straight on'} from the previous run`;
-    if (r.gate.type !== 'none') t += `; ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening at the ${r.gate.position}${r.gate.piers ? ', brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}${LOCKABLE(r.gate.type) && (!isAuto(r.gate) || PRODUCTS[r.product].pool) ? ', ' + (LOCKS[r.gate.lock] || LOCKS.locklatch).label + ' at ' + LOCK_H + ' mm' : ''}`;
+    if (r.gate.type !== 'none') t += `; ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening at the ${r.gate.position}${r.gate.piers ? ', brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}${LOCKABLE(r.gate.type) && (!isAuto(r.gate) || PRODUCTS[r.product].pool) ? ', ' + (LOCKS[r.gate.lock] || LOCKS.locklatch).label + ' at ' + LOCK_H + ' mm' : ''}${laneText(r.gate)}`;
     if (lay.errs.length) t += ' (layout needs checking)';
     lines.push(t);
   });
