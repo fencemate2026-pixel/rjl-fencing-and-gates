@@ -80,6 +80,7 @@ label.f > span{letter-spacing:.02em}
 fieldset{border:0;padding:0;margin:0;min-width:0;display:flex;flex-direction:column;gap:10px}
 legend{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0;margin-bottom:8px}
 .products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.hout{display:block;padding:7px 9px;border:1px dashed var(--line);border-radius:4px;font-family:var(--f-mono);color:var(--ink)}
 .pgroup{margin:4px 0 -4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .pcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 7px;border:1px solid var(--line);border-radius:4px;cursor:pointer;text-align:center;font-size:11.5px;line-height:1.2;background:var(--surface-2)}
 .pcard input{position:absolute;opacity:0;pointer-events:none}
@@ -273,7 +274,7 @@ const WEB = CFG.mode === 'web';
 const STORE_KEY = WEB ? 'rjl-web-designer-' + (CFG.brand || 'residential') + '-v1' : 'rjl-fence-gate-designer-v1';
 const SHEET_COVER = 820;            // steel sheet effective cover (mm) — inferred, see evidence panel
 const CATS = ['Posts','Panels & infill','Gates','Hardware','Automation & access','Concrete & footings','Turnstiles','Labour'];
-const INT_UNITS = new Set(['ea','bag','len','roll','m','set','pair','pack']);
+const INT_UNITS = new Set(['ea','bag','len','roll','m','set','pair','pack','m²']);
 
 const COLOURS = [
   {name:'Black',hex:'#1d1d1d'},{name:'Charcoal',hex:'#3a3d40'},{name:'Slate grey',hex:'#5b6166'},
@@ -290,6 +291,8 @@ const DEFAULT_RULES = {
   slidingOverlap: 400,  // RJL default — sliding leaf longer than opening
   heavyLeafWidth: 2000, // RJL default — leaves wider than this get 100×100 gate posts
   kerf: 3,              // saw cut allowance per cut
+  retainEmbedMin: 900,  // RJL default — minimum H-beam depth in the ground (mm)
+  bagsPerBeam: 6,       // RJL default — concrete bags per retaining wall H-beam
   elecZoneLen: 500,     // RJL default — metres of electric fence per energiser zone
   signSpacing: 10       // RJL default — metres between electric fence warning signs
 };
@@ -298,6 +301,7 @@ const RULE_LABELS = {
   gatePostEmbed:['Gate post depth in ground (mm)',0,2000,50], bagsPerGateHole:['Concrete bags per gate post',0,20,0.5],
   hingeGap:['Gate clearance gap (mm)',5,60,1], slidingOverlap:['Sliding leaf overlap (mm)',0,1500,50],
   heavyLeafWidth:['Heavy leaf width (mm)',800,6000,100], kerf:['Saw cut allowance (mm)',0,10,1],
+  retainEmbedMin:['Retaining H-beam min. depth (mm)',600,3000,50], bagsPerBeam:['Concrete bags per H-beam',1,20,0.5],
   elecZoneLen:['Electric fence per energiser zone (m)',50,3000,50], signSpacing:['Warning sign spacing (m)',5,50,1]
 };
 
@@ -308,8 +312,8 @@ const PRODUCTS = {
     defaults:{height:1800,maxBay:2400,colour:'#e3dfd3',style:'standard',gap:0}, market:[80,190],
     styles:[['standard','Standard'],['breezeway','Breezeway top'],['slatfx','Slat FX top'],['lattice','Lattice top']]},
   paling:{group:'Residential', label:'Timber paling', short:'Paling', postW:75, postD:125, strategy:'full', maxBayLimit:2700,
-    defaults:{height:1800,maxBay:2400,colour:'#9c7650',style:'butted',gap:0}, market:[80,190],
-    styles:[['butted','Butted palings'],['lapcap','Lapped and capped']]},
+    defaults:{height:1650,maxBay:2400,colour:'#b9875a',style:'lapped',gap:60}, market:[80,190], derivedHeight:true,
+    styles:[['lapped','Lapped (over and under palings)'],['butted','Butted (side by side)']]},
   picket:{group:'Residential', label:'Picket', short:'Picket', postW:75, strategy:'full', maxBayLimit:2700,
     defaults:{height:1000,maxBay:2400,colour:'#f1efe8',style:'standard',gap:50}, gapLabel:'Gap between pickets (mm)', market:[60,250]},
   hslat:{group:'Residential', label:'Aluminium horizontal slat', short:'Horiz. slat', postW:50, strategy:'equal', maxBayLimit:2900,
@@ -396,6 +400,8 @@ function newRun(product='colorbond', name='Run'){
   return { id:uid(), name, product, length:10, height:d.height, maxBay:d.maxBay, colour:d.colour, style:d.style, gap:d.gap,
     fixing:'inground', turn:90, joinPrev:true,
     lattice:'square',
+    palingLen:1650, palingW:150, capping:false, plinths:1, sleepers:0,
+    retain:{on:false, height:600},
     rails:{top:true, mid:false, bot:false}, barbed:false, razor:false, razorMount:'arms',
     electric:false, elecMount:'top', elecStrands:6,
     gate:{ type:'none', width:3440, position:'start', piers:false, auto:false, access:'none', lock:PRODUCTS[product].pool ? 'magna' : 'locklatch' } };
@@ -427,6 +433,8 @@ function normalise(s){
   const runs = s.runs.filter(r => r && PRODUCTS[r.product]).map(r => {
     const b = newRun(r.product, r.name || 'Run'), o = {...b, ...r, gate:{...b.gate, ...(r.gate||{})}, rails:{...b.rails, ...(r.rails||{})}};
     if (r.style === 'barbed') o.barbed = true; if (r.style === 'razor') o.razor = true;   // v2 stored topping as a style
+    if (r.product === 'paling' && r.style === 'lapcap'){ o.style = 'lapped'; o.capping = true; if (!r.gap) o.gap = 60; }   // v3
+    o.retain = {...b.retain, ...(r.retain || {})};
     return o;
   });
   if (!runs.length) return null;
@@ -597,6 +605,18 @@ function cbTopInfill(run, w, gate){
   const k = run.lattice || 'square', n = LATTICE_STYLES[k] || 'Lattice';
   return [gate ? `CB-GLAT-${k}-${w}` : `CB-LAT-${k}-2390`, gate ? `${n} gate lattice infill, ${w} × 310` : `${n} lattice infill, 2390 × 310`];
 }
+/* Timber paling build-up (RJL spec, Oct 2026):
+ *   palings 1650 mm (5'4") or 1950 mm (6'4"); capping adds 250 mm (1650 palings + capping = 1900 mm);
+ *   a second plinth board adds 150 mm; each 200 × 50 treated pine sleeper adds 200 mm (1 or 2 sleepers);
+ *   with 2 sleepers RJL recommends 100 × 100 SHS steel posts instead of timber.
+ *   Construction per RJL detail: lapped = "under" palings with a 50-70 mm gap, "over" palings covering each gap. */
+const PAL_CAP = 250, PAL_PLINTH = 150, PAL_SLEEPER = 200;
+function palingHeight(r){ return (+r.palingLen || 1650) + (r.capping ? PAL_CAP : 0) + ((r.plinths|0) > 1 ? PAL_PLINTH : 0) + (r.sleepers|0)*PAL_SLEEPER; }
+const palingSteel = r => r.product === 'paling' && (r.sleepers|0) >= 2;
+/* Retaining wall under the fence: concrete sleepers (200 mm high) between 150 UC "H-beam" uprights. */
+const RET_SLEEPER_H = 200;
+const retainOn = r => !!(r.retain && r.retain.on) && !PRODUCTS[r.product].noPosts;
+const retainH = r => retainOn(r) ? Math.max(RET_SLEEPER_H, Math.round((+r.retain.height || 0)/RET_SLEEPER_H)*RET_SLEEPER_H) : 0;
 const BLADE_PITCH = {'45':60, '60':50, '90':100};   // blade centres by angle — RJL default
 const PRODUCT_BOM = {
   colorbond(c){
@@ -672,19 +692,32 @@ const PRODUCT_BOM = {
     else fixings(c, fencePosts.length, 60, 0);
   },
   paling(c){
-    const {run,H,bom,postLen,fencePosts,bays,P} = c;
-    const lap = run.style === 'lapcap', rails = H > 1500 ? 3 : 2, pl = H - 150;
+    const {run,H,bom,fencePosts,bays,P,rules,ground} = c;
+    const lap = run.style !== 'butted', pw = +run.palingW || 150, gap = clamp(+run.gap || 60, 0, 100);
+    const pl = +run.palingLen || 1650, rails = 3, steel = palingSteel(run), retained = retainOn(run);
+    // posts: timber 125 × 75, or 100 × 100 SHS steel with 2 sleepers (RJL recommendation). On a retaining wall the
+    // post bolts to the H-beam instead of going in the ground (fixings counted in retainBom).
+    const postLen = retained ? H + 300 : c.postLen;
+    if (steel) bom.add('Posts',`SHS100-${postLen}`,`100×100 SHS steel post, ${postLen} mm`, fencePosts.length, 'ea', 'Recommended with double sleepers');
+    else bom.add('Posts',`PINE125-${postLen}`,`125×75 H4 treated pine post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
+    if (steel) bom.add('Hardware','CAP-SHS100','100×100 post cap', fencePosts.length, 'ea', '1 per post');
+    if (steel) bom.add('Hardware','RAIL-BRKT-STEEL','Rail-to-steel-post bracket', fencePosts.length*rails*2, 'ea', '2 per rail per post');
     let pals = 0;
-    bom.add('Posts',`PINE125-${postLen}`,`125×75 H4 treated pine post, ${postLen} mm`, fencePosts.length, 'ea', '1 per post');
     bays.forEach(b => {
-      const span = b + P.postW;                                   // rails and palings run past post centres
-      const n = lap ? Math.ceil(span/100 - 1e-9) : Math.ceil(span/150 - 1e-9); pals += n;
-      bom.piece('Panels & infill','PINE-RAIL7538','75×38 H3 pine rail', 4800, span, rails, `${rails} rails per bay`);
-      bom.piece('Panels & infill','PINE-PLINTH','150×25 H4 plinth board', 4800, span, 1, '1 per bay');
-      if (lap) bom.piece('Panels & infill','PINE-CAP','140×19 capping board', 4800, span, 1, '1 per bay');
+      const span = b + P.postW;                                   // rails, plinths and sleepers run post centre to post centre
+      const n = lap ? 2*Math.ceil((span + gap)/(pw + gap) - 1e-9) - 1 : Math.ceil(span/pw - 1e-9);
+      pals += n;
+      bom.piece('Panels & infill','PINE-RAIL7538','75×38 H3 pine rail', 4800, span, rails, '3 rails per bay (top, middle, bottom)');
+      bom.piece('Panels & infill','PINE-PLINTH','150×25 H4 plinth board', 4800, span, Math.max(1, run.plinths|0), `${Math.max(1, run.plinths|0)} per bay`);
+      if (run.sleepers) bom.piece('Panels & infill','PINE-SLEEPER','200×50 H4 treated pine sleeper', 2400, span, run.sleepers|0, `${run.sleepers} per bay`);
+      if (run.capping){ bom.piece('Panels & infill','PINE-CAP','140×19 capping board', 4800, span, 1, '1 per bay');
+                        bom.piece('Panels & infill','PINE-TRIM','70×35 capping trim rail', 4800, span, 1, '1 per bay'); }
     });
-    bom.add('Panels & infill',`PALING-${pl}`,`150×16 paling, ${pl} mm`, pals, 'ea', lap ? 'Lapped and capped: 1 per 100 mm (two overlapping layers)' : 'Butted: 1 per 150 mm');
+    bom.add('Panels & infill',`PALING-${pw}-${pl}`,`${pw}×16 paling, ${pl} mm`, pals, 'ea',
+      lap ? `Lapped: under palings at ${gap} mm gaps, over palings covering each gap` : `Butted: 1 per ${pw} mm`);
     bom.add('Hardware','NAIL-GALV','Galvanised nail (pack of 500)', pals*rails*2/500, 'pack', '2 per paling per rail');
+    if (run.sleepers) bom.add('Hardware','SLEEPER-SCREW','Batten screw for sleepers', bays.length*(run.sleepers|0)*4, 'ea', '2 per sleeper end');
+    if (!retained && !steel) { /* concrete counted by fixings() in runBom */ }
   },
   picket(c){
     const {run,H,bom,postLen,fencePosts,bays,P} = c;
@@ -843,6 +876,22 @@ function electricJobBom(bom, rules){
   bom.add('Labour','LAB-ELEC','Install electric fence', ELEC.len, 'm', 'All electrified fence');
   bom.add('Labour','LAB-ELEC-COMM','Commission and test energiser zone', z, 'ea', '1 per zone');
 }
+/* Retaining wall under the fence: 150 UC uprights at every fence post, concrete sleepers between them. */
+function retainBom(c){
+  const {run,bom,fencePosts,bays,rules} = c, wh = retainH(run), rows = wh/RET_SLEEPER_H;
+  const embed = Math.max(rules.retainEmbedMin, wh);                 // RJL default: embed at least equal to retained height
+  const beamLen = wh + embed;
+  bom.add('Posts',`UC150-${beamLen}`,`150 UC steel upright (H-beam), ${beamLen} mm, galvanised`, fencePosts.length, 'ea', `Retained ${wh} mm + ${embed} mm in the ground`);
+  bays.forEach(b => { const L = b + 150 <= 2000 ? 2000 : 2400;
+    bom.add('Panels & infill',`CSLEEPER-${L}`,`Concrete sleeper ${L} × 200 × 80`, rows, 'ea', `${rows} per bay`); });
+  bom.add('Concrete & footings','CONC-20','Concrete post mix, 20 kg bag', fencePosts.length*rules.bagsPerBeam, 'bag', `H-beams ${rules.bagsPerBeam} bags each`);
+  bom.add('Hardware','FENCE-TO-UC','Fence post to H-beam bolt set (M12)', fencePosts.length, 'set', 'Fence post bolted to the top of each upright');
+  const len = bays.reduce((a,b) => a + b, 0) + fencePosts.reduce((a,p) => a + p.w, 0);
+  bom.add('Concrete & footings','AG-PIPE','100 mm slotted ag pipe with sock', len/1000, 'm', 'Drainage behind the wall');
+  bom.add('Concrete & footings','DRAIN-GRAVEL','20 mm drainage gravel', Math.ceil(len/1000*wh/1000*0.3*10)/10, 'm³', '300 mm wide behind the wall');
+  bom.add('Concrete & footings','GEOFABRIC','Geotextile fabric', Math.ceil(len/1000*(wh/1000 + 0.3)), 'm²', 'Behind sleepers');
+  bom.add('Labour','LAB-RETAIN','Build sleeper retaining wall', len/1000*wh/1000, 'm²', 'Wall face area');
+}
 function runBom(run, lay, join, bom, rules){
   const P = PRODUCTS[run.product], H = run.height, ground = run.fixing === 'inground';
   const postLen = H + (ground ? rules.postEmbed : 0);
@@ -855,7 +904,8 @@ function runBom(run, lay, join, bom, rules){
   const bays = lay.seq.filter(n => n.k === 'bay').map(n => n.w);
   const c = {run, P, H, ground, postLen, fencePosts, bays, secs:sections(lay.seq), bom, rules};
   if (bays.length) PRODUCT_BOM[run.product](c);
-  if (run.product !== 'chain' && !P.noPosts) fixings(c, fencePosts.length, P.postW, rules.bagsPerHole);
+  if (run.product !== 'chain' && !P.noPosts && !retainOn(run)) fixings(c, fencePosts.length, palingSteel(run) ? 100 : P.postW, rules.bagsPerHole);
+  if (retainOn(run) && bays.length) retainBom(c);
   if (P.topping && bays.length) toppingBom(c);
   const fenceMM = bays.reduce((a,b) => a+b, 0) + fencePosts.reduce((a,p) => a+p.w, 0);
   bom.add('Labour',`LAB-FENCE-${run.product}`,`Install ${P.label} fence`, fenceMM/1000, 'm', 'Fence length, gate openings excluded');
@@ -925,8 +975,9 @@ function gateBom(run, lay, bom, rules){
         bom.piece('Panels & infill','AL-SLAT65','65×16 slat', 5800, iw, k*n); bom.add('Hardware','TEK-COL','Coloured tek screw', 2*k*n, 'ea', '2 per slat'); break; }
       case 'vslat': { const pitch = 65 + run.gap, k = Math.floor((iw + run.gap)/pitch);
         bom.piece('Panels & infill','AL-PICKET65','65×16 vertical slat', 6500, ih, k*n); bom.add('Hardware','TEK-COL','Coloured tek screw', 2*k*n, 'ea', '2 per gate slat'); break; }
-      case 'paling': { const k = Math.ceil(iw/(run.style === 'lapcap' ? 100 : 150) - 1e-9);
-        bom.add('Gates',`PALING-${ih}`,`150×16 paling, ${ih} mm (gate)`, k*n, 'ea', 'Fixed to steel gate frame'); break; }
+      case 'paling': { const pw = +run.palingW || 150, gap = +run.gap || 60, lap = run.style !== 'butted';
+        const k = lap ? 2*Math.ceil((iw + gap)/(pw + gap) - 1e-9) - 1 : Math.ceil(iw/pw - 1e-9);
+        bom.add('Gates',`PALING-${pw}-${ih}`,`${pw}×16 paling, ${ih} mm (gate)`, k*n, 'ea', 'Fixed to steel gate frame'); break; }
       case 'picket': { const k = Math.floor((iw + run.gap)/(70 + run.gap));
         bom.add('Gates',`PICKET-${ih}`,`70 mm picket, ${ih} mm (gate)`, k*n, 'ea', 'Fixed to steel gate frame'); break; }
       case 'vblade': { const pitch = BLADE_PITCH[run.style] || 60, k = Math.floor(iw/pitch);
@@ -1017,6 +1068,7 @@ function turnstileBom(bom){
 let LAYOUTS = [], JOINS = [], BOM = null;
 const isStrong = n => n.role !== 'end' && n.role !== 'line' && n.role !== 'corner';
 function compute(){
+  state.runs.forEach(r => { if (PRODUCTS[r.product].derivedHeight) r.height = palingHeight(r); });
   LAYOUTS = state.runs.map(r => layoutRun(r, state.rules));
   JOINS = state.runs.map(() => ({skipFirst:false, skipLast:false}));
   // Shared post where a run continues from the previous one: keep the stronger post (gate beats fence).
@@ -1095,13 +1147,29 @@ function renderEditor(){
     </fieldset>
     <div class="grid2">
       <label class="f"><span>Run length (m)</span><input type="number" id="e-length" data-k="length" min="1" max="500" step="0.1" value="${r.length}"></label>
-      <label class="f"><span>Height (mm)</span><input type="number" id="e-height" data-k="height" min="900" max="3600" step="50" value="${r.height}"></label>
+      ${P.derivedHeight ? `<label class="f"><span>Fence height</span><output id="e-hout" class="hout">${fmt(palingHeight(r))} mm</output></label>`
+        : `<label class="f"><span>Height (mm)</span><input type="number" id="e-height" data-k="height" min="900" max="3600" step="50" value="${r.height}"></label>`}
       <label class="f"><span>Max panel width (mm)</span><input type="number" id="e-maxBay" data-k="maxBay" min="300" max="${P.maxBayLimit}" step="10" value="${r.maxBay}"></label>
       <label class="f"><span>Post fixing</span><select id="e-fixing" data-k="fixing">${opt('inground','Concreted in ground',r.fixing)}${opt('baseplate','Base plate on slab',r.fixing)}</select></label>
       ${P.styles ? `<label class="f"><span>Panel style</span><select id="e-style" data-k="style">${P.styles.map(s => opt(s[0], s[1], r.style)).join('')}</select></label>` : ''}
       ${r.product === 'colorbond' && r.style === 'lattice' ? `<label class="f"><span>Lattice style</span><select id="e-lat" data-k="lattice">${Object.entries(LATTICE_STYLES).map(([k,v]) => opt(k, v, r.lattice)).join('')}</select></label>` : ''}
       ${P.gapLabel ? `<label class="f"><span>${P.gapLabel}</span><input type="number" id="e-gap" data-k="gap" min="0" max="100" step="1" value="${r.gap}"></label>` : ''}
     </div>
+    ${r.product === 'paling' ? `<fieldset><legend>Paling build-up</legend>
+      <div class="grid2">
+        <label class="f"><span>Paling height</span><select id="e-pl" data-k="palingLen" data-num>${opt(1650, '1650 mm (5\'4")', r.palingLen)}${opt(1950, '1950 mm (6\'4")', r.palingLen)}</select></label>
+        <label class="f"><span>Paling width</span><select id="e-pw" data-k="palingW" data-num>${opt(125, '125 mm', r.palingW)}${opt(150, '150 mm', r.palingW)}</select></label>
+        <label class="f"><span>Plinth</span><select id="e-plinth" data-k="plinths" data-num>${opt(1, 'Single plinth board', r.plinths)}${opt(2, 'Double plinth (+150 mm)', r.plinths)}</select></label>
+        <label class="f"><span>Treated pine sleepers (200 × 50)</span><select id="e-slp" data-k="sleepers" data-num>${opt(0, 'None', r.sleepers)}${opt(1, '1 sleeper (+200 mm)', r.sleepers)}${opt(2, '2 sleepers (+400 mm)', r.sleepers)}</select></label>
+        <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="e-cap" data-k="capping"${r.capping ? ' checked' : ''}>Capping (+250 mm, e.g. 1650 palings = 1900 mm)</label>
+      </div>
+      ${palingSteel(r) ? `<p class="hint"><strong>Double sleepers:</strong> 100 × 100 SHS steel posts are used instead of timber (RJL recommendation).</p>` : ''}
+    </fieldset>` : ''}
+    ${P.noPosts ? '' : `<fieldset><legend>Retaining wall under the fence</legend>
+      <label class="chk"><input type="checkbox" id="e-ret" data-k="retain.on"${retainOn(r) ? ' checked' : ''}>Concrete sleeper retaining wall with 150 UC (H-beam) uprights</label>
+      ${retainOn(r) ? `<label class="f"><span>Retained height (mm, 200 mm sleepers)</span><input type="number" id="e-reth" data-k="retain.height" min="200" max="2000" step="200" value="${retainH(r)}"></label>
+      <p class="hint">The fence sits on top of the wall, with each fence post bolted to an H-beam. Walls over 1 m generally need an engineer and a building permit.</p>` : ''}
+    </fieldset>`}
     ${P.chainOpts ? `<fieldset><legend>Rails and security topping</legend>
       <div class="grid2">
         <label class="chk"><input type="checkbox" id="e-rtop" data-k="rails.top"${r.rails.top ? ' checked' : ''}>Top rail</label>
@@ -1168,7 +1236,7 @@ function renderRules(){
 function renderSummary(){
   $('#layoutSummary').innerHTML = state.runs.map((r,i) => {
     const lay = LAYOUTS[i], P = PRODUCTS[r.product];
-    const head = `<div class="sum-h"><b>${esc(r.name)}</b><span>${esc(P.label)}${cbStyleText(r, ', ')}${esc(chainDesc(r))} · ${(+r.length).toFixed(2)} m × ${fmt(r.height)} mm</span></div>`;
+    const head = `<div class="sum-h"><b>${esc(r.name)}</b><span>${esc(P.label)}${cbStyleText(r, ', ')}${esc(chainDesc(r) + palingText(r) + retainText(r))} · ${(+r.length).toFixed(2)} m × ${fmt(r.height)} mm</span></div>`;
     if (lay.errs.length) return `<div class="panel sum">${head}<p class="err-text">${lay.errs.map(esc).join('<br>')}</p></div>`;
     const posts = lay.seq.filter((n,j) => n.k === 'post' && !((j === 0 && JOINS[i].skipFirst) || (j === lay.seq.length-1 && JOINS[i].skipLast))).length;
     const chips = lay.seq.filter(n => n.k !== 'post').map(n => n.k === 'gate'
@@ -1190,6 +1258,8 @@ function renderWarns(){
     if (PRODUCTS[r.product].pool) w.push(`${r.name}: pool fence. No climbable surface wider than 10 mm within 900 mm of the top, and gaps no more than 100 mm. Check the site against AS 1926.1 and get a pool barrier certificate.`);
     if (PRODUCTS[r.product].topping && r.electric) w.push(`${r.name}: electric security fence. Install, signage and permits must meet AS/NZS 3016 and council requirements. Energiser zone count is an estimate until the site layout is set.`);
     if (PRODUCTS[r.product].topping && (r.barbed || r.razor) && r.height < 2000) w.push(`${r.name}: barbed or razor wire on a fence under 2 m is within easy reach. Check council rules and duty of care before quoting.`);
+    if (retainOn(r) && retainH(r) > 1000) w.push(`${r.name}: retaining wall over 1 m. Get it engineered and check the building permit before quoting.`);
+    if (retainOn(r) && r.gate.type !== 'none') w.push(`${r.name}: there is a gate in a run with a retaining wall. Check the gate opening is at the retained level.`);
     if (r.product === 'temp') w.push(`${r.name}: temporary fence is usually hired. Price it per week, or enter hire rates instead of purchase prices.`);
   });
   $('#warns').innerHTML = w.map(t => `<div>${esc(t)}</div>`).join('');
@@ -1263,9 +1333,11 @@ function renderEvidence(){
       <li>Sliding track length (opening × 2 + overlap) and 2 pairs of safety beams per automated vehicle gate. The final safety device count comes from the site risk assessment.</li>
     </ul>
     <p><span class="pill src">From source</span> Pool fence rules: at least 1200 mm high, gaps no more than 100 mm, no climbable surface wider than 10 mm within 900 mm of the top, and gates that self-close, self-latch, open away from the pool with the latch at least 1500 mm high (Fencing Components pool fence guide). Market price ranges per metre come from whatsthedamage.com.au.</p>
-    <p><span class="pill warn">RJL default — confirm</span> Every rule for the systems added from market research: timber paling (125×75 posts, palings every 150 mm butted or 100 mm lapped), picket, aluminium pool, frameless glass (12 mm panels, 30 mm gaps, 2 spigots per panel), 868 mesh, palisade (pales at 140 mm centres), Garrison, temporary fence (2400 × 2100 panels, 1 stay per 4 panels), chainmesh rails, barbed and razor topping, aluminium vertical blade (75 mm blades at 60 / 50 / 100 mm centres for 45° / 60° / 90°), steel batten (50, 65 or 90 × 25 battens on 50 × 25 rails), cantilever gates (50% tail), bi-fold speed gates and boom gate loops.</p>
+    <p><span class="pill warn">RJL default — confirm</span> Every rule for the systems added from market research: picket, aluminium pool, frameless glass (12 mm panels, 30 mm gaps, 2 spigots per panel), 868 mesh, palisade (pales at 140 mm centres), Garrison, temporary fence (2400 × 2100 panels, 1 stay per 4 panels), chainmesh rails, barbed and razor topping, aluminium vertical blade (75 mm blades at 60 / 50 / 100 mm centres for 45° / 60° / 90°), steel batten (50, 65 or 90 × 25 battens on 50 × 25 rails), cantilever gates (50% tail), bi-fold speed gates and boom gate loops.</p>
     <p><span class="pill src">From source</span> Electric fence parts follow JVA's own product categories (store.jva-fence.com.au): Z Range energisers and keypads, insulators, fence wire, brackets (stays, free-standing, Y-standard), warning signs, earth spikes, lightning diverters, gate contacts, cut-out switches, enclosures, line clamps, tensioners and under-gate cable. The JVA Z14R spec (single zone, 4 J, 12 V 7.2 Ah backup battery, siren and strobe outputs) comes from a reseller listing.</p>
     <p><span class="pill warn">RJL default — confirm</span> Electric fence quantities: ${state.rules.elecZoneLen} m per energiser zone, 3 earth spikes per energiser, warning signs every ${state.rules.signSpacing} m, 20 m of lead-out cable per energiser, brackets at every post plus every 3 m. Confirm with JVA for the actual site. In-line razor uses 450 mm post extensions.</p>
+    <p><span class="pill src">Your spec</span> Timber paling: palings 1650 mm (5'4") or 1950 mm (6'4"); capping takes 1650 palings to 1900 mm (+250 mm); a double plinth adds 150 mm; one or two 200 × 50 treated pine sleepers add 200 mm each; with two sleepers, 100 × 100 SHS steel posts replace timber. Construction follows your detail: lapped over and under palings 125 or 150 mm wide with a 50 to 70 mm gap (60 mm default), three rails, plinth, and posts in 600 mm holes. Retaining walls use concrete sleepers between 150 UC (H-beam) uprights, with the fence on top.</p>
+    <p><span class="pill warn">RJL default — confirm</span> Retaining wall: H-beams go into the ground at least as deep as the retained height (900 mm minimum), 6 bags of concrete per H-beam, 2000 or 2400 mm concrete sleepers to suit the bay, ag pipe, 300 mm of drainage gravel and geofabric. Get walls over 1 m engineered.</p>
     <p><span class="pill src">Your spec</span> Gate locks: D&amp;D LokkLatch (standard), D&amp;D lever-style lock, or D&amp;D MagnaLatch magnetic pull-up pool safety latch, always installed with the release 1500 mm above ground level. Pool gates default to the MagnaLatch.</p>
     <p><span class="pill src">From source</span> Colorbond lattice panel make-up from Oxworks: a 2400 × 1500 lattice panel is 3 × 1190 mm sheets, 2 × 2100 mm channel posts, 3 × 2400 mm rails, 1 × 2390 mm laser-cut lattice infill and 22 tek screws. Lattice style names (square, diamond, slat, laser-cut) are generic; match them to your supplier's range.</p>
     <p><span class="pill src">Your spec</span> Bionik-6 boom barrier (brushless 36 V, 100% duty cycle) with red and green flashing boom-arm lights.</p>
@@ -1285,7 +1357,7 @@ function refresh(opts={}){
 }
 
 /* ---------------------------------------------------------------- events */
-const LIMITS = { length:[1,500], height:[900,3600], gap:[0,100], elecStrands:[2,30] };
+const LIMITS = { length:[1,500], height:[900,3600], gap:[0,100], elecStrands:[2,30], 'retain.height':[200,2000] };
 function onEdit(e){
   const t = e.target, k = t.dataset.k; if (!k) return;
   const r = curRun();
@@ -1312,7 +1384,8 @@ function onEdit(e){
   if (k === 'gate.auto') rebuildEditor = true;
   if (k === 'gate.type'){ const gt = GATE_TYPES[v]; if (gt.def && (r.gate.width < gt.min || r.gate.width > gt.max)) r.gate.width = gt.def; rebuildEditor = true; }
   if (k === 'colour' && e.type === 'change') rebuildEditor = true;
-  if ((k === 'razor' || k === 'electric' || k === 'style') && e.type === 'change') rebuildEditor = true;
+  if ((k === 'razor' || k === 'electric' || k === 'style' || k === 'retain.on' || k === 'sleepers') && e.type === 'change') rebuildEditor = true;
+  if (['palingLen','capping','plinths','sleepers'].includes(k)){ const o = $('#e-hout'); if (o) o.textContent = fmt(palingHeight(r)) + ' mm'; }
   if (k === 'name') { renderTabs(); }
   state.project.example = state.project.example && true;
   refresh({editor: rebuildEditor});
@@ -1378,6 +1451,14 @@ function csv(){
   for (const l of BOM.list){ const r = +state.rates[l.code] || 0; rows.push([l.cat, l.code, l.desc, l.qty, l.unit, r ? r.toFixed(2) : '', r ? (r*l.qty).toFixed(2) : '', l.basis]); }
   return rows.map(r => r.map(q).join(',')).join('\n');
 }
+function palingText(r){
+  if (r.product !== 'paling') return '';
+  const t = [`${r.style === 'butted' ? 'butted' : 'lapped'} ${r.palingW || 150} mm palings ${r.palingLen || 1650} mm`];
+  if (r.capping) t.push('capped'); if ((r.plinths|0) > 1) t.push('double plinth');
+  if (r.sleepers) t.push(`${r.sleepers} treated pine sleeper${r.sleepers > 1 ? 's' : ''}`); if (palingSteel(r)) t.push('100 × 100 steel posts');
+  return ' (' + t.join(', ') + ')';
+}
+function retainText(r){ return retainOn(r) ? `, on a ${fmt(retainH(r))} mm concrete sleeper retaining wall with 150 UC uprights` : ''; }
 function cbStyleText(r, pre){
   if (r.product !== 'colorbond' || !CB_TOP(r.style)) return '';
   return pre + (r.style === 'lattice' ? `lattice top (${(LATTICE_STYLES[r.lattice] || 'lattice').toLowerCase()})` : r.style === 'slatfx' ? 'Slat FX top' : 'breezeway top');
@@ -1397,7 +1478,7 @@ function quoteText(){
   lines.push('', 'Scope:');
   state.runs.forEach((r,i) => {
     const lay = LAYOUTS[i]; if (lay.errs.length) return;
-    let s = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}, ${(+r.length).toFixed(2)} m long × ${r.height} mm high`;
+    let s = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}${palingText(r)}${retainText(r)}, ${(+r.length).toFixed(2)} m long × ${r.height} mm high`;
     if (r.gate.type !== 'none') s += `, ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening${r.gate.piers ? ' on brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}`;
     lines.push(s);
   });
@@ -1501,6 +1582,13 @@ function makeTextures(){
 }
 const UNIT_BOX = typeof THREE !== 'undefined' ? new THREE.BoxGeometry(1,1,1) : null;
 const UNIT_CYL = typeof THREE !== 'undefined' ? new THREE.CylinderGeometry(0.5,0.5,1,14) : null;
+/* Unit wedge for timber post tops: top face slopes from the front (+z, full height) down to the back (-z). */
+const UNIT_WEDGE = (() => {
+  if (typeof THREE === 'undefined') return null;
+  const g = new THREE.BoxGeometry(1,1,1), pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) if (pos.getY(i) > 0 && pos.getZ(i) < 0) pos.setY(i, -0.5);
+  g.computeVertexNormals(); return g;
+})();
 const matCache = new Map();
 function mat(hex, metal=0.3, rough=0.55){
   const k = hex + metal + rough; if (!matCache.has(k)) matCache.set(k, new THREE.MeshStandardMaterial({color:hex, metalness:metal, roughness:rough}));
@@ -1515,11 +1603,12 @@ class Batch {
   }
   box(m, x,y,z, sx,sy,sz, ry=0){ this._add('box', m, x,y,z, sx,sy,sz, 0, ry, 0); }
   boxR(m, x,y,z, sx,sy,sz, rx,ry,rz){ this._add('box', m, x,y,z, sx,sy,sz, rx, ry, rz); }
+  wedge(m, x,y,z, sx,sy,sz){ this._add('wedge', m, x,y,z, sx,sy,sz); }
   cylY(m, x,y,z, d, len){ this._add('cyl', m, x,y,z, d,len,d); }
   cylH(m, x,y,z, d, len, ang=0){ this._add('cyl', m, x,y,z, d,len,d, 0, ang, Math.PI/2); }
   flush(parent){
     for (const e of this.g.values()){
-      const im = new THREE.InstancedMesh(e.geo === 'box' ? UNIT_BOX : UNIT_CYL, e.m, e.list.length);
+      const im = new THREE.InstancedMesh(e.geo === 'box' ? UNIT_BOX : e.geo === 'wedge' ? UNIT_WEDGE : UNIT_CYL, e.m, e.list.length);
       e.list.forEach((m,i) => im.setMatrixAt(i, m)); im.instanceMatrix.needsUpdate = true;
       im.castShadow = im.receiveShadow = true; im.frustumCulled = false; parent.add(im);
     }
@@ -1584,12 +1673,23 @@ function infill(run, B, parent, x0, x1, y0, y1, z, mF){
     case 'mesh358':
       texturedPlane(parent, TEX.m358, w/12.7, (y1 - y0)/76.2, run.colour, w, y1 - y0, cx, (y0 + y1)/2, z, true); break;
     case 'paling': {
-      const lap = run.style === 'lapcap', mT = mat(run.colour, 0, 0.9);
-      B.box(mT, cx, y0 + 75, z + 4, w, 150, 25);                                  // plinth
-      [y0 + 300, (y0 + y1)/2, y1 - 300].forEach((y, i) => { if (i === 1 && y1 - y0 <= 1500) return; B.box(mT, cx, y, z - 32, w, 75, 38); });
-      if (lap){ for (let x = x0; x < x1 - 1; x += 100) B.box(mT, Math.min(x + 75, x1 - 75), (y0 + 150 + y1)/2, z + ((Math.round((x - x0)/100) % 2) ? 12 : 0), 150, y1 - y0 - 150, 14);
-                B.box(mT, cx, y1 + 10, z + 4, w, 20, 140); }
-      else for (let x = x0; x < x1 - 1; x += 150) B.box(mT, Math.min(x + 75, x1 - 75), (y0 + 150 + y1)/2, z, 146, y1 - y0 - 150, 16);
+      const mT = mat(run.colour, 0, 0.85), mTd = mat(new THREE.Color(run.colour).multiplyScalar(0.82).getStyle(), 0, 0.85);
+      const g0 = y0 - 50;                                                     // ground line inside the bay
+      const ns = run.sleepers|0, np = Math.max(1, run.plinths|0), capH = run.capping ? 60 : 0;
+      let y = g0;
+      for (let k=0;k<ns;k++){ B.box(mTd, cx, y + 100, z + 6, w, 196, 50); y += PAL_SLEEPER; }   // treated pine sleepers
+      for (let k=0;k<np;k++){ B.box(mT, cx, y + 75, z + 10, w, 146, 25); y += PAL_PLINTH; }       // plinth board(s)
+      const pTop = y1 - capH, pBot = y - 20, ph = pTop - pBot;                                    // palings sit just behind the top plinth
+      [pBot + 150, (pBot + pTop)/2, pTop - 150].forEach(yy => B.box(mTd, cx, yy, z - 32, w, 75, 38));   // 3 rails
+      const pw = +run.palingW || 150, gap = clamp(+run.gap || 60, 0, 100);
+      if (run.style !== 'butted'){
+        const pitch = pw + gap, n = Math.max(1, Math.ceil((w + gap)/pitch - 1e-9)), xs = x0 + (w - (n*pitch - gap))/2;
+        for (let i=0;i<n;i++) B.box(mT, xs + i*pitch + pw/2, pBot + ph/2, z - 4, pw - 2, ph, 14);                 // under
+        for (let i=0;i<n-1;i++) B.box(mTd, xs + i*pitch + pw + gap/2, pBot + ph/2, z + 12, Math.min(pw, gap + 40), ph, 14);   // over
+      } else {
+        for (let x = x0; x < x1 - 1; x += pw) B.box(mT, Math.min(x + pw/2, x1 - pw/2), pBot + ph/2, z, pw - 4, ph, 16);
+      }
+      if (run.capping){ B.box(mTd, cx, pTop + 18, z + 4, w, 36, 70); B.box(mT, cx, pTop + 46, z + 4, w, 20, 140); }   // trim + capping board
       break; }
     case 'picket': {
       const mT = mat(run.colour, 0, 0.8), pitch = 70 + run.gap, n = Math.floor((w + run.gap)/pitch), xs = x0 + (w - (n*pitch - run.gap))/2;
@@ -1731,7 +1831,30 @@ function buildPier(grp, cx, w, H){
   const cap = new THREE.Mesh(new THREE.BoxGeometry(w + 100, 80, w + 100), new THREE.MeshStandardMaterial({color:'#d9d4c8', roughness:0.9}));
   cap.position.set(cx, ph + 40, 0); cap.castShadow = true; cap.userData.own = true; grp.add(cap);
 }
+/* Concrete sleeper retaining wall with 150 UC uprights at each fence post position. Wall top is at y = 0
+ * of the fence group, so the whole fence is lifted by the retained height. */
+function buildRetaining(run, i, lay, grp, wh){
+  const B = new Batch(), mC = mat('#c8c7c1', 0, 0.95), mJ = mat('#a9a8a2', 0, 0.95), mS = mat('#222427', 0.5, 0.45);
+  lay.seq.forEach((n, idx) => {
+    const cx = n.x + n.w/2;
+    if (n.k === 'post'){
+      if ((idx === 0 && JOINS[i].skipFirst) || (idx === lay.seq.length - 1 && JOINS[i].skipLast)) return;
+      // 150 UC: two 150 mm flanges + web, flanges facing along the fence so sleepers slot between them
+      [-70, 70].forEach(dx => B.box(mS, cx + dx, wh/2, 0, 10, wh, 152));
+      B.box(mS, cx, wh/2, 0, 140, wh, 8);
+    } else {
+      const L = n.w + 60;
+      for (let k = 0; k < wh/RET_SLEEPER_H; k++){
+        B.box(mC, cx, k*RET_SLEEPER_H + 99, 0, L, 196, 80);
+        B.box(mJ, cx, k*RET_SLEEPER_H + 199, 0, L, 3, 82);               // joint line between sleepers
+      }
+    }
+  });
+  B.flush(grp);
+}
 function buildRun(run, i, lay, grp){
+  const wh = retainH(run);
+  if (wh){ buildRetaining(run, i, lay, grp, wh); const up = new THREE.Group(); up.position.y = wh; grp.add(up); grp = up; }
   const B = new Batch(), H = run.height, chain = run.product === 'chain';
   const mF = chain ? mat('#a8adb1', 0.6, 0.45) : mat(run.colour, 0.3, 0.55);
   const mPost = chain ? mF : (run.product === 'colorbond' ? mat(run.colour, 0.3, 0.55) : mF);
@@ -1746,7 +1869,11 @@ function buildRun(run, i, lay, grp){
       if (P.glass) return;                                                                    // glass: spigots belong to panels
       if (P.temp){ B.box(mat('#d0632a', 0, 0.8), cx, 70, 0, 620, 140, 200); return; }       // temp fence foot block
       const ph = H + 40, pd = P.postD || n.w;
-      if (run.product === 'paling' || run.product === 'picket'){ const mT = mat(run.colour, 0, 0.9); B.box(mT, cx, ph/2, -20, n.w, ph, pd); return; }
+      if (palingSteel(run)){ const ps = H + 30; B.box(mat('#2b2e31', 0.45, 0.5), cx, ps/2, -10, 100, ps, 100); B.box(mDark, cx, ps + 6, -10, 106, 12, 106); return; }
+      if (run.product === 'paling' || run.product === 'picket'){
+        // timber post, top cut on a downward angle (weathered) so water runs off — 45 mm fall across the post
+        const mT = mat(run.colour, 0, 0.9), pt = H + 40, fall = 45;
+        B.box(mT, cx, pt/2, -20, n.w, pt, pd); B.wedge(mT, cx, pt + fall/2, -20, n.w, fall, pd); return; }
       if (chain){ const d = n.role === 'line' ? 48 : 60; B.cylY(mF, cx, ph/2, 0, d, ph); B.cylY(mDark, cx, ph + 8, 0, d + 6, 16); }
       else { B.box(mPost, cx, ph/2, 0, n.w, ph, n.w); B.box(mDark, cx, ph + 6, 0, n.w + 4, 12, n.w + 4); }
     } else if (n.k === 'bay'){
@@ -1842,7 +1969,7 @@ function build3D(){
       const grp = new THREE.Group(); grp.position.set(ox, 0, oz); grp.rotation.y = head; root.add(grp);
       buildRun(r, i, lay, grp);
     }
-    const L = lay.L, H = r.height + 900;
+    const L = lay.L, H = r.height + 900 + retainH(r);
     pts.push([ox, oz, H], [ox + dir[0]*L, oz + dir[1]*L, H]);
     prevEnd = [ox + dir[0]*L, oz + dir[1]*L]; prevDir = dir; prevW = lay.seq.length ? lay.seq[lay.seq.length - 1].w : 0;
   });
@@ -1880,7 +2007,8 @@ function designSummary(){
   const lines = ['Design from the online 3D fence designer:'];
   state.runs.forEach((r,i) => {
     const lay = LAYOUTS[i];
-    let t = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}, ${(+r.length).toFixed(1)} m long × ${fmt(r.height)} mm high, colour ${(COLOURS.find(c => c.hex === r.colour) || {name:r.colour}).name}`;
+    let t = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}${palingText(r)}, ${(+r.length).toFixed(1)} m long × ${fmt(r.height)} mm high, colour ${(COLOURS.find(c => c.hex === r.colour) || {name:r.colour}).name}`;
+    t += retainText(r);
     if (i > 0) t += `, ${r.turn ? (r.turn > 0 ? 'turns left ' : 'turns right ') + Math.abs(r.turn) + '°' : 'straight on'} from the previous run`;
     if (r.gate.type !== 'none') t += `; ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening at the ${r.gate.position}${r.gate.piers ? ', brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}${LOCKABLE(r.gate.type) && (!isAuto(r.gate) || PRODUCTS[r.product].pool) ? ', ' + (LOCKS[r.gate.lock] || LOCKS.locklatch).label + ' at ' + LOCK_H + ' mm' : ''}`;
     if (lay.errs.length) t += ' (layout needs checking)';
