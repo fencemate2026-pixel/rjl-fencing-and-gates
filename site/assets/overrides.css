@@ -67,3 +67,7 @@
 .area-group>div>a{background:var(--paper);color:var(--navy,#071f38);border-radius:20px;padding:7px 11px;font-size:.77rem;font-weight:700;text-decoration:underline;text-decoration-color:var(--orange,#f36f21);text-underline-offset:3px}
 .area-group>div>a:hover{background:var(--orange,#f36f21);color:#fff;text-decoration:none}
 .content-body p a,.content-body .feature-list a{color:inherit;font-weight:700;text-decoration:underline;text-decoration-color:var(--orange-bright);text-decoration-thickness:2px;text-underline-offset:3px}
+
+/* ---- Zing Sans Rust (Fontfabric free font, commercial use allowed under FFF EULA 2.0) - whole site ---- */
+@font-face{font-family:"Zing Sans Rust";src:url(/assets/fonts/zing-sans-rust.woff2) format("woff2"),url(/assets/fonts/zing-sans-rust.woff) format("woff");font-style:normal;font-display:swap}
+html body,html body *:not(svg):not(svg *),html body input,html body select,html body textarea,html body button{font-family:"Zing Sans Rust",system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important}
