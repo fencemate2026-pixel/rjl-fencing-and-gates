@@ -278,6 +278,10 @@ textarea{font-family:var(--f-mono);font-size:12px;min-height:120px;resize:vertic
 const HOST = document.getElementById('rjl-designer');
 const CFG = HOST ? {...HOST.dataset} : {};
 const WEB = CFG.mode === 'web';
+/* Photo overlay (rjlcommercialgroup.com/photo-visualiser): <div id="rjl-designer" data-mode="overlay"> + <div id="viewport">.
+ * No designer UI: the page drives the model through window.RJLDesignerOverlay and the 3D view is drawn
+ * with a transparent background, a camera matched to the visitor's photo and a shadow-only ground. */
+const OVERLAY = CFG.mode === 'overlay';
 const STORE_KEY = WEB ? 'rjl-web-designer-' + (CFG.brand || 'residential') + '-v1' : 'rjl-fence-gate-designer-v1';
 const SHEET_COVER = 820;            // steel sheet effective cover (mm) — inferred, see evidence panel
 const CATS = ['Posts','Panels & infill','Gates','Hardware','Automation & access','Concrete & footings','Turnstiles','Labour'];
@@ -466,9 +470,9 @@ function normalise(s){
     rates:{...(s.rates||{})}, view:{...ex.view, ...(s.view||{})}, sel:clamp(s.sel|0, 0, runs.length-1) };
 }
 function loadState(){ try { const raw = localStorage.getItem(STORE_KEY); return raw ? normalise(JSON.parse(raw)) : null; } catch(e){ return null; } }
-function saveState(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
+function saveState(){ if (OVERLAY) return; try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){} }
 
-let state = loadState() || exampleState();
+let state = OVERLAY ? exampleState() : (loadState() || exampleState());
 const curRun = () => state.runs[state.sel];
 
 /* ===================================================================== LAYOUT
@@ -1502,7 +1506,7 @@ function renderEvidence(){
     <p><span class="pill bad">Not covered</span> Raked or stepped panels on slopes, retaining and sleepers, rock or underground services, engineering for wind load, and council or building approvals.</p>
     <p>Stock lengths are worked out with a cutting optimiser. It mixes cut sizes from all runs and gates in each length, so it usually orders fewer lengths than retail calculators that pack each panel separately.</p>`;
 }
-function renderAll(){ compute(); renderProject(); renderTabs(); renderEditor(); renderTurnstiles(); renderRules(); renderSummary(); renderWarns(); renderBom(); renderQuote(); renderEvidence(); build3D(); }
+function renderAll(){ if (OVERLAY){ compute(); build3D(); return; } compute(); renderProject(); renderTabs(); renderEditor(); renderTurnstiles(); renderRules(); renderSummary(); renderWarns(); renderBom(); renderQuote(); renderEvidence(); build3D(); }
 
 let timer = null;
 function refresh(opts={}){
@@ -1678,33 +1682,46 @@ on('#ioReset', 'click', e => {
  * ------------------------------------------------------------------------- */
 let renderer, scene, camera, controls, root, sun, ground, grid, TEX = {}, anims = [], openT = 0, openTarget = 0, view = 'iso';
 const sceneBox = { min:[0,0,0], max:[1,1,1] };
-let three = typeof THREE !== 'undefined' && THREE.OrbitControls;
+let three = typeof THREE !== 'undefined' && (OVERLAY || THREE.OrbitControls);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css = n => getComputedStyle(HOST || document.documentElement).getPropertyValue(n).trim();   // website theme vars live on #rjl-designer
 
 function init3D(){
   const host = $('#viewport');
   if (!three){ host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">The 3D view could not load. The materials list and quote still work.</p>'); return; }
-  try { renderer = new THREE.WebGLRenderer({antialias:true}); }
+  try { renderer = new THREE.WebGLRenderer(OVERLAY ? {antialias:true, alpha:true, preserveDrawingBuffer:true} : {antialias:true}); }
   catch(e){ three = false; host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">3D needs WebGL, which is turned off in this browser. The materials list and quote still work.</p>'); return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   host.prepend(renderer.domElement);
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(38, 1, 0.05, 600);
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true; controls.maxPolarAngle = Math.PI*0.495; controls.minDistance = 1; controls.maxDistance = 250;
+  if (!OVERLAY){
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.maxPolarAngle = Math.PI*0.495; controls.minDistance = 1; controls.maxDistance = 250;
+  } else renderer.setClearColor(0x000000, 0);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f86, 0.75));
   sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005;
   scene.add(sun); scene.add(sun.target);
-  ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({roughness:1, metalness:0}));
+  ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600),
+    OVERLAY ? new THREE.ShadowMaterial({opacity:0.32}) : new THREE.MeshStandardMaterial({roughness:1, metalness:0}));   // overlay: shadows fall on the photo
   ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
   grid = new THREE.GridHelper(200, 200); grid.material.transparent = true; grid.material.opacity = 0.22; grid.position.y = 0.001; scene.add(grid);
   root = new THREE.Group(); root.scale.setScalar(0.001); scene.add(root);
   makeTextures(); applySceneTheme();
+  if (OVERLAY){
+    grid.visible = false;
+    // invisible ground that still hides anything below it (lowered bollards and spikes), drawn first
+    const occ = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshBasicMaterial({colorWrite:false}));
+    occ.rotation.x = -Math.PI/2; occ.position.y = -0.003; occ.renderOrder = -1; scene.add(occ);
+    return startLoop();
+  }
   new ResizeObserver(resize).observe(host); resize();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applySceneTheme);
   new MutationObserver(applySceneTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+  startLoop();
+}
+function startLoop(){
   let last = performance.now();
   (function loop(now){
     const dt = Math.min(0.05, (now - last)/1000); last = now;
@@ -1724,12 +1741,15 @@ function init3D(){
       else if (a.type === 'spikes') a.obj.position.y = -125*openT;   // spikes drop flush when the lane opens
       else a.obj.position.x = a.base + a.shift*openT;
     }
-    controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
+    if (controls) controls.update();
+    if (!OVERLAY || overlayLive) renderer.render(scene, camera);
+    requestAnimationFrame(loop);
   })(last);
 }
 function resize(){ const h = $('#viewport'); const w = h.clientWidth, ht = h.clientHeight; if (!w || !ht) return; renderer.setSize(w, ht, false); camera.aspect = w/ht; camera.updateProjectionMatrix(); }
 function applySceneTheme(){
   if (!scene) return;
+  if (OVERLAY){ scene.background = null; return; }
   scene.background = new THREE.Color(css('--scene') || '#dde3e8');
   ground.material.color.set(css('--ground') || '#c3c9bf');
   grid.material.color = new THREE.Color(css('--grid') || '#9aa39a');
@@ -2278,6 +2298,7 @@ function build3D(){
 }
 function fitCamera(v, keepIfUserMoved){
   if (!camera) return;
+  if (OVERLAY){ placeSun(); return; }          // overlay camera is set from the photo, not fitted
   if (keepIfUserMoved && fitCamera.userMoved) { placeSun(); return; }
   view = v;
   const [x0,y0,z0] = sceneBox.min, [x1,y1,z1] = sceneBox.max;
@@ -2353,11 +2374,67 @@ function quoteService(){
   return 'Steel & feature fencing';
 }
 
+/* ---------------------------------------------------------------- photo overlay API
+ * Used only by the photo visualiser (data-mode="overlay"). Camera model: the photo was taken by an
+ * upright camera at height camH (m) with focal length f (px); the horizon is the image row yh and
+ * the optical centre column cx. The fence run is placed on the ground from p0 to p1 (metres,
+ * camera at the origin looking down -z), so every panel, post and gate is drawn at its real size.
+ */
+let overlayLive = false;
+function exposeOverlay(){
+  const api = {
+    ready: !!(three && renderer),
+    /* run: a designer run (same fields as newRun), turnstiles: {count, type} */
+    setDesign(run, turnstiles){
+      const b = newRun(run.product, 'Run A');
+      const r = {...b, ...run, name:'Run A', turn:0, joinPrev:false,
+        gate:{...b.gate, ...(run.gate||{})}, rails:{...b.rails, ...(run.rails||{})}, retain:{...b.retain, ...(run.retain||{})}};
+      state.runs = [r]; state.sel = 0; state.turnstiles = {count:0, type:'single', access:'none', ...(turnstiles||{})};
+      state.view.dims = false;
+      renderAll();
+      const lay = LAYOUTS[0];
+      return { errs: lay.errs.slice(), L: lay.L, bays: lay.seq.filter(n => n.k === 'bay').map(n => Math.round(n.w)),
+               gate: (lay.seq.find(n => n.k === 'gate') || {}).w || 0 };
+    },
+    /* view: {w, h, f, cx, yh, camH, p0:[x,z], p1:[x,z], dpr} - all in photo pixels / metres */
+    setView(v){
+      if (!renderer) return;
+      renderer.setPixelRatio(v.dpr || 1);
+      renderer.setSize(v.w, v.h, false);
+      const near = 0.05, far = 800, k = near / v.f;
+      camera.position.set(0, v.camH, 0); camera.rotation.set(0, 0, 0); camera.updateMatrixWorld();
+      camera.projectionMatrix.makePerspective(-v.cx*k, (v.w - v.cx)*k, v.yh*k, -(v.h - v.yh)*k, near, far);
+      camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+      const dx = v.p1[0] - v.p0[0], dz = v.p1[1] - v.p0[1];
+      root.position.set(v.p0[0], 0, v.p0[1]); root.rotation.set(0, Math.atan2(-dz, dx), 0); root.updateMatrixWorld(true);
+      sceneBox.min = [v.p0[0] - 30, 0, Math.min(v.p0[1], v.p1[1]) - 30]; sceneBox.max = [v.p0[0] + 30, 6, Math.max(v.p0[1], v.p1[1]) + 30];
+      placeSun();
+    },
+    setLive(on){ overlayLive = !!on; },
+    setShadows(on){ if (ground) ground.visible = !!on; },
+    /* product list, gate types and options exactly as the designer has them */
+    catalog: { products: PRODUCTS, gates: GATE_TYPES, access: ACCESS, lattice: LATTICE_STYLES, colours: COLOURS,
+               gatesFor: GATES_FOR, isVehicle: VEHICLE, forced: t => !!(GATE_TYPES[t] && GATE_TYPES[t].forced) },
+    /* the same plain-English design summary the designer sends with a quote request */
+    summary(){ return designSummary().replace('online 3D fence designer', 'online photo visualiser').replace(/\n+Open this design:[^\n]*$/, ''); },
+    setOpen(t, instant){ openTarget = t ? 1 : 0; if (instant) openT = openTarget; },
+    get open(){ return openT; },
+    get moving(){ return Math.abs(openTarget - openT) > 0.002; },
+    /* one frame drawn now into the overlay canvas (used for downloads) */
+    renderNow(){ renderer.render(scene, camera); return renderer.domElement; },
+    canvas: renderer ? renderer.domElement : null
+  };
+  window.RJLDesignerOverlay = api;
+  window.dispatchEvent(new Event('rjl-designer-overlay-ready'));
+}
+
 /* ---------------------------------------------------------------- boot */
 init3D();
 if (controls) controls.addEventListener('start', () => { fitCamera.userMoved = true; });
-$('#btnDims').setAttribute('aria-pressed', String(state.view.dims));
+if ($('#btnDims')) $('#btnDims').setAttribute('aria-pressed', String(state.view.dims));
+if (OVERLAY) state.view.dims = false;
 renderAll();
+if (OVERLAY) exposeOverlay();
 // expose for testing
 window.__rjl = { get state(){ return state; }, compute, layoutRun, cutPlan, get BOM(){ return BOM; } };
 })();
