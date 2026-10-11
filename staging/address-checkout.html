@@ -1,0 +1,254 @@
+<!doctype html>
+<!-- DEPLOYMENT
+1. Serve this file as /address-checkout.html on your HTTPS staging server.
+2. Set API_KEY and MAP_ID below. Use your own domain-restricted browser key.
+   Enable billing, Maps JavaScript API, Places API (New), and Geocoding API.
+3. Keep QUOTE_PATH pointed at the existing enquiry page. The button continues
+   to that form; it does not create a quote, take payment, or submit a lead.
+   The enquiry page must read rjl-property-address from sessionStorage.
+4. For a strict CSP, move inline styles/scripts (including the parent resize
+   listener) into same-origin external files or apply server-generated nonces.
+   The parent must allow frame-src 'self' for this same-origin iframe. The
+   checkout document must permit the Maps SDK and its Google API/static-asset
+   requests, plus frame-src https://www.google.com for the backup map. Follow
+   Google's Maps JavaScript CSP guide; preserve existing security directives.
+   Configure on staging first. No live-site CSP changes are included here.
+5. Embed the controlled copy (same origin) rather than trying to edit the
+   cross-origin Google-hosted iframe. Parent embed example:
+
+   <iframe id="rjl-checkout" src="/address-checkout.html" title="Checkout — property address"
+     loading="lazy" style="display:block;width:100%;height:900px;border:0"></iframe>
+   <script>
+     const frame = document.getElementById('rjl-checkout');
+     window.addEventListener('message', (event) => {
+       if (event.origin !== location.origin || event.source !== frame.contentWindow) return;
+       if (event.data?.type === 'rjl:checkout-height' && Number.isFinite(event.data.height))
+         frame.style.height = Math.min(2000, Math.max(480, event.data.height)) + 'px';
+     });
+   </script>
+
+The original hosted solution cannot be reconfigured by this parent page:
+https://storage.googleapis.com/maps-solutions-jp9wz5o3xe/address-selection/7tko/address-selection.html
+Autocomplete/map confirmation is not Google's separate Address Validation API
+and does not prove ownership, deliverability, or service availability.
+-->
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Checkout | RJL Fencing and Gates</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px; background: #f4f6f8; color: #102c45;
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .checkout { max-width: 760px; margin: auto; padding: clamp(20px, 4vw, 36px);
+      background: white; border: 1px solid #dce3e9; border-radius: 18px; box-shadow: 0 12px 40px #102c450d; }
+    h1 { margin: 0 0 8px; font-size: clamp(2rem, 6vw, 2.75rem); line-height: 1.15; }
+    p { margin: 0 0 18px; }
+    .muted { color: #526678; }
+    label, .field-label { display: block; margin: 18px 0 8px; font-weight: 650; }
+    input:not([type="checkbox"]), gmp-place-autocomplete { display: block; width: 100%; min-width: 0; }
+    input:not([type="checkbox"]) { padding: 13px 14px; border: 1px solid #bbc9d4;
+      border-radius: 8px; color: inherit; background: white; font: inherit; }
+    input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #f47737; outline-offset: 3px; }
+    .map-shell { height: clamp(280px, 55vw, 360px); position: relative; margin-top: 16px;
+      overflow: hidden; border: 1px solid #dce3e9; border-radius: 12px; background: #eef2f5; }
+    #map, #backup-map { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    #address-status { min-height: 48px; margin: 12px 0 8px; font-size: .92rem; overflow-wrap: anywhere; }
+    .anchor { font-size: .83rem; color: #526678; margin: 8px 0 16px; }
+    .confirm { display: flex; align-items: flex-start; gap: 10px; margin: 22px 0; font-weight: 500; }
+    .confirm input { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 3px; accent-color: #d94a18; }
+    button[type="submit"] { width: 100%; min-height: 56px; padding: 15px 18px; background: #d94a18;
+      color: white; border: 0; border-radius: 9px; font: 700 1rem/1.4 system-ui; cursor: pointer; white-space: normal; }
+    button[type="submit"]:hover { background: #b9380b; }
+    button:disabled { opacity: .65; cursor: wait; }
+    .help { margin-top: 16px; font-size: .85rem; color: #526678; }
+    .help a { color: #102c45; }
+    [hidden] { display: none !important; }
+    @media (max-width: 480px) { body { padding: 10px; } .checkout { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <main class="checkout">
+    <h1>Checkout</h1>
+    <p class="muted">Find your property, check its location on the map and continue to your fencing or gate quote.</p>
+    <form id="address-form" action="/contact-us" method="get">
+      <span id="lookup-label" class="field-label">Property address</span>
+      <div id="autocomplete-host"></div>
+      <input id="manual-address" name="address" aria-labelledby="lookup-label"
+        autocomplete="street-address" placeholder="Start typing your property address"
+        maxlength="300" minlength="8" required>
+
+      <div class="map-shell" aria-label="Property location map">
+        <div id="map" hidden></div>
+        <iframe id="backup-map" title="Property address confirmation map" loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          src="https://www.google.com/maps?q=Unit%201%20%2F%2012%20Merchant%20Avenue%2C%20Thomastown%20VIC%203074%2C%20Australia&amp;output=embed"></iframe>
+      </div>
+      <p id="address-status" role="status" aria-live="polite" aria-atomic="true">Enter your property address and check the map.</p>
+      <p class="anchor">RJL headquarters: Unit 1 / 12 Merchant Avenue, Thomastown VIC 3074.
+        This is the default map location, not your quote address.</p>
+
+      <label for="unit">Unit / apartment (optional)</label>
+      <input id="unit" name="unit" autocomplete="address-line2" maxlength="80" placeholder="e.g. Unit 2">
+      <label class="confirm" for="confirm-address">
+        <input id="confirm-address" type="checkbox" required>
+        <span>I confirm this is the property for my quote.</span>
+      </label>
+      <button type="submit" id="quote-button">Verify Property Address &amp; Secure Quote</button>
+      <p class="help">Continue to add your project details and send your enquiry.
+        Need help? <a href="tel:+61412467840">Call 0412 467 840</a>.</p>
+      <noscript><p class="help">Enter your address above to continue to the enquiry form. Address suggestions require JavaScript.</p></noscript>
+    </form>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+      const API_KEY = 'REPLACE_WITH_YOUR_RESTRICTED_GOOGLE_MAPS_KEY';
+      const MAP_ID = 'REPLACE_WITH_YOUR_GOOGLE_MAP_ID';
+      const QUOTE_PATH = '/contact-us';
+      const HQ = 'Unit 1 / 12 Merchant Avenue, Thomastown VIC 3074, Australia';
+      const form = document.getElementById('address-form');
+      const manual = document.getElementById('manual-address');
+      const mapNode = document.getElementById('map');
+      const backup = document.getElementById('backup-map');
+      const status = document.getElementById('address-status');
+      const button = document.getElementById('quote-button');
+      const confirm = document.getElementById('confirm-address');
+      let autocomplete, map, marker, anchor, selected, selectionText, request = 0;
+      let pending = false, manualTimer, apiTimeout;
+
+      const say = (message) => { status.textContent = message; };
+      function setPending(value) {
+        pending = value; button.disabled = value; button.setAttribute('aria-busy', String(value));
+      }
+      function backupMap(address) {
+        backup.src = 'https://www.google.com/maps?q=' + encodeURIComponent(address || HQ) + '&output=embed';
+        backup.hidden = false; mapNode.hidden = true;
+      }
+      function clearSelection() {
+        request++; selected = null; selectionText = ''; confirm.checked = false; setPending(false);
+        if (marker) marker.position = null;
+      }
+      function useManual() {
+        clearTimeout(apiTimeout); clearSelection();
+        if (autocomplete) { manual.value = autocomplete.value || ''; autocomplete.hidden = true; }
+        manual.hidden = false; manual.required = true; backupMap(manual.value.trim());
+        say('Address suggestions are unavailable. Enter your address and check the map before continuing.');
+      }
+      function showPlace(place) {
+        mapNode.hidden = false;
+        if (!map) map = new google.maps.Map(mapNode, {
+          center: place.location, zoom: 18, mapId: MAP_ID, gestureHandling: 'cooperative',
+          streetViewControl: false, mapTypeControl: false
+        });
+        map.setCenter(place.location);
+        if (place.viewport) map.fitBounds(place.viewport); else map.setZoom(18);
+        if (!marker) marker = new google.maps.marker.AdvancedMarkerElement({ map });
+        marker.position = place.location; marker.title = place.formattedAddress;
+        backup.hidden = true;
+      }
+      manual.addEventListener('input', () => {
+        clearSelection(); clearTimeout(manualTimer);
+        manualTimer = setTimeout(() => {
+          const address = manual.value.trim(); backupMap(address);
+          say(address ? 'Check the location shown for: ' + address : 'Enter your property address and check the map.');
+        }, 450);
+      });
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (pending || !form.reportValidity()) return;
+        if (autocomplete && !autocomplete.hidden &&
+            (!selected || autocomplete.value !== selectionText)) {
+          clearSelection(); say('Select your property from the address suggestions first.'); autocomplete.focus(); return;
+        }
+        const address = selected ? selected.address : manual.value.trim();
+        if (!address) { manual.focus(); return; }
+        const data = {
+          address, unit: document.getElementById('unit').value.trim(),
+          placeId: selected?.placeId || null, location: selected?.location || null,
+          source: selected ? 'google-places' : 'manual', confirmedAt: Date.now()
+        };
+        const destination = new URL(QUOTE_PATH, location.origin);
+        try { sessionStorage.setItem('rjl-property-address', JSON.stringify(data)); }
+        catch (_) { destination.searchParams.set('address', [data.unit, address].filter(Boolean).join(', ')); }
+        // Same-origin embedding shares the enquiry handoff. Cross-origin embeds
+        // stay in their own frame; use a server endpoint for another domain.
+        try {
+          if (window.parent !== window && window.parent.location.origin === location.origin) {
+            window.parent.location.assign(destination.href); return;
+          }
+        } catch (_) { /* parent belongs to another origin */ }
+        location.assign(destination.href);
+      });
+
+      window.initRJLAddressCheckout = async () => {
+        clearTimeout(apiTimeout);
+        try {
+          const [{ PlaceAutocompleteElement }, { Geocoder }] = await Promise.all([
+            google.maps.importLibrary('places'), google.maps.importLibrary('geocoding'),
+            google.maps.importLibrary('maps'), google.maps.importLibrary('marker')
+          ]);
+          autocomplete = new PlaceAutocompleteElement({
+            includedRegionCodes: ['au'], includedPrimaryTypes: ['street_address', 'premise', 'subpremise'],
+            requestedLanguage: 'en', requestedRegion: 'au', placeholder: 'Search your property address'
+          });
+          autocomplete.setAttribute('aria-labelledby', 'lookup-label');
+          autocomplete.value = manual.value;
+          document.getElementById('autocomplete-host').append(autocomplete);
+          manual.hidden = true; manual.required = false;
+          autocomplete.addEventListener('input', () => {
+            clearSelection(); say('Select the updated property address from the suggestions.');
+          });
+          autocomplete.addEventListener('gmp-error', useManual);
+          autocomplete.addEventListener('gmp-select', async (event) => {
+            const current = ++request; selected = null; confirm.checked = false; setPending(true);
+            say('Finding your property on the map…');
+            try {
+              const place = event.placePrediction.toPlace();
+              await place.fetchFields({ fields: ['id', 'formattedAddress', 'location', 'viewport'] });
+              if (current !== request) return;
+              if (!place.location || !place.formattedAddress) throw new Error('No address location');
+              showPlace(place);
+              selected = { address: place.formattedAddress, placeId: place.id, location: place.location.toJSON() };
+              selectionText = autocomplete.value;
+              say('Check the map pin for: ' + place.formattedAddress);
+            } catch (_) {
+              if (current === request) say('We could not locate that address. Select another suggestion or call RJL.');
+            } finally { if (current === request) setPending(false); }
+          });
+          say('Search for your property and choose an address suggestion.');
+          try {
+            const result = await new Geocoder().geocode({ address: HQ, region: 'au' });
+            anchor = result.results[0];
+            if (anchor && !selected && !pending) showPlace({
+              location: anchor.geometry.location, formattedAddress: HQ
+            });
+            if (anchor) autocomplete.locationBias = { center: anchor.geometry.location, radius: 25000 };
+          } catch (_) { /* The exact HQ address remains visible in the backup map. */ }
+        } catch (_) { useManual(); }
+      };
+      window.gm_authFailure = useManual;
+      // Define the callback before appending the async/defer loader.
+      if (!API_KEY.startsWith('REPLACE_') && !MAP_ID.startsWith('REPLACE_')) {
+        const script = document.createElement('script');
+        script.async = true; script.defer = true;
+        const params = new URLSearchParams({ key: API_KEY, loading: 'async', v: 'weekly',
+          callback: 'initRJLAddressCheckout', language: 'en', region: 'AU' });
+        script.src = 'https://maps.googleapis.com/maps/api/js?' + params;
+        script.onerror = useManual;
+        apiTimeout = setTimeout(useManual, 15000);
+        document.head.append(script);
+      } else { useManual(); }
+
+      // Resize only the same-origin parent; never broadcast property details.
+      if (window.parent !== window && 'ResizeObserver' in window) {
+        new ResizeObserver(() => window.parent.postMessage({
+          type: 'rjl:checkout-height', height: document.documentElement.scrollHeight
+        }, location.origin)).observe(document.body);
+      }
+    })();
+  </script>
+</body>
+</html>
