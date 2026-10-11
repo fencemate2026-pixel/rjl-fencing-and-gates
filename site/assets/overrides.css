@@ -71,3 +71,38 @@
 /* ---- Zing Sans Rust (Fontfabric free font, commercial use allowed under FFF EULA 2.0) - whole site ---- */
 @font-face{font-family:"Zing Sans Rust";src:url(/assets/fonts/zing-sans-rust.woff2) format("woff2"),url(/assets/fonts/zing-sans-rust.woff) format("woff");font-style:normal;font-display:swap}
 html body,html body *:not(svg):not(svg *),html body input,html body select,html body textarea,html body button{font-family:"Zing Sans Rust",system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important}
+
+/* Residential suburb layout and accessible service-suburb navigation. */
+.desktop-nav{gap:clamp(12px,1.35vw,22px)}
+.suburb-nav{position:relative}
+.suburb-nav summary{cursor:pointer;list-style:none;border-bottom:2px solid transparent;padding:12px 0 10px;white-space:nowrap}
+.suburb-nav summary::-webkit-details-marker{display:none}
+.suburb-nav summary:hover,.suburb-nav[open] summary{border-color:var(--orange-bright)}
+.suburb-nav summary:focus-visible{outline:2px solid var(--orange-bright);outline-offset:4px}
+.suburb-nav-panel{position:absolute;z-index:60;top:100%;left:50%;transform:translateX(-50%);display:grid;min-width:230px;padding:12px 18px;background:#fff;color:var(--navy);border:1px solid var(--line);border-radius:8px;box-shadow:0 16px 38px #071f382b}
+.desktop-nav .suburb-nav-panel a{padding:10px 4px;white-space:nowrap}
+.mobile-suburb-nav summary{font-size:inherit;font-weight:900;padding:16px 0;color:var(--navy)}
+.mobile-suburb-nav .suburb-nav-panel{position:static;transform:none;min-width:0;padding:0 0 10px 18px;border:0;box-shadow:none;top:auto;left:auto;background:transparent}
+.footer-suburb-links{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;margin:26px 0 14px;padding:20px 0;border-top:1px solid #ffffff26;color:#ffffffc7;font-size:.82rem}
+.footer-suburb-links a:hover{color:var(--orange-bright)}
+.suburb-hero h1{max-width:1050px;font-size:clamp(2.8rem,5.1vw,5.1rem)}
+.suburb-hero .lead{max-width:820px}
+.suburb-hero .hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin:30px 0}
+.suburb-hero .breadcrumbs{flex-wrap:wrap}
+.suburb-gallery{padding-top:52px;padding-bottom:52px}
+.suburb-gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.suburb-gallery-grid figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.suburb-gallery-grid img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.suburb-gallery-grid figcaption{padding:16px 18px;color:var(--navy);font-weight:800}
+.suburb-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(30px,5vw,72px);align-items:center}
+.suburb-service-text{min-width:0;order:1}
+.suburb-service-text p{color:var(--muted);line-height:1.75}
+.suburb-service-text h2{margin-bottom:24px}
+.suburb-service-text .feature-list{margin:24px 0}
+.suburb-service-visual{min-width:0;margin:0;order:2}
+.suburb-service-visual img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:10px}
+.suburb-service-visual figcaption{font-size:.82rem;line-height:1.5;color:var(--muted);margin-top:12px}
+.suburb-split-reverse .suburb-service-text{order:2}
+.suburb-split-reverse .suburb-service-visual{order:1}
+@media(max-width:900px){.suburb-split{grid-template-columns:1fr}.suburb-split-reverse .suburb-service-text{order:1}.suburb-split-reverse .suburb-service-visual{order:2}.suburb-gallery-grid{gap:14px}}
+@media(max-width:600px){.suburb-gallery-grid{grid-template-columns:1fr}.suburb-hero h1{font-size:clamp(2.45rem,10vw,3.5rem)}.suburb-hero .hero-actions .button{width:100%;justify-content:center}.suburb-gallery{padding-top:36px;padding-bottom:36px}}

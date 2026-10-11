@@ -3,7 +3,7 @@
  *  1. Mobile navigation toggle (Escape closes; body class mirrors original).
  *  2. Email enquiry form: builds a pre-filled email (mailto + Gmail/Outlook
  *     fallbacks), identical wording to the original form. No data leaves the
- *     visitor's device; nothing is stored.
+ *     visitor's device until the visitor sends the email.
  *  3. Prefills the enquiry with a design handed over from /fence-designer.
  */
 (function () {
@@ -61,6 +61,52 @@
       window.location.href = mailto;
     });
   }
+
+  // Native disclosure menus support Escape and close when focus moves away.
+  document.querySelectorAll('.suburb-nav').forEach(function (menu) {
+    menu.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { menu.open = false; menu.querySelector('summary').focus(); }
+    });
+    menu.addEventListener('focusout', function (e) {
+      if (!menu.contains(e.relatedTarget)) menu.open = false;
+    });
+    document.addEventListener('click', function (e) {
+      if (!menu.contains(e.target)) menu.open = false;
+    });
+  });
+  // Suburb landing-page links prefill the existing enquiry address field.
+  if (form) {
+    var suburb = new URLSearchParams(window.location.search).get('suburb');
+    var coreSuburbs = ['Bundoora', 'Mill Park', 'Epping', 'South Morang', 'Greensborough'];
+    var addressField = form.querySelector('#enquiry-address');
+    if (coreSuburbs.indexOf(suburb) !== -1 && addressField && !addressField.value) addressField.value = suburb;
+  }
+
+  // A staged address checkout can hand the confirmed property to this form.
+  if (form) {
+    var propertyField = form.querySelector('#enquiry-address');
+    var property = null;
+    try {
+      property = JSON.parse(sessionStorage.getItem('rjl-property-address') || 'null');
+      sessionStorage.removeItem('rjl-property-address');
+    } catch (err) { /* Manual entry remains available when storage is blocked. */ }
+    if (propertyField && property && typeof property.address === 'string' &&
+        Number.isFinite(property.confirmedAt) && Date.now() - property.confirmedAt >= 0 &&
+        Date.now() - property.confirmedAt < 60 * 60 * 1000) {
+      propertyField.value = [typeof property.unit === 'string' ? property.unit.slice(0, 80) : '',
+        property.address.slice(0, 300)].filter(Boolean).join(', ');
+    } else if (propertyField && !propertyField.value) {
+      var manualProperty = new URLSearchParams(window.location.search).get('address');
+      if (manualProperty) propertyField.value = manualProperty.slice(0, 400);
+    }
+    // Clear the query-string fallback once it has prefilled the local form.
+    if (new URLSearchParams(window.location.search).has('address')) {
+      var cleaned = new URL(window.location.href);
+      cleaned.searchParams.delete('address');
+      window.history.replaceState(window.history.state, '', cleaned.href);
+    }
+  }
+
   // ---- 3. Design handed over from the 3D fence designer (/fence-designer) ----
   // The designer stores a plain-text summary in sessionStorage and comes here.
   // Prefill the project details once, then clear it. No data leaves the device.

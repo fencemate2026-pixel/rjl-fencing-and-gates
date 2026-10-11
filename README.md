@@ -21,3 +21,19 @@ Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
 - Website mode hides materials, prices and rules. "Add to online quote" hands a plain-text design summary to `/contact-us`
   via sessionStorage (prefilled by `site/assets/site.js`). Nothing is sent to a server.
 - `dist/commercial-fence-designer/` is a drop-in copy for rjlcommercialgroup.com (RJL Commercial logo, own email quote page).
+
+## Residential content and location pages (October 2026)
+- Canonical suburb pages: `/locations/fencing-mill-park`, `/locations/fencing-epping`, `/locations/fencing-south-morang`, and `/locations/fencing-greensborough`.
+- Prior `/fencing-*` URLs and the shorter `/locations/<suburb>` variants redirect permanently to those pages in `netlify.toml`. Bundoora retains `/fencing-bundoora`.
+- The shared Service suburbs menu links to canonical pages. Each suburb quote link prefills the existing enquiry address field; the email workflow is unchanged.
+- `/llms.txt` contains the service summary and canonical links. Review figures are explicitly dated 7 October 2026, with a link to the live Google profile.
+- Business JSON-LD keeps the legal identity and user-supplied Thomastown headquarters; it does not invent an address or Google-sourced self-review AggregateRating. FAQ JSON-LD mirrors the visible accordion answers.
+- Pool installation, council registration, formal barrier certification and licensed electrical bonding remain distinct responsibilities. South Morang uses VIC 3752.
+- FAQPage markup is retained for machine-readable content; Google retired FAQ rich results in May 2026. `llms.txt` is a reference file, not a Google ranking control.
+
+## Address checkout for staging
+- `staging/address-checkout.html` is a self-contained, responsive iframe document built with Google's current Places Autocomplete widget. It is outside the published `site/` folder until its browser API key and map ID are configured.
+- The supplied Google-hosted iframe has no address/message integration bridge. Its title, button and US default map cannot be changed from this site's parent document. Use the controlled staging document or update the original solution at its source.
+- Deployment and same-origin embed instructions are in the HTML. Enable Maps JavaScript API, Places API (New) and Geocoding API; restrict the browser key to the intended staging/production hosts. Configure the host CSP for Maps without removing existing protections.
+- Headquarters backup: Unit 1 / 12 Merchant Avenue, Thomastown VIC 3074. It is a map anchor, never an automatically selected customer property. A user confirms their own address before continuing to `/contact-us`; `site.js` consumes and clears the temporary handoff.
+- The existing enquiry email workflow completes the quote request. Places/map lookup does not claim postal validation, property ownership, or a secured booking. When Maps is unavailable, manual address entry and a Google map preview remain usable.
