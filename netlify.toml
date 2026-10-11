@@ -221,3 +221,35 @@
   for = "/assets/photo-visualiser-ai.js"
   [headers.values]
     Content-Security-Policy = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; worker-src 'self'"
+
+# North-west residential suburb aliases.
+[[redirects]]
+  from = "/fencing-strathmore"
+  to = "/locations/fencing-strathmore"
+  status = 301
+
+[[redirects]]
+  from = "/fencing-strathmore.html"
+  to = "/locations/fencing-strathmore"
+  status = 301
+
+[[redirects]]
+  from = "/locations/strathmore"
+  to = "/locations/fencing-strathmore"
+  status = 301
+
+[[redirects]]
+  from = "/fencing-essendon"
+  to = "/locations/fencing-essendon"
+  status = 301
+
+[[redirects]]
+  from = "/fencing-essendon.html"
+  to = "/locations/fencing-essendon"
+  status = 301
+
+[[redirects]]
+  from = "/locations/essendon"
+  to = "/locations/fencing-essendon"
+  status = 301
+

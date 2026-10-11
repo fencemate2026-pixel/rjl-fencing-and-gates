@@ -25,7 +25,7 @@ Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
 ## Residential content and location pages (October 2026)
 - Canonical suburb pages: `/locations/fencing-mill-park`, `/locations/fencing-epping`, `/locations/fencing-south-morang`, and `/locations/fencing-greensborough`.
 - Prior `/fencing-*` URLs and the shorter `/locations/<suburb>` variants redirect permanently to those pages in `netlify.toml`. Bundoora retains `/fencing-bundoora`.
-- The global footer links to the service-suburb hub and all five canonical suburb pages. Each suburb quote link prefills the existing enquiry address field; the email workflow is unchanged.
+- The global footer links to the service-suburb hub and all seven canonical suburb pages. Each suburb quote link prefills the existing enquiry address field; the email workflow is unchanged.
 - `/llms.txt` contains the service summary and canonical links. Review figures are explicitly dated 7 October 2026, with a link to the live Google profile.
 - Business JSON-LD keeps the legal identity and user-supplied Thomastown headquarters; it does not invent an address or Google-sourced self-review AggregateRating. FAQ JSON-LD mirrors the visible accordion answers.
 - Pool installation, council registration, formal barrier certification and licensed electrical bonding remain distinct responsibilities. South Morang uses VIC 3752.
@@ -42,8 +42,14 @@ Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
 - Adapted from the commercial site's existing interface and photo placement/removal/export controls, using the shared RJL 3D model engine.
 - Residential catalogue: Colorbond, timber paling, picket, horizontal/vertical aluminium slat, aluminium blades, steel battens, aluminium pool barriers, frameless glass, steel picket/tubular, PVC/vinyl privacy panels, ornamental aluminium, and wrought iron style. The three additional material previews are residential-only concepts with matching gate infill; final construction and supplier specifications are confirmed on site. Pedestrian, single/double swing, track sliding and cantilever gates are available where suitable; pool barriers use pedestrian gates.
 - The photo page uses the supplied residential H1, H2 and Start Your 3D Home Design CTA, with the exact 46-character title and 156-character description across search/social/WebPage metadata. Three How It Works steps and three closed native FAQ accordions sit below the tool; FAQPage answers match the visible copy.
-- The 3D designer stays in the main header alongside Photo visualiser. Service Suburbs and Google reviews are in the global footer, with the five-suburb text link row retained.
+- The 3D designer stays in the main header alongside Photo visualiser. Service Suburbs and Google reviews are in the global footer, with the seven-suburb text link row retained.
 - Object removal downloads the existing MI-GAN model and ONNX Runtime WASM binaries only on demand, through three fixed same-origin Netlify rewrites to RJL Commercial. These three binary assets depend on that static host. Local fallback removal and Undo remain available if AI cannot run. Licences and worker/runtime JavaScript are included locally.
 - WebAssembly permission is limited to the AI worker response. The page policy admits blob images to decode local uploads; it does not allow inline or evaluated JavaScript.
 - The photo quote form uses Netlify Forms and includes the concept and edited site photo. Enable Forms detection and configure residential enquiry notifications in the Netlify project before live release. Verify a test submission in staging; client-side success alone is not an email-delivery check.
 - To regenerate just shared designer assets without overwriting page wrappers: `python3 tools/build_fence_designer.py --assets-only`. Preserve asset version hashes when regenerating.
+
+### North-west service area update — 12 October 2026
+
+- Added `/locations/fencing-strathmore` and `/locations/fencing-essendon` using the established residential layout, native FAQ accordions and suburb-prefilled quote links.
+- Added the surrounding Moonee Valley suburbs to the service area hub, visible coverage wording and matching structured data. The global footer links to both new pages.
+- Updated the sitemap, `llms.txt`, canonical metadata and permanent aliases. Moonee Valley council details were checked against https://mvcc.vic.gov.au/my-council/who-we-are/ and its building/pool guidance.
