@@ -175,7 +175,7 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://www.google.com.au https://*.doubleclick.net https://www.googleadservices.com; frame-src https://www.google.com https://maps.google.com https://*.doubleclick.net https://www.googletagmanager.com; form-action 'self' https:; base-uri 'self'; object-src 'none'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://www.google.com https://www.google.com.au https://*.doubleclick.net https://www.googleadservices.com; frame-src https://www.google.com https://maps.google.com https://*.doubleclick.net https://www.googletagmanager.com; form-action 'self' https:; base-uri 'self'; object-src 'none'"
 # CSS/JS are referenced with ?v=<hash>, so they can be cached for a year.
 [[headers]]
   for = "/assets/*"
@@ -195,3 +195,29 @@
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
     Cache-Control = "public, max-age=3600"
+
+# On-demand visualiser model assets reused from RJL Commercial.
+
+[[redirects]]
+  from = "/assets/vendor/migan/migan_pipeline_v2.onnx"
+  to = "https://www.rjlcommercialgroup.com/assets/vendor/migan/migan_pipeline_v2.onnx"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/assets/vendor/ort/ort-wasm-simd.wasm"
+  to = "https://www.rjlcommercialgroup.com/assets/vendor/ort/ort-wasm-simd.wasm"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/assets/vendor/ort/ort-wasm.wasm"
+  to = "https://www.rjlcommercialgroup.com/assets/vendor/ort/ort-wasm.wasm"
+  status = 200
+  force = false
+
+# WebAssembly is confined to the same-origin object-removal worker.
+[[headers]]
+  for = "/assets/photo-visualiser-ai.js"
+  [headers.values]
+    Content-Security-Policy = "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; worker-src 'self'"

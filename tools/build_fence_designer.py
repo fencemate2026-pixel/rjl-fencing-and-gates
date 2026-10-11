@@ -232,6 +232,12 @@ vh = {n: short_hash(open(os.path.join(SITE, 'assets', 'vendor', n), encoding='ut
 scripts_tag = SCRIPTS.format(t=vh['three.min.js'], o=vh['OrbitControls.js'], j=short_hash(web_js))
 css_tag = f'<link rel="stylesheet" href="/assets/fence-designer.css?v={short_hash(web_css)}"/>'
 
+# Regenerate shared assets without replacing the hand-maintained site pages or
+# commercial distribution when changing the residential catalogue.
+if '--assets-only' in sys.argv:
+    print('ok - updated shared designer assets; page wrappers preserved')
+    sys.exit(0)
+
 # --------------------------------------------------------------------------- site page from contact-us template
 tpl = open(os.path.join(SITE, 'contact-us.html'), encoding='utf-8').read()
 head_end, main_s, main_e = tpl.index('</head>'), tpl.index('<main'), tpl.index('</main>') + len('</main>')
@@ -322,3 +328,4 @@ for f in ('index.html', 'quote.html'):
 summary = f'ok - css {len(web_css)} B, js {len(web_js)} B, page fence-designer.html, commercial folder dist/commercial-fence-designer'
 log(summary)
 print(summary)
+

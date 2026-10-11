@@ -386,11 +386,12 @@ const LOCKS = {
   magna:{code:'DD-MAGNALATCH', label:'D&D MagnaLatch magnetic pull-up pool safety latch'}
 };
 const LOCKABLE = t => t === 'pedestrian' || t === 'single' || t === 'double' || t === 'sliding' || t === 'cantilever';
-/* Both websites and the internal tool list every fence system (Jarrod, 9 Oct 2026: keep both lists on both sites).
- * Boom gates, rising bollards, bi-fold speed gates and the vehicle entry quick-add are commercial-site only. */
-const BRAND_GROUPS = ['Residential','Commercial'];
+/* The residential website and photo overlay offer home fencing and driveway gates.
+ * The commercial website and internal tool keep their existing full catalogues. */
+const RES_WEB = (WEB || OVERLAY) && CFG.brand === 'residential';
+if (RES_WEB) PRODUCTS.tubular = {...PRODUCTS.tubular, group:'Residential', label:'Steel picket / tubular', topping:false};
+const BRAND_GROUPS = RES_WEB ? ['Residential'] : ['Residential','Commercial'];
 const productAllowed = k => !!PRODUCTS[k] && BRAND_GROUPS.includes(PRODUCTS[k].group);
-const RES_WEB = WEB && CFG.brand !== 'commercial';      // residential site: no boom / bollard / speed-gate lanes, no vehicle quick-add
 const GATES_FOR = p => PRODUCTS[p].pool ? ['none','pedestrian']
   : PRODUCTS[p].temp ? ['none','pedestrian','single','double']
   : Object.keys(GATE_TYPES).filter(k => !(RES_WEB && (k === 'boom' || k === 'bollards' || k === 'bifold')));
@@ -401,6 +402,16 @@ const ACCESS = {
   gsm:{code:'ACC-GSM', label:'RJL GSM access module (phone call / MagicKeys)'},
   sgpro:{code:'ACC-SGPRO', label:'RJL SG-PRO control interface'}
 };
+if (RES_WEB) delete ACCESS.sgpro;
+function residentialRun(run){
+  if (!RES_WEB) return run;
+  run.barbed = false; run.razor = false; run.electric = false;
+  if (!GATES_FOR(run.product).includes(run.gate.type)) run.gate.type = 'none';
+  Object.assign(run.gate, {spikes:'none', tlights:0, beacon:false});
+  if (!ACCESS[run.gate.access]) run.gate.access = 'none';
+  if (PRODUCTS[run.product].pool){ run.gate.auto = false; run.gate.lock = 'magna'; }
+  return run;
+}
 
 /* ---------------------------------------------------------------- helpers */
 const $ = (s, r=document) => r.querySelector(s);
@@ -430,7 +441,7 @@ function newRun(product='colorbond', name='Run'){
     rails:{top:true, mid:false, bot:false}, barbed:false, razor:false, razorMount:'arms',
     electric:false, elecMount:'top', elecStrands:6,
     gate:{ type:'none', width:3440, position:'start', piers:false, auto:false, access:'none', lock:PRODUCTS[product].pool ? 'magna' : 'locklatch',
-           spikes:'none', tlights:0, beacon:true, bollardH:800 } };
+           spikes:'none', tlights:0, beacon:!RES_WEB, bollardH:800 } };
 }
 function webExample(){
   const commercial = CFG.brand === 'commercial';
@@ -438,12 +449,13 @@ function webExample(){
   a.turn = 0; a.joinPrev = false; a.length = commercial ? 20 : 12;
   a.gate = commercial ? {type:'sliding', width:6000, position:'middle', piers:false, auto:true, access:'none'}
                       : {type:'double', width:3440, position:'start', piers:false, auto:false, access:'none'};
+  residentialRun(a);
   return { v:1, project:{name:'', client:'', site:'', example:false}, runs:[a], sel:0,
     turnstiles:{count:0, type:'single', access:'none'}, rules:{...DEFAULT_RULES}, rates:{},
     pricing:{margin:30, gst:true, pmVisits:4, pmRate:0}, view:{dims:true} };
 }
 function exampleState(){
-  if (WEB) return webExample();
+  if (WEB || RES_WEB) return webExample();
   const a = newRun('colorbond','Run A'); a.style='breezeway'; a.turn=0; a.joinPrev=false;
   a.gate = {type:'double', width:3440, position:'start', piers:false, auto:false, access:'none'};
   const b = newRun('hslat','Run B');
@@ -461,12 +473,12 @@ function normalise(s){
     if (r.style === 'barbed') o.barbed = true; if (r.style === 'razor') o.razor = true;   // v2 stored topping as a style
     if (r.product === 'paling' && r.style === 'lapcap'){ o.style = 'lapped'; o.capping = true; if (!r.gap) o.gap = 60; }   // v3
     o.retain = {...b.retain, ...(r.retain || {})};
-    return o;
+    return residentialRun(o);
   });
   if (!runs.length) return null;
   return { ...ex, ...s, runs,
     project:{...ex.project, ...(s.project||{})}, rules:{...DEFAULT_RULES, ...(s.rules||{})},
-    pricing:{...ex.pricing, ...(s.pricing||{})}, turnstiles:{...ex.turnstiles, ...(s.turnstiles||{})},
+    pricing:{...ex.pricing, ...(s.pricing||{})}, turnstiles:RES_WEB ? {...ex.turnstiles, count:0} : {...ex.turnstiles, ...(s.turnstiles||{})},
     rates:{...(s.rates||{})}, view:{...ex.view, ...(s.view||{})}, sel:clamp(s.sel|0, 0, runs.length-1) };
 }
 function loadState(){ try { const raw = localStorage.getItem(STORE_KEY); return raw ? normalise(JSON.parse(raw)) : null; } catch(e){ return null; } }
@@ -1368,7 +1380,7 @@ function renderEditor(){
       ${P.pool || P.temp || gt.forced ? '' : `<label class="chk"><input type="checkbox" id="e-gauto" data-k="gate.auto"${isAuto(g) ? ' checked' : ''}>Automate this gate (RJL operator, safety beams)</label>`}
       ${g.type === 'bollards' ? `<label class="f"><span>Bollard rise</span><select id="e-bh" data-k="gate.bollardH" data-num>${[600,800,1000,1200].map(h => opt(h, h + ' mm', g.bollardH || 800)).join('')}</select></label>
         <p class="hint">${bollardCount(g.width)} bollards at up to ${BOLLARD_CC} mm centres. LED crown shows green when fully down, red while rising and when up.</p>` : ''}
-      ${VEHICLE(g.type) && !P.pool && !P.temp ? `<div class="grid2">
+      ${!RES_WEB && VEHICLE(g.type) && !P.pool && !P.temp ? `<div class="grid2">
         <label class="f"><span>Tyre spikes</span><select id="e-spk" data-k="gate.spikes">${opt('none','None',g.spikes)}${opt('surface','Tiger Teeth (surface, one-way)',g.spikes)}${opt('auto','Automated in-ground spikes',g.spikes)}</select></label>
         <label class="f"><span>Traffic lights</span><select id="e-tl" data-k="gate.tlights" data-num>${opt(0,'None',g.tlights)}${opt(1,'1 (approach side)',g.tlights)}${opt(2,'2 (both sides)',g.tlights)}</select></label>
       </div>
@@ -2386,10 +2398,12 @@ function exposeOverlay(){
     ready: !!(three && renderer),
     /* run: a designer run (same fields as newRun), turnstiles: {count, type} */
     setDesign(run, turnstiles){
+      if (!productAllowed(run.product)) throw new Error('Choose a residential fence style.');
       const b = newRun(run.product, 'Run A');
       const r = {...b, ...run, name:'Run A', turn:0, joinPrev:false,
         gate:{...b.gate, ...(run.gate||{})}, rails:{...b.rails, ...(run.rails||{})}, retain:{...b.retain, ...(run.retain||{})}};
-      state.runs = [r]; state.sel = 0; state.turnstiles = {count:0, type:'single', access:'none', ...(turnstiles||{})};
+      state.runs = [residentialRun(r)]; state.sel = 0;
+      state.turnstiles = RES_WEB ? {count:0, type:'single', access:'none'} : {count:0, type:'single', access:'none', ...(turnstiles||{})};
       state.view.dims = false;
       renderAll();
       const lay = LAYOUTS[0];
@@ -2413,7 +2427,9 @@ function exposeOverlay(){
     setLive(on){ overlayLive = !!on; },
     setShadows(on){ if (ground) ground.visible = !!on; },
     /* product list, gate types and options exactly as the designer has them */
-    catalog: { products: PRODUCTS, gates: GATE_TYPES, access: ACCESS, lattice: LATTICE_STYLES, colours: COLOURS,
+    catalog: { products: Object.fromEntries(Object.entries(PRODUCTS).filter(([k]) => productAllowed(k))),
+               gates: Object.fromEntries(Object.entries(GATE_TYPES).filter(([k]) => !RES_WEB || !['boom','bollards','bifold'].includes(k))),
+               access: ACCESS, lattice: LATTICE_STYLES, colours: COLOURS,
                gatesFor: GATES_FOR, isVehicle: VEHICLE, forced: t => !!(GATE_TYPES[t] && GATE_TYPES[t].forced) },
     /* the same plain-English design summary the designer sends with a quote request */
     summary(){ return designSummary().replace('online 3D fence designer', 'online photo visualiser').replace(/\n+Open this design:[^\n]*$/, ''); },
@@ -2439,3 +2455,4 @@ if (OVERLAY) exposeOverlay();
 window.__rjl = { get state(){ return state; }, compute, layoutRun, cutPlan, get BOM(){ return BOM; } };
 })();
 </script>
+
