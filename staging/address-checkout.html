@@ -6,9 +6,13 @@
 3. Keep QUOTE_PATH pointed at the existing enquiry page. The button continues
    to that form; it does not create a quote, take payment, or submit a lead.
    The enquiry page must read rjl-property-address from sessionStorage.
-4. With a strict CSP, move this style/script into same-origin external files,
-   or use your server's nonces. Allow Maps scripts/connects from Google APIs
-   and Google Maps static assets, plus frames from https://www.google.com.
+4. For a strict CSP, move inline styles/scripts (including the parent resize
+   listener) into same-origin external files or apply server-generated nonces.
+   The parent must allow frame-src 'self' for this same-origin iframe. The
+   checkout document must permit the Maps SDK and its Google API/static-asset
+   requests, plus frame-src https://www.google.com for the backup map. Follow
+   Google's Maps JavaScript CSP guide; preserve existing security directives.
+   Configure on staging first. No live-site CSP changes are included here.
 5. Embed the controlled copy (same origin) rather than trying to edit the
    cross-origin Google-hosted iframe. Parent embed example:
 

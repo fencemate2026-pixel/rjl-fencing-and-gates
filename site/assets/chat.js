@@ -25,7 +25,7 @@
     abn: "82 159 036 781",
     acn: "159 036 781",
     abnLookupUrl: "https://abr.business.gov.au/ABN/View/82159036781",
-    base: "Bundoora VIC 3083",
+    base: "Unit 1 / 12 Merchant Avenue, Thomastown VIC 3074",
     googleReviewsUrl: "https://www.google.com/maps/place/RJL+Fencing+Pty+Ltd/@-37.6492188,144.9227316,9z/data=!4m8!3m7!1s0x6ad648c5b9dfccb5:0x2b249edaace32e5e!8m2!3d-37.6492188!4d144.922045!9m1!1b1!16s%2Fg%2F11c1tj0trr?entry=ttu&g_ep=EgoyMDI2MDgxOS4wIKXMDSoASAFQAw%3D%3D",
     instagram: "https://www.instagram.com/rjlfencing/",
     facebook: "https://www.facebook.com/Alltypesoffencingandgates/"
