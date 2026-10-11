@@ -389,7 +389,18 @@ const LOCKABLE = t => t === 'pedestrian' || t === 'single' || t === 'double' || 
 /* The residential website and photo overlay offer home fencing and driveway gates.
  * The commercial website and internal tool keep their existing full catalogues. */
 const RES_WEB = (WEB || OVERLAY) && CFG.brand === 'residential';
-if (RES_WEB) PRODUCTS.tubular = {...PRODUCTS.tubular, group:'Residential', label:'Steel picket / tubular', topping:false};
+if (RES_WEB){
+  PRODUCTS.tubular = {...PRODUCTS.tubular, group:'Residential', label:'Steel picket / tubular', topping:false};
+  // Preview concepts; final sizes, materials and construction are confirmed on site.
+  Object.assign(PRODUCTS, {
+    pvcprivacy:{group:'Residential', label:'PVC / vinyl privacy panels', short:'PVC privacy', postW:100, strategy:'equal', maxBayLimit:2400,
+      defaults:{height:1800,maxBay:2400,colour:'#f1efe8',style:'standard',gap:0}},
+    ornamental:{group:'Residential', label:'Ornamental aluminium', short:'Ornamental', postW:65, strategy:'equal', maxBayLimit:2400,
+      defaults:{height:1200,maxBay:2400,colour:'#1d1d1d',style:'standard',gap:0}},
+    wroughtiron:{group:'Residential', label:'Wrought iron style', short:'Wrought iron', postW:65, strategy:'equal', maxBayLimit:2400,
+      defaults:{height:1500,maxBay:2400,colour:'#1d1d1d',style:'standard',gap:0}}
+  });
+}
 const BRAND_GROUPS = RES_WEB ? ['Residential'] : ['Residential','Commercial'];
 const productAllowed = k => !!PRODUCTS[k] && BRAND_GROUPS.includes(PRODUCTS[k].group);
 const GATES_FOR = p => PRODUCTS[p].pool ? ['none','pedestrian']
@@ -904,6 +915,14 @@ const PRODUCT_BOM = {
   }
 };
 
+// New residential concepts have no invented supplier part numbers or price ranges.
+if (RES_WEB) ['pvcprivacy','ornamental','wroughtiron'].forEach(key => {
+  PRODUCT_BOM[key] = function({P,H,bom,fencePosts,bays}){
+    bom.add('Posts',`CONCEPT-${key}-POST`,`${P.label} post (specification to confirm)`, fencePosts.length, 'ea');
+    bays.forEach(w => bom.add('Panels & infill',`CONCEPT-${key}-${Math.round(w)}x${H}`,`${P.label} concept panel, ${Math.round(w)} × ${H} mm`, 1, 'ea', 'Final construction subject to site measure and manufacturer specification'));
+  };
+});
+
 /* Security add-ons for commercial systems: barbed wire, razor coil (on arms or in line on post tops), electric fence.
  * Electric fence totals are collected per job in ELEC so energisers, keypad, earths and signs are counted once. */
 let ELEC = {len:0};
@@ -1075,6 +1094,8 @@ function gateBom(run, lay, bom, rules){
         bom.piece('Panels & infill','AL-BLADE75','75 mm aluminium blade', 6500, ih, k*n); bom.add('Hardware','AL-BLADECLIP','Blade clip / end cap', 2*k*n, 'ea', '2 per blade'); break; }
       case 'sbatten': { const bw = +run.style || 50, k = Math.floor((iw + run.gap)/(bw + run.gap));
         bom.piece('Panels & infill',`BATTEN${bw}-ST`,`${bw}×25 steel batten`, 6500, ih, k*n); bom.add('Hardware','TEK-COL','Coloured tek screw', 2*k*n, 'ea', '2 per gate batten'); break; }
+      case 'pvcprivacy': case 'ornamental': case 'wroughtiron':
+        bom.add('Gates',`CONCEPT-${run.product}-INFILL`,`${P.label} matching gate infill, ${Math.round(iw)} × ${Math.round(ih)} mm`, n, 'ea', 'Final construction to confirm on site'); break;
       case 'chain': bom.add('Gates','CHAIN-GATE','Chainmesh for gate infill', n*iw*ih/1e6, 'm²', 'Cut from roll'); break;
       case 'mesh358': bom.add('Gates','MESH358-GATE','358 mesh panel cut to gate leaf', n*Math.ceil(iw/2500 - 1e-9), 'ea', 'Cut to suit'); break;
       case 'mesh868': bom.add('Gates','MESH868-GATE','Double wire mesh panel cut to gate leaf', n*Math.ceil(iw/2500 - 1e-9), 'ea', 'Cut to suit'); break;
@@ -1221,6 +1242,17 @@ function totals(){
 function icon(k){
   const posts = '<rect x="2" y="2" width="3" height="26" fill="currentColor"/><rect x="43" y="2" width="3" height="26" fill="currentColor"/>';
   let body = '';
+  if (k === 'pvcprivacy'){
+    body = '<rect x="5" y="5" width="38" height="21" fill="currentColor" opacity=".25"/><rect x="5" y="4" width="38" height="3" fill="currentColor"/><rect x="5" y="24" width="38" height="3" fill="currentColor"/>';
+    for (let x=10;x<43;x+=5) body += `<line x1="${x}" y1="7" x2="${x}" y2="24" stroke="currentColor" stroke-width=".8"/>`;
+  }
+  if (k === 'ornamental' || k === 'wroughtiron'){
+    body = '<rect x="5" y="11" width="38" height="1.5" fill="currentColor"/><rect x="5" y="15" width="38" height="1.5" fill="currentColor"/><rect x="5" y="24" width="38" height="1.5" fill="currentColor"/>';
+    for (let x=9;x<43;x+=6){
+      body += `<rect x="${x}" y="7" width="1.5" height="19" fill="currentColor"/><polygon points="${x-.8},6 ${x+.75},3 ${x+2.3},6 ${x+.75},9" fill="currentColor"/>`;
+      if (k === 'wroughtiron') body += `<rect x="${x-1}" y="18" width="3.5" height="2" fill="currentColor"/>`;
+    }
+  }
   if (k === 'colorbond'){ body = '<rect x="5" y="5" width="38" height="20" fill="none" stroke="currentColor" stroke-width="1.6"/>'; for (let x=9;x<43;x+=4) body += `<line x1="${x}" y1="6" x2="${x}" y2="24" stroke="currentColor" stroke-width="1"/>`; }
   if (k === 'hslat'){ for (let y=5;y<27;y+=3.2) body += `<rect x="5" y="${y}" width="38" height="2.2" fill="currentColor"/>`; }
   if (k === 'vslat'){ for (let x=7;x<42;x+=4.2) body += `<rect x="${x}" y="4" width="2.6" height="22" fill="currentColor"/>`; body += '<rect x="5" y="8" width="38" height="1.4" fill="currentColor"/><rect x="5" y="21" width="38" height="1.4" fill="currentColor"/>'; }
@@ -1869,6 +1901,25 @@ function infill(run, B, parent, x0, x1, y0, y1, z, mF, y1b){
         else if (run.style === 'slatfx') for (let y = top + 30; y < y1 - 40; y += 55) B.box(mF, cx, y, z, w, 38, 14);
         else { const k = run.lattice || 'square', t = TEX['lat_' + k], hb = 250 - 30, rep = {square:[w/90, hb/90], diamond:[w/80, hb/80], hslat:[1, hb/60], vslat:[w/60, 1], laser:[w/160, hb/160]}[k];
           const m = texturedPlane(parent, t, rep[0], rep[1], run.colour, w, hb, cx, top + hb/2, z, true); m.material.depthWrite = true; m.material.alphaTest = 0.4; m.material.transparent = false; m.castShadow = true; }
+      }
+      break; }
+    case 'pvcprivacy': {
+      const mPVC = mat(run.colour, 0, 0.35), h = y1 - y0;
+      B.box(mPVC, cx, y0 + 40, z, w, 80, 50); B.box(mPVC, cx, y1 - 40, z, w, 80, 50);
+      const n = Math.max(1, Math.ceil(w/150)), boardW = w/n;
+      for (let i=0;i<n;i++) B.box(mPVC, x0 + (i + .5)*boardW, (y0 + y1)/2, z, boardW - 1, Math.max(1,h - 80), 22);
+      break; }
+    case 'ornamental': case 'wroughtiron': {
+      const iron = run.product === 'wroughtiron', pitch = iron ? 120 : 110;
+      [y0 + 120, y1 - 160, y1 - 260].forEach(y => B.box(mF, cx, y, z, w, 35, 35));
+      const n = Math.max(1, Math.floor(w/pitch)), xs = x0 + (w - (n - 1)*pitch)/2;
+      for (let i=0;i<n;i++){
+        const px = xs + i*pitch, h = y1 - y0 - 65;
+        if (iron){
+          B.cylY(mF, px, y0 + h/2, z, 18, h);
+          [y1 - 340, y1 - 120].forEach(y => B.cylY(mF, px, y, z, 32, 28));
+        } else B.box(mF, px, y0 + h/2, z, 20, h, 20);
+        B.boxR(mF, px, y1 - 45, z, 36, 36, 16, 0, 0, Math.PI/4);
       }
       break; }
     case 'hslat': {
