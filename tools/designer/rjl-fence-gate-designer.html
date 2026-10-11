@@ -1700,9 +1700,10 @@ const css = n => getComputedStyle(HOST || document.documentElement).getPropertyV
 
 function init3D(){
   const host = $('#viewport');
-  if (!three){ host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">The 3D view could not load. The materials list and quote still work.</p>'); return; }
+  const fallbackHelp = WEB ? 'Fence options and the online quote still work.' : 'The materials list and quote still work.';
+  if (!three){ host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">The 3D view could not load. ' + fallbackHelp + '</p>'); return; }
   try { renderer = new THREE.WebGLRenderer(OVERLAY ? {antialias:true, alpha:true, preserveDrawingBuffer:true} : {antialias:true}); }
-  catch(e){ three = false; host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">3D needs WebGL, which is turned off in this browser. The materials list and quote still work.</p>'); return; }
+  catch(e){ three = false; host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">The 3D view needs WebGL, which is unavailable in this browser. ' + fallbackHelp + '</p>'); return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   host.prepend(renderer.domElement);

@@ -25,8 +25,8 @@
  *   - Placement points cannot cross the eye-level line (that has no real-world meaning).
  *   - Object removal runs in a worker with progress, a time-out, a fallback method and Undo.
  *   - Every decode / export / upload / removal step reports a plain-English error on the page.
- *   - No inline script, nothing loaded from other sites, and the photo is never uploaded
- *     unless the visitor submits the form.
+ *   - No inline script. Removal binaries are downloaded through fixed same-origin rewrites.
+ *     The photo is never uploaded unless the visitor submits the form.
  */
 (function () {
   'use strict';
@@ -94,7 +94,7 @@
   var A = null, B = null, horizon = 0;      // fence start / end on the ground, eye-level row (photo px)
   var drag = null, mask = null, maskCtx = null, maskDirty = false, undo = [], busy = false;
   var erase = false, openState = false, layoutInfo = null, rebuildQueued = false;
-  var aiWorker = null, fbWorker = null, aiBroken = false, jobId = 0;
+  var aiWorker = null, fbWorker = null, aiBroken = false, jobId = 0, eraseCancel = null;
   var logo = new Image(); logo.src = '/images/rjl-logo-trim.webp';
 
   function nearestColour(hex) {
@@ -124,7 +124,7 @@
       retain: { on: false, height: 600 }, rails: { top: true, mid: false, bot: false },
       barbed: false, razor: false, razorMount: 'arms', electric: false, elecMount: 'top', elecStrands: 6,
       gate: p.gate && gtype === p.gate.type ? Object.assign({}, p.gate) : gateDefaults(gtype),
-      turnstile: p.turnstile || 'none'
+      turnstile: 'none'
     };
   }
   var cfg = defaultsFor('colorbond');
@@ -282,21 +282,25 @@
   // ------------------------------------------------------------------ photo loading
   function loadFile(file) {
     if (!file) return;
-    if (!/^image\//.test(file.type || 'image/')) { say('That file is not a photo. Please choose a JPG or PNG.', true); return; }
+    if (!(/^image\/(jpeg|png|webp)$/i.test(file.type) || (!file.type && /\.(jpe?g|png|webp)$/i.test(file.name || '')))) {
+      say('Please choose a JPG, PNG or WebP photo. Convert HEIC photos to JPG first.', true); return;
+    }
     if (file.size > 25 * 1024 * 1024) { say('Please choose a photo smaller than 25 MB.', true); return; }
     var currentPhoto = ++photoRequest;
+    cancelRemoval();
     say('Loading your photo…');
     var url = URL.createObjectURL(file), img = new Image();
     img.onload = function () {
       URL.revokeObjectURL(url);
       if (currentPhoto !== photoRequest) return;
+      cancelRemoval();
       var k = Math.min(1, MAX_PHOTO / Math.max(img.naturalWidth, img.naturalHeight));
       W = Math.round(img.naturalWidth * k); H = Math.round(img.naturalHeight * k);
       if (!W || !H) { say('That photo could not be read. Please try a different one.', true); return; }
       photo = document.createElement('canvas'); photo.width = W; photo.height = H;
       var g = photo.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, W, H);
       mask = document.createElement('canvas'); mask.width = W; mask.height = H; maskCtx = mask.getContext('2d');
-      undo = []; maskDirty = false;
+      undo = []; maskDirty = false; eraseStatus.textContent = '';
       root.classList.add('has-photo'); drop.hidden = true;
       say('');
       defaultPlacement();
@@ -428,7 +432,10 @@
     var el = e.target, k = el.getAttribute('data-k'); if (!k) return;
     var v = el.type === 'checkbox' ? el.checked : el.hasAttribute('data-num') ? +el.value : el.value;
     if (el.type === 'number') { if (isNaN(v)) return; v = Math.max(+el.min, Math.min(+el.max, v)); el.value = v; }
-    if (k === 'product') cfg = defaultsFor(v, cfg);
+    if (k === 'product') {
+      cfg = defaultsFor(v, cfg);
+      openState = false; D.setOpen(0, true); btnOpen.textContent = 'Open gate'; btnOpen.setAttribute('aria-pressed', 'false');
+    }
     else if (k === 'gate.type') {
       var keep = cfg.gate; cfg.gate = gateDefaults(v); cfg.gate.position = keep.position; cfg.gate.access = keep.access;
       openState = false; D.setOpen(0, true); btnOpen.textContent = 'Open gate'; btnOpen.setAttribute('aria-pressed', 'false');
@@ -456,6 +463,11 @@
   function updateEraseButtons() {
     btnRemove.disabled = busy || !maskDirty; btnClearPaint.disabled = busy || !maskDirty;
     btnUndo.disabled = busy || !undo.length; btnEraseDone.disabled = busy;
+  }
+  function cancelRemoval() {
+    if (eraseCancel) { eraseCancel(); eraseCancel = null; }
+    busy = false;
+    updateEraseButtons();
   }
   btnErase.addEventListener('click', function () { if (photo) setErase(!erase); });
   btnEraseDone.addEventListener('click', function () { setErase(false); });
@@ -505,22 +517,35 @@
     try {
       if (useAI) { aiWorker = aiWorker || new Worker(root.getAttribute('data-ai')); wk = aiWorker; }
       else { fbWorker = fbWorker || new Worker(root.getAttribute('data-fallback')); wk = fbWorker; }
-    } catch (e) { cb('Removing objects is not supported in this browser.'); return; }
+    } catch (e) {
+      if (useAI) { aiBroken = true; runRemoval(rgba, hole, w, h, cb); return; }
+      cb('Removing objects is not supported in this browser.'); return;
+    }
     eraseStatus.textContent = useAI ? 'Starting the removal tool…' : 'Removing…';
     var finished = false;
     var timer = setTimeout(function () {
+      if (useAI) { fallBack(); return; }
       finish('That took too long. Check your connection, or paint a smaller area.');
       wk.terminate(); if (useAI) aiWorker = null; else fbWorker = null;
     }, ERASE_TIMEOUT);
-    function finish(err, data) { if (finished) return; finished = true; clearTimeout(timer); cb(err, data); }
-    function fallBack() { if (finished) return; finished = true; clearTimeout(timer); aiBroken = true; aiWorker = null; runRemoval(rgba, hole, w, h, cb); }
+    eraseCancel = function () {
+      finished = true; clearTimeout(timer); wk.terminate();
+      if (useAI) aiWorker = null; else fbWorker = null;
+    };
+    function finish(err, data) { if (finished) return; finished = true; clearTimeout(timer); eraseCancel = null; cb(err, data); }
+    function fallBack() {
+      if (finished) return;
+      finished = true; clearTimeout(timer); wk.terminate();
+      aiBroken = true; aiWorker = null; eraseCancel = null;
+      runRemoval(rgba, hole, w, h, cb);
+    }
     wk.onerror = function () { if (useAI) fallBack(); else finish('Removal failed in this browser.'); };
     wk.onmessage = function (ev) {
       var m = ev.data; if (m.id !== id) return;
       if (m.stage === 'download') { eraseStatus.textContent = 'Downloading the removal tool (first time only, about 27 MB)… ' + Math.round(m.progress * 100) + '%'; return; }
       if (m.stage === 'thinking') { eraseStatus.textContent = 'Removing…'; return; }
       if (m.progress != null) { eraseStatus.textContent = 'Removing… ' + Math.round(m.progress * 100) + '%'; return; }
-      if (m.error) { if (useAI && !/download/.test(m.error)) fallBack(); else finish('Could not remove that: ' + m.error + '.'); return; }
+      if (m.error) { if (useAI) fallBack(); else finish('Could not remove that: ' + m.error + '.'); return; }
       finish(null, new Uint8ClampedArray(m.rgba));
     };
     var r2 = new Uint8ClampedArray(rgba), h2 = hole.slice();          // copies: the originals are kept for a retry

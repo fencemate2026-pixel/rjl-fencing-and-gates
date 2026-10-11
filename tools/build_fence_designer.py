@@ -243,7 +243,7 @@ tpl = open(os.path.join(SITE, 'contact-us.html'), encoding='utf-8').read()
 head_end, main_s, main_e = tpl.index('</head>'), tpl.index('<main'), tpl.index('</main>') + len('</main>')
 head = tpl[:head_end]
 TITLE = '3D Fence &amp; Gate Designer | RJL Fencing and Gates'
-DESC = 'Design your fence and gate in 3D: Colorbond, timber, slat, pool and security fencing with swing, sliding and automated gates. Add your design to an online quote.'
+DESC = 'Design your residential fence and gate in 3D: Colorbond, timber, slat, batten and pool fencing with swing, sliding and automated gates. Add your design to a quote.'
 head = re.sub(r'<title>.*?</title>', f'<title>{TITLE}</title>', head)
 head = re.sub(r'(<meta name="description" content=")[^"]*', r'\g<1>' + DESC, head)
 head = re.sub(r'(<meta property="og:title" content=")[^"]*', r'\g<1>3D Fence &amp; Gate Designer | RJL Fencing and Gates', head)
@@ -252,7 +252,7 @@ head = re.sub(r'(<meta property="og:url" content=")[^"]*', r'\g<1>https://www.rj
 head = re.sub(r'(<link rel="canonical" href=")[^"]*', r'\g<1>https://www.rjlfencingandgates.com.au/fence-designer', head)
 head = re.sub(r'<script type="application/ld\+json">.*?</script>', '', head, flags=re.S)   # contact-page schema doesn't apply
 head += css_tag
-main = f"""<main id="main-content"><section class="page-hero"><div class="shell"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span><span aria-hidden="true">/</span><b>3D designer</b></span></nav><span class="eyebrow">3D fence designer</span><h1>Design your fence and gate in 3D.</h1><p class="lead">Pick a fence style, enter your lengths and add a gate. Turn the model to see it from any side, then add the design to an online quote.</p></div></section><section class="content-section"><div class="shell">{designer_markup('residential', '/contact-us', False)}</div></section></main>"""
+main = f"""<main id="main-content"><section class="page-hero"><div class="shell"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span><span aria-hidden="true">/</span><b>3D designer</b></span></nav><span class="eyebrow">3D fence designer</span><h1>Design your fence and gate in 3D.</h1><p class="lead">Pick a fence style, enter your lengths and add a gate. Turn the model to see it from any side, then add the design to an online quote.</p><div class="button-row"><a class="button" href="/photo-visualiser">Try the photo visualiser</a></div></div></section><section class="content-section"><div class="shell">{designer_markup('residential', '/contact-us', False)}</div></section></main>"""
 tail = tpl[main_e:]
 tail = tail.replace('</body>', scripts_tag + '</body>', 1)
 page = head + tpl[head_end:main_s] + main + tail

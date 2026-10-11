@@ -1,6 +1,6 @@
 # rjlfencingandgates.com.au
 
-Plain static site (HTML + one CSS file + one small script). No build step.
+Static HTML site with shared styles and scripts. Netlify publishes `site/` without a build step.
 
 - `site/` - the website. Each page is `site/<page-name>.html`.
 - `site/assets/site.js` - mobile menu and email enquiry form.
@@ -17,7 +17,7 @@ Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
 
 ## 3D fence designer (/fence-designer)
 - Master file: `tools/designer/rjl-fence-gate-designer.html` (the full internal RJL tool with materials and quote).
-- Build the website copy: `python3 tools/build_fence_designer.py` (first run: `THREE_SRC=/path/to/node_modules/three` for three@0.128.0).
+- Regenerate the shared designer assets: `python3 tools/build_fence_designer.py --assets-only` (first run: `THREE_SRC=/path/to/node_modules/three` for three@0.128.0). Update the version hashes in both designer page wrappers after regeneration. Omit `--assets-only` only when intentionally rebuilding wrappers and the commercial drop-in distribution.
 - Website mode hides materials, prices and rules. "Add to online quote" hands a plain-text design summary to `/contact-us`
   via sessionStorage (prefilled by `site/assets/site.js`). Nothing is sent to a server.
 - `dist/commercial-fence-designer/` is a drop-in copy for rjlcommercialgroup.com (RJL Commercial logo, own email quote page).
@@ -25,7 +25,7 @@ Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
 ## Residential content and location pages (October 2026)
 - Canonical suburb pages: `/locations/fencing-mill-park`, `/locations/fencing-epping`, `/locations/fencing-south-morang`, and `/locations/fencing-greensborough`.
 - Prior `/fencing-*` URLs and the shorter `/locations/<suburb>` variants redirect permanently to those pages in `netlify.toml`. Bundoora retains `/fencing-bundoora`.
-- The shared Service suburbs menu links to canonical pages. Each suburb quote link prefills the existing enquiry address field; the email workflow is unchanged.
+- The global footer links to the service-suburb hub and all five canonical suburb pages. Each suburb quote link prefills the existing enquiry address field; the email workflow is unchanged.
 - `/llms.txt` contains the service summary and canonical links. Review figures are explicitly dated 7 October 2026, with a link to the live Google profile.
 - Business JSON-LD keeps the legal identity and user-supplied Thomastown headquarters; it does not invent an address or Google-sourced self-review AggregateRating. FAQ JSON-LD mirrors the visible accordion answers.
 - Pool installation, council registration, formal barrier certification and licensed electrical bonding remain distinct responsibilities. South Morang uses VIC 3752.
