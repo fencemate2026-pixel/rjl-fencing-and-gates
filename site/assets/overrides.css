@@ -109,3 +109,44 @@ html body,html body *:not(svg):not(svg *),html body input,html body select,html 
 
 /* Give the additional north-west service area card the full available row. */
 .area-group.area-group-wide{grid-column:1/-1}
+
+/* align-with-commercial 2026-10-13 */
+/* 1. Page headers: same title size rule as RJL Commercial, shorter heroes site-wide */
+html body :is(.res-hero-content,.page-hero,.regulation-hero) h1{
+  font-size:clamp(30px,4.4vw,56px)!important;line-height:1.12!important;letter-spacing:-.025em!important;
+  max-width:1000px;margin-bottom:18px!important}
+html body .res-hero-content h1 em{letter-spacing:-.02em!important}
+html body :is(.res-hero-content,.page-hero,.regulation-hero) :is(h1 ~ p):not(.eyebrow){
+  font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;font-size:1rem!important;font-weight:400!important;
+  line-height:1.65!important;text-transform:none!important;letter-spacing:normal!important;max-width:760px}
+html body .res-hero{min-height:0!important}
+html body .res-hero-content{min-height:520px!important;padding:56px 0 140px!important;justify-content:center!important}
+html body :is(.page-hero,.regulation-hero){padding-top:56px!important;padding-bottom:56px!important}
+@media (max-width:900px){
+  html body .res-hero-content{min-height:0!important;padding:44px 0 36px!important}
+  html body :is(.page-hero,.regulation-hero){padding-top:40px!important;padding-bottom:40px!important}
+}
+
+/* 2. Request a quote = orange, same as RJL Commercial's main buttons */
+html body .site-header .button,
+html body .mobile-menu-actions a[href="/contact-us"],
+html body a.button.button-light[href^="/contact-us"]{
+  background:var(--orange-bright,#f36f21)!important;border-color:var(--orange-bright,#f36f21)!important;color:var(--navy,#071f38)!important}
+html body .site-header .button:hover,html body .site-header .button:focus-visible,
+html body .mobile-menu-actions a[href="/contact-us"]:hover,
+html body a.button.button-light[href^="/contact-us"]:hover{
+  background:var(--orange,#d95420)!important;border-color:var(--orange,#d95420)!important;color:#fff!important}
+
+/* 3. 24/7 Rapid Response tab */
+html body .desktop-nav a.nav-rapid{color:#b3121f!important;font-weight:800;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+html body .desktop-nav a.nav-rapid::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:#e0202a;animation:rjlRapidPulse 1.8s ease-out infinite}
+html body .desktop-nav a.nav-rapid:hover,html body .desktop-nav a.nav-rapid:focus-visible{color:#7d0a14!important}
+html body .mobile-menu-panel a.mobile-rapid{background:#9e0f1b;color:#fff!important;border-radius:8px;padding-left:14px;padding-right:14px}
+html body .mobile-menu-panel a.mobile-rapid b{color:#fff}
+@keyframes rjlRapidPulse{0%{box-shadow:0 0 0 0 rgba(224,32,42,.55)}70%{box-shadow:0 0 0 7px rgba(224,32,42,0)}100%{box-shadow:0 0 0 0 rgba(224,32,42,0)}}
+@media (prefers-reduced-motion:reduce){html body .desktop-nav a.nav-rapid::before{animation:none}}
+/* page-header photo kept compact; desktop menu on one line with the Rapid Response tab */
+html body .page-hero-image{max-height:420px;overflow:hidden}
+html body .page-hero-image img{width:100%;height:100%;max-height:420px;object-fit:cover}
+html body .desktop-nav>a{white-space:nowrap!important}
+@media (max-width:1320px){html body .desktop-nav{gap:11px!important}html body .desktop-nav>a{font-size:10px!important}}
