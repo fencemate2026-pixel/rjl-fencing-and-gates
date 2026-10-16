@@ -2594,6 +2594,73 @@ function initDrag(){
   window.addEventListener('pointercancel', up, true);
 }
 
+/* ---------------------------------------------------------------- website: full-screen designer ("app")
+ * Website only. The designer can open as its own full-screen page, laid out like a professional fence
+ * planner in the site's colours: slim top bar (brand, view buttons, Open gates, Dimensions, Add to online
+ * quote, Close), the 3D view as large as the screen allows with a floating summary card, and a right-hand
+ * panel of cards (runs, fence system tiles, size, colour circles, gate, quote). Phones: view on top, cards
+ * below. Opens from "Start designing" links (href="#design"), the designer's own button, or a #design
+ * address; Close, Esc or Back returns to the page. Existing controls are moved, not copied, so every
+ * button keeps its behaviour; Close puts them back.
+ */
+let appOn = false;
+function initApp(){
+  if (!WEB || !HOST || OVERLAY) return;
+  const work = HOST.querySelector('.work'), stage = HOST.querySelector('.stage'), controls = HOST.querySelector('.controls');
+  const toolbar = HOST.querySelector('.stage .toolbar'), cta = HOST.querySelector('.quote-cta'), warns = $('#warns');
+  if (!work || !stage || !controls || !toolbar) return;
+  const residential = CFG.brand !== 'commercial';
+  const bar = document.createElement('div'); bar.className = 'app-bar';
+  bar.innerHTML = '<img class="app-logo" alt="" height="36"/>' +
+    '<div class="app-title"><strong>3D Fence &amp; Gate Designer</strong><span>Drag the gate or a panel in the view to slide it along the fence</span></div>' +
+    '<div class="app-views" role="group" aria-label="View"></div><span class="app-sp"></span><div class="app-acts"></div>' +
+    '<button type="button" class="btn app-close" aria-label="Close the full-screen designer">✕<span> Close</span></button>';
+  const logo = bar.querySelector('.app-logo');
+  logo.src = residential ? '/images/rjl-logo-trim.webp' : '/rjl-commercial-logo.webp';
+  logo.alt = residential ? 'RJL Fencing and Gates' : 'RJL Commercial';
+  const views = bar.querySelector('.app-views'), acts = bar.querySelector('.app-acts');
+  const quoteBtn = document.createElement('button'); quoteBtn.type = 'button'; quoteBtn.className = 'btn primary app-quote'; quoteBtn.textContent = 'Add to online quote';
+  quoteBtn.addEventListener('click', () => { const b = $('#addToQuote'); if (b) b.click(); });
+  const openBtn = document.createElement('button'); openBtn.type = 'button'; openBtn.className = 'btn primary app-open'; openBtn.textContent = '⤢ Full-screen designer';
+  toolbar.insertBefore(openBtn, toolbar.firstChild);
+  let homes = [], pushed = false;
+  const moveTo = (el, parent, before) => { if (!el) return; homes.push([el, el.parentNode, el.nextSibling]); parent.insertBefore(el, before || null); };
+  const restore = () => { for (let i = homes.length - 1; i >= 0; i--){ const [el, p, n] = homes[i]; p.insertBefore(el, n); } homes = []; };
+  function setApp(on, fromHistory){
+    if (appOn === on) return;
+    appOn = on;
+    if (on){
+      HOST.insertBefore(bar, HOST.firstChild);
+      HOST.querySelectorAll('[data-view]').forEach(b => moveTo(b, views));
+      moveTo($('#btnOpen'), acts); moveTo($('#btnDims'), acts); bar.insertBefore(quoteBtn, bar.querySelector('.app-close'));
+      if (warns) moveTo(warns, controls, controls.firstChild);
+      if (cta) moveTo(cta, controls);
+      const copy = HOST.querySelector(':scope > .rjl-copy'); if (copy) moveTo(copy, controls);
+      openBtn.hidden = true;
+    } else {
+      restore(); if (bar.parentNode) bar.remove(); openBtn.hidden = false;
+    }
+    HOST.classList.toggle('app', on);
+    document.documentElement.classList.toggle('rjl-app-on', on);
+    if (on && !fromHistory && location.hash !== '#design'){ try { history.pushState({rjlDesigner:1}, '', location.pathname + location.search + '#design'); pushed = true; } catch(e){} }
+    if (!on){
+      if (pushed && !fromHistory){ try { history.back(); } catch(e){} }
+      else if (location.hash === '#design'){ try { history.replaceState(null, '', location.pathname + location.search); } catch(e){} }
+      pushed = false;
+      setTimeout(() => HOST.scrollIntoView({block:'start'}), 0);
+    }
+    fitCamera.userMoved = false;
+    requestAnimationFrame(() => { if (renderer) resize(); fitCamera(view); });
+    try { if (window.gtag) window.gtag('event', on ? 'designer_fullscreen_open' : 'designer_fullscreen_close'); } catch(e){}
+  }
+  bar.querySelector('.app-close').addEventListener('click', () => setApp(false));
+  openBtn.addEventListener('click', () => setApp(true));
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href="#design"],[data-open-designer]'); if (a){ e.preventDefault(); setApp(true); } });
+  window.addEventListener('popstate', () => { if (appOn && location.hash !== '#design') setApp(false, true); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && appOn && !document.querySelector('.toast')) setApp(false); });
+  if (location.hash === '#design') setApp(true, true);
+}
+
 /* ---------------------------------------------------------------- website: add to online quote */
 function designSummary(){
   const lines = ['Design from the online 3D fence designer:'];
@@ -2725,6 +2792,7 @@ function exposeOverlay(){
 /* ---------------------------------------------------------------- boot */
 init3D();
 initDrag();
+initApp();
 if (WEB && HOST) HOST.insertAdjacentHTML('beforeend', '<p class="rjl-copy">\u00a9 ' + new Date().getFullYear() + ' RJL Commercial Fencing and Gates (VIC) Pty Ltd. ' +
   'The RJL 3D Fence &amp; Gate Designer, its software, 3D models and design are protected by copyright. You may use it to plan your own project. ' +
   'Copying, scraping, reverse engineering or reusing any part of it is not permitted.</p>');

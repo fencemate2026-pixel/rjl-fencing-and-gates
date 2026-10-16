@@ -169,3 +169,75 @@ input[type=text], #rjl-designer input[type=number], #rjl-designer select, #rjl-d
 #rjl-designer .btn[aria-pressed="true"], #rjl-designer .chip.gate{color:#fff}
 #rjl-designer .toast{color:#fff}
 @media (max-width:920px){#rjl-designer .stage{order:-1}#rjl-designer #viewport{height:clamp(300px,52vh,520px)}}
+/* ---- full-screen designer ("app"): its own page, laid out like a professional fence planner ---- */
+html.rjl-app-on,html.rjl-app-on body{overflow:hidden!important}
+html.rjl-app-on .chat-widget,html.rjl-app-on .chat-launcher,html.rjl-app-on .rjl-chat-launcher,html.rjl-app-on [class*="rjl-chat"],html.rjl-app-on .sticky-quote{display:none!important}
+#rjl-designer .app-open{margin-right:6px}
+#rjl-designer.app{--navy:#071f38;--aline:#dfe3e8;position:fixed;inset:0;z-index:2147483000;display:grid;grid-template-rows:60px minmax(0,1fr);background:#fff;margin:0;padding:0;max-width:none}
+#rjl-designer.app .app-bar{display:flex;align-items:center;gap:14px;padding:0 18px;background:#fff;border-bottom:1px solid var(--aline);box-shadow:0 1px 8px rgba(7,31,56,.08);position:relative;z-index:5;min-width:0}
+#rjl-designer.app .app-logo{height:36px;width:auto;flex:none}
+#rjl-designer.app .app-title{display:flex;flex-direction:column;line-height:1.25;padding-left:14px;border-left:1px solid var(--aline);min-width:0}
+#rjl-designer.app .app-title strong{font-size:16px;color:var(--navy);white-space:nowrap}
+#rjl-designer.app .app-title span{font-size:12.5px;color:#5b6570;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rjl-designer.app .app-views{display:inline-flex;border:1px solid #cfd6de;border-radius:8px;overflow:hidden;margin-left:10px;flex:none}
+#rjl-designer.app .app-views .btn{border:0;border-radius:0;border-right:1px solid #cfd6de;background:#fff;min-height:38px;padding:7px 14px}
+#rjl-designer.app .app-views .btn:last-child{border-right:0}
+#rjl-designer.app .app-views .btn:hover{background:#f3f5f7}
+#rjl-designer.app .app-sp{flex:1}
+#rjl-designer.app .app-acts{display:flex;align-items:center;gap:8px;flex:none}
+#rjl-designer.app .app-bar .btn{min-height:40px;border-radius:8px}
+#rjl-designer.app .app-bar .btn.primary{font-size:14px;padding:9px 16px}
+#rjl-designer.app .controls > .rjl-copy{margin:4px 2px 8px;font-size:11.5px}
+#rjl-designer.app .app-close{border-color:var(--aline);color:var(--navy);flex:none}
+#rjl-designer.app .work{display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:0;min-height:0;margin:0;align-items:stretch}
+#rjl-designer.app .stage{order:1;position:relative;display:flex;flex-direction:column;min-height:0;padding:0;margin:0;top:auto}
+#rjl-designer.app .stage .toolbar{display:none}
+#rjl-designer.app #viewport{flex:1 1 auto;height:auto!important;min-height:0;border:0;border-radius:0}
+#rjl-designer.app .v-note{top:14px;bottom:auto;left:14px;background:rgba(255,255,255,.88);color:#3a434c;border-radius:6px;padding:5px 9px}
+#rjl-designer.app .summary{position:absolute;left:20px;bottom:20px;z-index:3;max-width:min(720px,calc(100% - 40px));margin:0;background:#fff;border-radius:10px;
+  border-left:4px solid var(--accent);box-shadow:0 8px 26px rgba(7,31,56,.24);padding:10px 14px}
+#rjl-designer.app .summary:empty{display:none}
+#rjl-designer.app .summary .panel{border:0;padding:0;margin:0;background:none;box-shadow:none}
+#rjl-designer.app .summary .panel + .panel{margin-top:8px;padding-top:8px;border-top:1px solid var(--aline)}
+#rjl-designer.app .controls{order:2;min-height:0;overflow-y:auto;background:#f3f5f7;border-left:1px solid var(--aline);padding:12px;margin:0;position:static;max-height:none;overscroll-behavior:contain}
+#rjl-designer.app .controls > .panel{background:none;border:0;box-shadow:none;padding:0;margin:0}
+/* cards */
+#rjl-designer.app #runTabs,#rjl-designer.app #runEditor > *,#rjl-designer.app .controls > details,#rjl-designer.app .controls > .quote-cta,#rjl-designer.app .controls > .warns:not(:empty){
+  background:#fff;border:1px solid var(--aline);border-radius:10px;padding:14px;margin:0 0 12px}
+#rjl-designer.app #runTabs{display:flex;flex-wrap:wrap;gap:8px;border-radius:10px 10px 0 0;margin:0;border-bottom:0}
+#rjl-designer.app #runEditor > label.f:first-child{border-radius:0 0 10px 10px;border-top:0;padding-top:4px}
+#rjl-designer.app #runEditor{display:block;padding:0;border:0}
+#rjl-designer.app #runEditor > fieldset{display:block;min-width:0}
+#rjl-designer.app #runEditor > fieldset > legend{float:left;width:100%;padding:0;margin:0 0 12px;font-size:15px}
+#rjl-designer.app #runEditor > fieldset > legend + *{clear:both}
+#rjl-designer.app #runEditor > .grid2:first-of-type{border-radius:10px 10px 0 0;margin-bottom:0;border-bottom:0}
+#rjl-designer.app #runEditor > .grid2:first-of-type::before{content:"Size and layout";grid-column:1/-1;font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.06em}
+#rjl-designer.app #runEditor > .slide-row{border-radius:0;border-top:0;border-bottom:0;margin:0;padding-top:4px;padding-bottom:4px}
+#rjl-designer.app #runEditor > .slide-row + .hint{border-radius:0 0 10px 10px;border-top:0;padding-top:4px}
+#rjl-designer.app #runEditor > .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+#rjl-designer.app .controls > .warns:not(:empty){background:#fff8ec;border-color:#f1d29a}
+#rjl-designer.app .controls > .quote-cta{border-top:4px solid var(--accent)}
+/* plain font for labels and small print (brand font kept for headings and buttons) */
+#rjl-designer.app .app-title span,#rjl-designer.app .hint,#rjl-designer.app .f > span,#rjl-designer.app input,#rjl-designer.app select,#rjl-designer.app .chk,
+#rjl-designer.app .chip,#rjl-designer.app .sum-h span,#rjl-designer.app .v-note,#rjl-designer.app .quote-cta p,#rjl-designer.app .warns,#rjl-designer.app .pcard span,#rjl-designer.app .rjl-copy{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif!important;text-transform:none!important;letter-spacing:normal!important}
+@media (max-width:1180px) and (min-width:921px){#rjl-designer.app .work{grid-template-columns:minmax(0,1fr) 350px}#rjl-designer.app .app-title span{display:none}}
+@media (max-width:920px){
+  #rjl-designer.app{display:flex;flex-direction:column}
+  #rjl-designer.app .app-bar{flex:0 0 auto;flex-wrap:wrap;gap:6px 8px;padding:6px 8px}
+  #rjl-designer.app .app-logo{margin-right:auto}
+  #rjl-designer.app .app-views,#rjl-designer.app .app-acts{order:5}
+  #rjl-designer.app .app-views .btn,#rjl-designer.app .app-acts .btn{padding:5px 7px!important;font-size:11.5px!important;min-height:32px!important}
+  #rjl-designer.app .app-acts{gap:4px}
+  #rjl-designer.app .app-title,#rjl-designer.app .app-sp{display:none}
+  #rjl-designer.app .app-logo{height:28px}
+  #rjl-designer.app .app-views{margin-left:0}
+  #rjl-designer.app .app-views .btn,#rjl-designer.app .app-acts .btn{padding:6px 9px;font-size:12.5px;min-height:36px}
+  #rjl-designer.app .app-close span{display:none}
+  #rjl-designer.app .work{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  #rjl-designer.app .stage{order:0;flex:0 0 auto}
+  #rjl-designer.app #viewport{flex:none;height:46dvh!important}
+  #rjl-designer.app .summary{position:static;max-width:none;margin:8px;padding:8px 10px;box-shadow:none;border:1px solid var(--aline);border-left:4px solid var(--accent)}
+  #rjl-designer.app .v-note{display:none}
+  #rjl-designer.app .controls{order:1;flex:1 1 auto;border-left:0;border-top:1px solid var(--aline);padding:10px}
+}

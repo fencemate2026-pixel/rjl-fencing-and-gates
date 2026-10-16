@@ -624,3 +624,11 @@ fencing-greensborough.html	created suburb page (title 55, desc 149)	1
 2026-10-16T23:05:06 build_fence_designer: ok - css 15859 B, js 135575 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
 2026-10-16T23:05:13 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped
 2026-10-17T08:51:11 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped
+2026-10-17T10:19:31 build_fence_designer: website js: 198211 -> 138227 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:19:31 build_fence_designer: ok - css 22505 B, js 138462 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T10:20:29 build_fence_designer: website js: 198306 -> 138287 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:20:29 build_fence_designer: ok - css 22655 B, js 138522 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T10:21:40 build_fence_designer: website js: 198339 -> 138318 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:21:40 build_fence_designer: ok - css 22846 B, js 138553 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T10:22:14 build_fence_designer: website js: 198339 -> 138318 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:22:14 build_fence_designer: ok - css 22944 B, js 138553 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
