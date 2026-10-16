@@ -184,7 +184,7 @@ def seo_edits(s: str, fname: str, log):
         s = re.sub(r'<link rel="canonical"[^>]*/>', "", s)
         s = s.replace("<title>", '<meta name="robots" content="noindex"/><title>', 1)
         log(fname, "404 set to noindex")
-    if fname == "privacy-policy.html":
+    if fname == "privacy-policy.html" and "Access, correction and complaints" not in s:  # superseded by tools/rewrite_privacy_policy.py
         if "<h2>Contact</h2>" not in s:
             raise SystemExit("ABORT: privacy policy Contact heading not found")
         s = s.replace("<h2>Contact</h2>", PRIVACY_SECTION + "<h2>Contact</h2>", 1)
