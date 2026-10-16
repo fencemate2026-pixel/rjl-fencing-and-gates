@@ -605,3 +605,21 @@ fencing-greensborough.html	created suburb page (title 55, desc 149)	1
 2026-10-10T21:43:19 build_fence_designer: ok - css 15364 B, js 122016 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
 2026-10-13T18:19:14 align_with_commercial: 36/36 pages updated, overrides.css v=ba1e178f, problems=none
 2026-10-13T18:21:28 align_with_commercial: 36/36 pages updated, overrides.css v=726c1fa1, problems=none
+2026-10-16T22:43:55 build_fence_designer: website js: 190899 -> 133810 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:43:55 build_fence_designer: ok - css 15768 B, js 134045 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:45:44 build_fence_designer: website js: 190926 -> 133804 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:45:44 build_fence_designer: ok - css 15768 B, js 134039 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:46:37 build_fence_designer: website js: 191146 -> 133893 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:46:37 build_fence_designer: ok - css 15768 B, js 134128 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:47:10 build_fence_designer: website js: 191250 -> 133896 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:47:10 build_fence_designer: ok - css 15768 B, js 134131 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:50:54 build_fence_designer: website js: 192149 -> 134534 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:50:54 build_fence_designer: ok - css 15768 B, js 134769 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:53:56 build_fence_designer: website js: 192770 -> 134906 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:53:56 build_fence_designer: ok - css 15768 B, js 135141 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:57:23 build_fence_designer: website js: 192911 -> 134970 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:57:23 build_fence_designer: ok - css 15768 B, js 135205 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T23:02:13 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped
+2026-10-16T23:05:06 build_fence_designer: website js: 193320 -> 135340 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T23:05:06 build_fence_designer: ok - css 15859 B, js 135575 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T23:05:13 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped

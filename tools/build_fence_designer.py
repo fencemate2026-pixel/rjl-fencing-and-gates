@@ -199,7 +199,7 @@ def designer_markup(brand, quote_url, turnstiles):
         <button class="btn" type="button" id="btnOpen" aria-pressed="false">Open gates</button>
         <button class="btn" type="button" id="btnDims" aria-pressed="true">Dimensions</button>
       </div>
-      <div id="viewport"><span class="v-note">Drag to turn · scroll or pinch to zoom · right-drag to move</span></div>
+      <div id="viewport"><span class="v-note">Drag the gate or a panel to slide it (phone: hold, then drag) · drag elsewhere to turn</span></div>
       <div class="summary" id="layoutSummary" aria-live="polite"></div>
       <div class="warns" id="warns"></div>
       <div class="panel quote-cta">

@@ -35,6 +35,13 @@ input[type=text], #rjl-designer input[type=number], #rjl-designer select, #rjl-d
 #rjl-designer .chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
 #rjl-designer .chk input{width:16px;height:16px;accent-color:var(--accent)}
 #rjl-designer .hint{font-size:12px;color:var(--muted)}
+#rjl-designer .rjl-copy{font-size:12px;color:var(--muted);margin:14px 0 0;line-height:1.5}
+#rjl-designer .slide-row{display:flex;gap:10px;align-items:end;margin-top:10px}
+#rjl-designer .slide-row .f{flex:1}
+#rjl-designer .slide-row input[type=range]{width:100%;accent-color:var(--accent,#d95420)}
+#rjl-designer .gatebox input[type=range]{width:100%;accent-color:var(--accent,#d95420)}
+#rjl-designer #viewport canvas.can-grab{cursor:grab}
+#rjl-designer #viewport canvas.grabbing{cursor:grabbing}
 #rjl-designer .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
 #rjl-designer .btn:hover{border-color:var(--ink)}
 #rjl-designer .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
