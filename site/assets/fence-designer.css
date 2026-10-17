@@ -245,7 +245,15 @@ html.rjl-app-on .chat-widget,html.rjl-app-on .chat-launcher,html.rjl-app-on .rjl
 #rjl-designer:not(.app) > .work{display:none}
 #rjl-designer.app > .dz-launch{display:none}
 #rjl-designer .dz-launch{color:#071f38}
-#rjl-designer .dz-hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;align-items:center}
+#rjl-designer .dz-hero{display:block}
+#rjl-designer .dz-copy{text-align:center;max-width:780px;margin:34px auto 0}
+#rjl-designer .dz-copy p{margin-left:auto!important;margin-right:auto!important}
+#rjl-designer .dz-actions{justify-content:center}
+#rjl-designer .dz-launch .dz-app{margin:0;border-radius:14px;overflow:hidden;background:#fff;border:1px solid #d9dee4;box-shadow:0 30px 60px -20px rgba(7,31,56,.35),0 10px 20px -10px rgba(7,31,56,.2)}
+#rjl-designer .dz-app-bar{display:flex;gap:7px;padding:11px 14px;background:#071f38}
+#rjl-designer .dz-app-bar i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.35)}
+#rjl-designer .dz-launch .dz-app img{aspect-ratio:auto;border-radius:0;box-shadow:none}
+#rjl-designer .dz-app figcaption{padding:10px 16px;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;text-transform:none!important;font-size:14px;color:#5b6570;border-top:1px solid #e6e9ed}
 #rjl-designer .dz-copy h2{font-size:clamp(26px,2.6vw,36px);line-height:1.1;margin:0 0 14px;color:#071f38}
 #rjl-designer .dz-copy p,#rjl-designer .dz-small,#rjl-designer .dz-examples figcaption,#rjl-designer .dz-list li{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;text-transform:none!important;letter-spacing:normal!important}
 #rjl-designer .dz-copy p{max-width:52ch;margin:0 0 22px;font-size:17px;line-height:1.6;color:#2f3b47}
@@ -263,7 +271,7 @@ html.rjl-app-on .chat-widget,html.rjl-app-on .chat-launcher,html.rjl-app-on .rjl
 #rjl-designer .dz-list ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 #rjl-designer .dz-list li{position:relative;padding-left:28px;font-size:14.5px;line-height:1.45;color:#dbe4ee}
 #rjl-designer .dz-list li::before{content:"\2713";position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;background:var(--accent);color:#fff;font:700 11px/19px system-ui,sans-serif;text-align:center}
-@media (max-width:920px){#rjl-designer .dz-hero{grid-template-columns:1fr;gap:24px}#rjl-designer .dz-examples{grid-template-columns:1fr;margin-top:32px}#rjl-designer .dz-begin{width:100%;text-align:center;justify-content:center}}
+@media (max-width:920px){#rjl-designer .dz-copy{margin-top:24px}#rjl-designer .dz-examples{grid-template-columns:1fr;margin-top:32px}#rjl-designer .dz-begin{width:100%;text-align:center;justify-content:center}}
 /* ---- app finish: navy bar, drawing title block, numbered steps, chips (memorable element = the title block) ---- */
 #rjl-designer.app .app-bar{background:var(--navy);border-bottom:0;box-shadow:0 2px 14px rgba(7,31,56,.35);color:#fff}
 #rjl-designer.app .app-logo{background:#fff;border-radius:7px;padding:4px 8px;height:40px;box-sizing:border-box}

@@ -2662,12 +2662,12 @@ function initApp(){
   // launch section (examples of what it does, then begin). The designer itself only shows full screen.
   const launch = document.createElement('section'); launch.className = 'dz-launch'; launch.setAttribute('aria-labelledby', 'dzLaunchTitle');
   launch.innerHTML = `<div class="dz-hero">
+      <figure class="dz-app"><div class="dz-app-bar" aria-hidden="true"><i></i><i></i><i></i></div><img src="/assets/examples/des-app.webp" alt="The 3D fence designer: a fence and gate model with the options beside it" width="1440" height="810" fetchpriority="high"><figcaption>The designer opens full screen when you start.</figcaption></figure>
       <div class="dz-copy">
         <h2 id="dzLaunchTitle">Design your ${residential ? 'fence and gate' : 'site fencing and gates'} in 3D, at real size</h2>
         <p>Pick a fence system, enter your lengths and add a gate. Panels, posts and gates are laid out the way we build them. When you are happy, send it to us and we measure on site before confirming the quote.</p>
         <div class="dz-actions"><a class="btn primary dz-begin" href="#design">Start designing</a><span class="dz-small">Free. Your design is saved on this device.</span></div>
       </div>
-      <figure class="dz-main"><img src="/assets/examples/des-iso.webp" alt="A 3D fence design with a gate, shown at an angle" width="900" height="560" loading="lazy"></figure>
     </div>
     <div class="dz-examples">
       <figure><img src="/assets/examples/des-open.webp" alt="The same design with the gate open" width="900" height="560" loading="lazy"><figcaption><strong>Open the gates</strong>See swing and sliding gates move, and check the space they need.</figcaption></figure>
