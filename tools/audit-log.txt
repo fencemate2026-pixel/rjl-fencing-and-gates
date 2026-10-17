@@ -605,3 +605,46 @@ fencing-greensborough.html	created suburb page (title 55, desc 149)	1
 2026-10-10T21:43:19 build_fence_designer: ok - css 15364 B, js 122016 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
 2026-10-13T18:19:14 align_with_commercial: 36/36 pages updated, overrides.css v=ba1e178f, problems=none
 2026-10-13T18:21:28 align_with_commercial: 36/36 pages updated, overrides.css v=726c1fa1, problems=none
+2026-10-16T22:43:55 build_fence_designer: website js: 190899 -> 133810 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:43:55 build_fence_designer: ok - css 15768 B, js 134045 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:45:44 build_fence_designer: website js: 190926 -> 133804 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:45:44 build_fence_designer: ok - css 15768 B, js 134039 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:46:37 build_fence_designer: website js: 191146 -> 133893 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:46:37 build_fence_designer: ok - css 15768 B, js 134128 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:47:10 build_fence_designer: website js: 191250 -> 133896 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:47:10 build_fence_designer: ok - css 15768 B, js 134131 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:50:54 build_fence_designer: website js: 192149 -> 134534 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:50:54 build_fence_designer: ok - css 15768 B, js 134769 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:53:56 build_fence_designer: website js: 192770 -> 134906 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:53:56 build_fence_designer: ok - css 15768 B, js 135141 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T22:57:23 build_fence_designer: website js: 192911 -> 134970 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T22:57:23 build_fence_designer: ok - css 15768 B, js 135205 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T23:02:13 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped
+2026-10-16T23:05:06 build_fence_designer: website js: 193320 -> 135340 bytes minified, 9 price ranges removed, domain lock on
+2026-10-16T23:05:06 build_fence_designer: ok - css 15859 B, js 135575 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-16T23:05:13 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped
+2026-10-17T08:51:11 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped
+2026-10-17T10:19:31 build_fence_designer: website js: 198211 -> 138227 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:19:31 build_fence_designer: ok - css 22505 B, js 138462 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T10:20:29 build_fence_designer: website js: 198306 -> 138287 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:20:29 build_fence_designer: ok - css 22655 B, js 138522 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T10:21:40 build_fence_designer: website js: 198339 -> 138318 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:21:40 build_fence_designer: ok - css 22846 B, js 138553 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T10:22:14 build_fence_designer: website js: 198339 -> 138318 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T10:22:14 build_fence_designer: ok - css 22944 B, js 138553 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T11:43:01 build_fence_designer: website js: 204360 -> 143161 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T11:43:01 build_fence_designer: ok - css 32813 B, js 143396 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T11:57:35 build_fence_designer: website js: 204427 -> 143170 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T11:57:35 build_fence_designer: ok - css 32813 B, js 143405 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T12:08:56 build_fence_designer: website js: 204554 -> 143182 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T12:08:56 build_fence_designer: ok - css 32813 B, js 143417 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T21:37:40 build_fence_designer: website js: 204554 -> 143182 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T21:37:40 build_fence_designer: ok - css 39721 B, js 143417 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T21:38:46 build_fence_designer: website js: 204554 -> 143182 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T21:38:46 build_fence_designer: ok - css 39721 B, js 143417 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T21:39:48 build_fence_designer: website js: 204554 -> 143182 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T21:39:48 build_fence_designer: ok - css 39721 B, js 143417 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T21:41:22 build_fence_designer: website js: 204554 -> 143182 bytes minified, 9 price ranges removed, domain lock on
+2026-10-17T21:41:22 build_fence_designer: ok - css 32819 B, js 143417 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-17T21:44:43 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped
+2026-10-17T21:46:58 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped

@@ -35,6 +35,13 @@ input[type=text], #rjl-designer input[type=number], #rjl-designer select, #rjl-d
 #rjl-designer .chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
 #rjl-designer .chk input{width:16px;height:16px;accent-color:var(--accent)}
 #rjl-designer .hint{font-size:12px;color:var(--muted)}
+#rjl-designer .rjl-copy{font-size:12px;color:var(--muted);margin:14px 0 0;line-height:1.5}
+#rjl-designer .slide-row{display:flex;gap:10px;align-items:end;margin-top:10px}
+#rjl-designer .slide-row .f{flex:1}
+#rjl-designer .slide-row input[type=range]{width:100%;accent-color:var(--accent,#d95420)}
+#rjl-designer .gatebox input[type=range]{width:100%;accent-color:var(--accent,#d95420)}
+#rjl-designer #viewport canvas.can-grab{cursor:grab}
+#rjl-designer #viewport canvas.grabbing{cursor:grabbing}
 #rjl-designer .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
 #rjl-designer .btn:hover{border-color:var(--ink)}
 #rjl-designer .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -162,3 +169,174 @@ input[type=text], #rjl-designer input[type=number], #rjl-designer select, #rjl-d
 #rjl-designer .btn[aria-pressed="true"], #rjl-designer .chip.gate{color:#fff}
 #rjl-designer .toast{color:#fff}
 @media (max-width:920px){#rjl-designer .stage{order:-1}#rjl-designer #viewport{height:clamp(300px,52vh,520px)}}
+/* ---- full-screen designer ("app"): its own page, laid out like a professional fence planner ---- */
+html.rjl-app-on,html.rjl-app-on body{overflow:hidden!important}
+html.rjl-app-on .chat-widget,html.rjl-app-on .chat-launcher,html.rjl-app-on .rjl-chat-launcher,html.rjl-app-on [class*="rjl-chat"],html.rjl-app-on .sticky-quote{display:none!important}
+#rjl-designer .app-open{margin-right:6px}
+#rjl-designer.app{--navy:#071f38;--aline:#dfe3e8;position:fixed;inset:0;z-index:2147483000;display:grid;grid-template-rows:60px minmax(0,1fr);background:#fff;margin:0;padding:0;max-width:none}
+#rjl-designer.app .app-bar{display:flex;align-items:center;gap:14px;padding:0 18px;background:#fff;border-bottom:1px solid var(--aline);box-shadow:0 1px 8px rgba(7,31,56,.08);position:relative;z-index:5;min-width:0}
+#rjl-designer.app .app-logo{height:36px;width:auto;flex:none}
+#rjl-designer.app .app-title{display:flex;flex-direction:column;line-height:1.25;padding-left:14px;border-left:1px solid var(--aline);min-width:0}
+#rjl-designer.app .app-title strong{font-size:16px;color:var(--navy);white-space:nowrap}
+#rjl-designer.app .app-title span{font-size:12.5px;color:#5b6570;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rjl-designer.app .app-views{display:inline-flex;border:1px solid #cfd6de;border-radius:8px;overflow:hidden;margin-left:10px;flex:none}
+#rjl-designer.app .app-views .btn{border:0;border-radius:0;border-right:1px solid #cfd6de;background:#fff;min-height:38px;padding:7px 14px}
+#rjl-designer.app .app-views .btn:last-child{border-right:0}
+#rjl-designer.app .app-views .btn:hover{background:#f3f5f7}
+#rjl-designer.app .app-sp{flex:1}
+#rjl-designer.app .app-acts{display:flex;align-items:center;gap:8px;flex:none}
+#rjl-designer.app .app-bar .btn{min-height:40px;border-radius:8px}
+#rjl-designer.app .app-bar .btn.primary{font-size:14px;padding:9px 16px}
+#rjl-designer.app .controls > .rjl-copy{margin:4px 2px 8px;font-size:11.5px}
+#rjl-designer.app .app-close{border-color:var(--aline);color:var(--navy);flex:none}
+#rjl-designer.app .work{display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:0;min-height:0;margin:0;align-items:stretch}
+#rjl-designer.app .stage{order:1;position:relative;display:flex;flex-direction:column;min-height:0;padding:0;margin:0;top:auto}
+#rjl-designer.app .stage .toolbar{display:none}
+#rjl-designer.app #viewport{flex:1 1 auto;height:auto!important;min-height:0;border:0;border-radius:0}
+#rjl-designer.app .v-note{top:14px;bottom:auto;left:14px;background:rgba(255,255,255,.88);color:#3a434c;border-radius:6px;padding:5px 9px}
+#rjl-designer.app .summary{position:absolute;left:20px;bottom:20px;z-index:3;max-width:min(720px,calc(100% - 40px));margin:0;background:#fff;border-radius:10px;
+  border-left:4px solid var(--accent);box-shadow:0 8px 26px rgba(7,31,56,.24);padding:10px 14px}
+#rjl-designer.app .summary:empty{display:none}
+#rjl-designer.app .summary .panel{border:0;padding:0;margin:0;background:none;box-shadow:none}
+#rjl-designer.app .summary .panel + .panel{margin-top:8px;padding-top:8px;border-top:1px solid var(--aline)}
+#rjl-designer.app .controls{order:2;min-height:0;overflow-y:auto;background:#f3f5f7;border-left:1px solid var(--aline);padding:12px;margin:0;position:static;max-height:none;overscroll-behavior:contain}
+#rjl-designer.app .controls > .panel{background:none;border:0;box-shadow:none;padding:0;margin:0}
+/* cards */
+#rjl-designer.app #runTabs,#rjl-designer.app #runEditor > *,#rjl-designer.app .controls > details,#rjl-designer.app .controls > .quote-cta,#rjl-designer.app .controls > .warns:not(:empty){
+  background:#fff;border:1px solid var(--aline);border-radius:10px;padding:14px;margin:0 0 12px}
+#rjl-designer.app #runTabs{display:flex;flex-wrap:wrap;gap:8px;border-radius:10px 10px 0 0;margin:0;border-bottom:0}
+#rjl-designer.app #runEditor > label.f:first-child{border-radius:0 0 10px 10px;border-top:0;padding-top:4px}
+#rjl-designer.app #runEditor{display:block;padding:0;border:0}
+#rjl-designer.app #runEditor > fieldset{display:block;min-width:0}
+#rjl-designer.app #runEditor > fieldset > legend{float:left;width:100%;padding:0;margin:0 0 12px;font-size:15px}
+#rjl-designer.app #runEditor > fieldset > legend + *{clear:both}
+#rjl-designer.app #runEditor > .grid2:first-of-type{border-radius:10px 10px 0 0;margin-bottom:0;border-bottom:0}
+#rjl-designer.app #runEditor > .grid2:first-of-type::before{content:"Size and layout";grid-column:1/-1;font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.06em}
+#rjl-designer.app #runEditor > .slide-row{border-radius:0;border-top:0;border-bottom:0;margin:0;padding-top:4px;padding-bottom:4px}
+#rjl-designer.app #runEditor > .slide-row + .hint{border-radius:0 0 10px 10px;border-top:0;padding-top:4px}
+#rjl-designer.app #runEditor > .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+#rjl-designer.app .controls > .warns:not(:empty){background:#fff8ec;border-color:#f1d29a}
+#rjl-designer.app .controls > .quote-cta{border-top:4px solid var(--accent)}
+/* plain font for labels and small print (brand font kept for headings and buttons) */
+#rjl-designer.app .app-title span,#rjl-designer.app .hint,#rjl-designer.app .f > span,#rjl-designer.app input,#rjl-designer.app select,#rjl-designer.app .chk,
+#rjl-designer.app .chip,#rjl-designer.app .sum-h span,#rjl-designer.app .v-note,#rjl-designer.app .quote-cta p,#rjl-designer.app .warns,#rjl-designer.app .pcard span,#rjl-designer.app .rjl-copy{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif!important;text-transform:none!important;letter-spacing:normal!important}
+@media (max-width:1180px) and (min-width:921px){#rjl-designer.app .work{grid-template-columns:minmax(0,1fr) 350px}#rjl-designer.app .app-title span{display:none}}
+@media (max-width:920px){
+  #rjl-designer.app{display:flex;flex-direction:column}
+  #rjl-designer.app .app-bar{flex:0 0 auto;flex-wrap:wrap;gap:6px 8px;padding:6px 8px}
+  #rjl-designer.app .app-logo{margin-right:auto}
+  #rjl-designer.app .app-views,#rjl-designer.app .app-acts{order:5}
+  #rjl-designer.app .app-views .btn,#rjl-designer.app .app-acts .btn{padding:5px 7px!important;font-size:11.5px!important;min-height:32px!important}
+  #rjl-designer.app .app-acts{gap:4px}
+  #rjl-designer.app .app-title,#rjl-designer.app .app-sp{display:none}
+  #rjl-designer.app .app-logo{height:28px}
+  #rjl-designer.app .app-views{margin-left:0}
+  #rjl-designer.app .app-views .btn,#rjl-designer.app .app-acts .btn{padding:6px 9px;font-size:12.5px;min-height:36px}
+  #rjl-designer.app .app-close span{display:none}
+  #rjl-designer.app .work{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  #rjl-designer.app .stage{order:0;flex:0 0 auto}
+  #rjl-designer.app #viewport{flex:none;height:46dvh!important}
+  #rjl-designer.app .summary{position:static;max-width:none;margin:8px;padding:8px 10px;box-shadow:none;border:1px solid var(--aline);border-left:4px solid var(--accent)}
+  #rjl-designer.app .v-note{display:none}
+  #rjl-designer.app .controls{order:1;flex:1 1 auto;border-left:0;border-top:1px solid var(--aline);padding:10px}
+}
+/* ---- launch section: examples of what it does, then "Start designing". The designer shows only full screen. ---- */
+#rjl-designer:not(.app) > .work{display:none}
+#rjl-designer.app > .dz-launch{display:none}
+#rjl-designer .dz-launch{color:#071f38}
+#rjl-designer .dz-hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px;align-items:center}
+#rjl-designer .dz-copy h2{font-size:clamp(26px,2.6vw,36px);line-height:1.1;margin:0 0 14px;color:#071f38}
+#rjl-designer .dz-copy p,#rjl-designer .dz-small,#rjl-designer .dz-examples figcaption,#rjl-designer .dz-list li{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;text-transform:none!important;letter-spacing:normal!important}
+#rjl-designer .dz-copy p{max-width:52ch;margin:0 0 22px;font-size:17px;line-height:1.6;color:#2f3b47}
+#rjl-designer .dz-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+#rjl-designer .dz-begin{font-size:17px;padding:15px 28px;text-decoration:none;border-radius:8px}
+#rjl-designer .dz-small{font-size:13.5px;color:#5b6570}
+#rjl-designer .dz-launch figure{margin:0}
+#rjl-designer .dz-launch img{display:block;width:100%;height:auto;aspect-ratio:900/560;object-fit:cover;border-radius:10px;box-shadow:0 16px 40px rgba(7,31,56,.22)}
+#rjl-designer .dz-examples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;margin:52px 0 0}
+#rjl-designer .dz-examples figcaption{margin-top:14px;font-size:15px;line-height:1.5;color:#2f3b47}
+#rjl-designer .dz-examples figcaption strong{display:block;font-size:17px;color:#071f38;margin-bottom:2px}
+#rjl-designer .dz-list{background:#071f38;border-radius:10px;padding:22px 24px;color:#fff;border-top:4px solid var(--accent)}
+#rjl-designer .dz-list figcaption{margin:0 0 10px}
+#rjl-designer .dz-list figcaption strong{color:#fff}
+#rjl-designer .dz-list ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+#rjl-designer .dz-list li{position:relative;padding-left:28px;font-size:14.5px;line-height:1.45;color:#dbe4ee}
+#rjl-designer .dz-list li::before{content:"\2713";position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;background:var(--accent);color:#fff;font:700 11px/19px system-ui,sans-serif;text-align:center}
+@media (max-width:920px){#rjl-designer .dz-hero{grid-template-columns:1fr;gap:24px}#rjl-designer .dz-examples{grid-template-columns:1fr;margin-top:32px}#rjl-designer .dz-begin{width:100%;text-align:center;justify-content:center}}
+/* ---- app finish: navy bar, drawing title block, numbered steps, chips (memorable element = the title block) ---- */
+#rjl-designer.app .app-bar{background:var(--navy);border-bottom:0;box-shadow:0 2px 14px rgba(7,31,56,.35);color:#fff}
+#rjl-designer.app .app-logo{background:#fff;border-radius:7px;padding:4px 8px;height:40px;box-sizing:border-box}
+#rjl-designer.app .app-title{border-left-color:rgba(255,255,255,.18)}
+#rjl-designer.app .app-title strong{color:#fff}
+#rjl-designer.app .app-title span{color:#a9b7c6}
+#rjl-designer.app .app-views{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.06)}
+#rjl-designer.app .app-views .btn{background:transparent;color:#dbe4ee;border-right-color:rgba(255,255,255,.18)}
+#rjl-designer.app .app-views .btn:hover{background:rgba(255,255,255,.1);color:#fff}
+#rjl-designer.app .app-acts .btn,#rjl-designer.app .app-close{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}
+#rjl-designer.app .app-acts .btn[aria-pressed="true"]{background:#fff;color:var(--navy);border-color:#fff}
+#rjl-designer.app .app-bar .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(194,70,26,.45)}
+/* stage frame */
+#rjl-designer.app .stage::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 120px rgba(7,31,56,.18);z-index:1}
+#rjl-designer.app .summary{display:none}
+#rjl-designer.app .v-note{z-index:2}
+/* title block, like the box on a fabrication drawing */
+#rjl-designer.app .app-titleblock{position:absolute;left:20px;bottom:20px;z-index:3;display:grid;grid-template-columns:62px minmax(150px,1.6fr) repeat(3,minmax(70px,1fr));
+  max-width:min(760px,calc(100% - 150px));background:var(--navy);color:#fff;border-radius:10px;overflow:hidden;box-shadow:0 14px 40px rgba(7,31,56,.38);border-top:4px solid var(--accent)}
+#rjl-designer.app .app-titleblock:empty{display:none}
+#rjl-designer.app .tb-mark{grid-row:span 2;display:flex;align-items:center;justify-content:center;background:var(--accent);font-weight:800;font-size:17px;letter-spacing:.04em}
+#rjl-designer.app .tb-cell{padding:8px 12px;border-left:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);min-width:0}
+#rjl-designer.app .tb-cell small{display:block;font-size:11px;color:#9fb0c2;margin-bottom:2px}
+#rjl-designer.app .tb-cell strong{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rjl-designer.app .tb-cell strong i{width:12px;height:12px;border-radius:3px;border:1px solid rgba(255,255,255,.5);flex:none}
+#rjl-designer.app .tb-main strong{font-size:15px}
+#rjl-designer.app .tb-gate{grid-column:span 2}
+#rjl-designer.app .tb-err{grid-column:2 / -1;padding:8px 12px;background:#7a1f12;font-size:12.5px}
+/* zoom buttons */
+#rjl-designer.app .app-zoom{position:absolute;right:20px;bottom:20px;z-index:3;display:flex;flex-direction:column;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 8px 24px rgba(7,31,56,.25)}
+#rjl-designer.app .app-zoom button{width:46px;height:42px;border:0;border-bottom:1px solid var(--aline);background:#fff;color:var(--navy);font:600 20px/1 system-ui,sans-serif;cursor:pointer}
+#rjl-designer.app .app-zoom button:last-child{border-bottom:0;font-size:12px}
+#rjl-designer.app .app-zoom button:hover{background:#f3f5f7}
+#rjl-designer.app .app-zoom button:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+/* numbered steps (they are a sequence: system, size, ground, colour, gate) */
+#rjl-designer.app #runEditor{counter-reset:step}
+#rjl-designer.app #runEditor > fieldset > legend,#rjl-designer.app #runEditor > .grid2:first-of-type::before{counter-increment:step}
+#rjl-designer.app #runEditor > fieldset > legend::before,#rjl-designer.app #runEditor > .grid2:first-of-type::before{color:var(--accent)}
+#rjl-designer.app #runEditor > fieldset > legend::before{content:counter(step);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-right:10px;
+  border-radius:50%;background:var(--navy);color:#fff;font-size:12.5px;font-weight:700;vertical-align:2px}
+#rjl-designer.app #runEditor > .grid2:first-of-type::before{content:counter(step) "  Size and layout"}
+#rjl-designer.app #runEditor > fieldset > legend{color:var(--navy)!important}
+#rjl-designer.app #runEditor > *{box-shadow:0 1px 2px rgba(7,31,56,.05)}
+/* picker tiles */
+#rjl-designer.app .products{gap:8px}
+#rjl-designer.app .pcard{background:#fff;border:1.5px solid var(--aline);border-radius:10px;padding:12px 6px 10px;gap:6px;transition:border-color .12s,box-shadow .12s}
+#rjl-designer.app .pcard:hover{border-color:#b9c3cd;box-shadow:0 4px 12px rgba(7,31,56,.1)}
+#rjl-designer.app .pcard svg{width:58px;height:34px;color:#4b5866}
+#rjl-designer.app .pcard.on{border-color:var(--accent);background:#fff7f3;box-shadow:0 0 0 3px rgba(194,70,26,.15)}
+#rjl-designer.app .pcard.on::after{content:"\2713";position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font:700 11px/18px system-ui,sans-serif}
+/* colour chips with names */
+#rjl-designer.app .swatches{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 8px}
+#rjl-designer.app .sw{width:100%;height:auto;aspect-ratio:auto;border:0;border-radius:0;background:none!important;display:flex;flex-direction:column;align-items:center;gap:5px;padding:0}
+#rjl-designer.app .sw::before{content:"";display:block;width:100%;height:38px;border-radius:8px;background:var(--chip);border:1px solid rgba(0,0,0,.18);box-shadow:inset 0 -8px 14px rgba(0,0,0,.12)}
+#rjl-designer.app .sw::after{content:attr(title);font:500 11.5px/1.2 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#3a434c;text-align:center;text-transform:none}
+#rjl-designer.app .sw.on::before{outline:3px solid var(--accent);outline-offset:2px}
+#rjl-designer.app .sw-custom{width:100%;height:38px;border-radius:8px}
+/* inputs */
+#rjl-designer.app .f input:not([type=range]),#rjl-designer.app .f select{min-height:42px;border-radius:8px;border-color:#cfd6de}
+#rjl-designer.app .f input:focus,#rjl-designer.app .f select:focus{outline:3px solid rgba(194,70,26,.3);border-color:var(--accent)}
+/* quote bar pinned to the bottom of the panel */
+#rjl-designer.app .controls > .quote-cta{position:sticky;bottom:-12px;margin:12px -12px -12px;border-radius:0;border:0;border-top:4px solid var(--accent);
+  background:var(--navy);color:#fff;padding:14px 16px 16px;box-shadow:0 -8px 24px rgba(7,31,56,.18);z-index:4}
+#rjl-designer.app .controls > .quote-cta h2{color:#fff!important;font-size:17px;margin:0}
+#rjl-designer.app .controls > .quote-cta > p:not(.err-text){display:none}
+#rjl-designer.app .app-stats{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 13px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#c5d1dd}
+#rjl-designer.app .app-stats b{color:#fff;font-weight:700}
+#rjl-designer.app .controls > .rjl-copy{order:9}
+@media (max-width:920px){
+  #rjl-designer.app .app-titleblock{position:static;margin:8px;max-width:none;grid-template-columns:48px 1fr 1fr 1fr}
+  #rjl-designer.app .tb-main{grid-column:span 3}
+  #rjl-designer.app .tb-gate{grid-column:span 3}
+  #rjl-designer.app .app-zoom{right:10px;bottom:auto;top:10px}
+  #rjl-designer.app .stage::after{display:none}
+  #rjl-designer.app .swatches{grid-template-columns:repeat(3,minmax(0,1fr))}
+}

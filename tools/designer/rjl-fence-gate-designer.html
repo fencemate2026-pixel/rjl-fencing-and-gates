@@ -57,6 +57,9 @@ label.f > span{letter-spacing:.02em}
 .chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
 .chk input{width:16px;height:16px;accent-color:var(--accent)}
 .hint{font-size:12px;color:var(--muted)}
+.rjl-copy{font-size:12px;color:var(--muted);margin:14px 0 0;line-height:1.5}
+.slide-row{display:flex;gap:10px;align-items:end;margin-top:10px}.slide-row .f{flex:1}.slide-row input[type=range]{width:100%;accent-color:var(--accent,#d95420)}.gatebox input[type=range]{width:100%;accent-color:var(--accent,#d95420)}
+#viewport canvas.can-grab{cursor:grab}#viewport canvas.grabbing{cursor:grabbing}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
 .btn:hover{border-color:var(--ink)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -219,7 +222,7 @@ textarea{font-family:var(--f-mono);font-size:12px;min-height:120px;resize:vertic
       <button class="btn" type="button" id="btnOpen" aria-pressed="false">Open gates</button>
       <button class="btn" type="button" id="btnDims" aria-pressed="true">Dimensions</button>
     </div>
-    <div id="viewport"><span class="v-note">Drag to orbit · scroll or pinch to zoom · right-drag to pan</span></div>
+    <div id="viewport"><span class="v-note">Drag the gate or a panel to move it · drag empty space to orbit · scroll or pinch to zoom · right-drag to pan</span></div>
     <div class="summary" id="layoutSummary" aria-live="polite"></div>
   </section>
 </main>
@@ -446,6 +449,7 @@ function newRun(product='colorbond', name='Run'){
   const d = PRODUCTS[product].defaults;
   return { id:uid(), name, product, length:10, height:d.height, maxBay:d.maxBay, colour:d.colour, style:d.style, gap:d.gap,
     fixing:'inground', turn:90, joinPrev:true,
+    panelShift:null,   // null = standard layout; [a, b] = width (mm) of the first panel in each fence section (either side of a gate), set by dragging a panel or the sliders
     lattice:'square',
     palingLen:1650, palingW:150, capping:false, plinths:1, sleepers:0, front:'none', frontEnd:'end',
     retain:{on:false, height:600},
@@ -550,7 +554,27 @@ function layoutRun(run, rules){
   const W = clamp(run.maxBay, 300, P.maxBayLimit);
   const L = Math.round(run.length*1000), g = run.gate, errs = [], seq = [];
   const post = (role, w) => seq.push({k:'post', role, w});
-  const bays = clear => splitBays(clear, p, W, P.strategy).forEach((b,i) => { if (i) post('line', p); seq.push({k:'bay', w:b}); });
+  /* Sliding panels (run.panelShift = [first-panel width per fence section]): the first panel of a section
+   * is set to that width and the rest follow at full width, so dragging moves every post in that section.
+   * A panel that would be under 300 mm is shared with its neighbour. null = the standard layout. */
+  const PSa = Array.isArray(run.panelShift) ? run.panelShift : (run.panelShift != null ? [run.panelShift, run.panelShift] : []);
+  let sec = 0;
+  const shiftedBays = (lead, clear) => {
+    if (clear <= 0.5) return [];
+    const Pp = W + p; let first = ((lead % Pp) + Pp) % Pp;
+    if (first < 1 || first > W) first = W;
+    const out = [Math.min(first, clear)]; let rem = clear - out[0];
+    while (rem > p + 0.5){ rem -= p; const w = Math.min(W, rem); out.push(w); rem -= w; }
+    if (rem > 0.5) out[out.length - 1] += rem;
+    const share = (i, j) => { const c = out[i] + p + out[j]; if (c <= W) out.splice(Math.min(i, j), 2, c); else out[i] = out[j] = (c - p)/2; };
+    if (out.length > 1 && out[0] < 300) share(0, 1);
+    if (out.length > 1 && out[out.length - 1] < 300) share(out.length - 1, out.length - 2);
+    for (let i = 0; i < out.length; i++) if (out[i] > W + 0.5){ const h = (out[i] - p)/2; out.splice(i, 1, h, h); i++; }
+    return out;
+  };
+  const bays = clear => { const lead = PSa[sec]; const ix = sec++;
+    (lead != null && isFinite(lead) ? shiftedBays(lead, clear) : splitBays(clear, p, W, P.strategy))
+      .forEach((b,i) => { if (i) post('line', p); seq.push({k:'bay', w:b, sec:ix}); }); };
   let gw = 0;
   if (g.type === 'none'){
     if (L < 2*p + 300) errs.push(`Run is too short. It needs at least ${fmt(2*p+300)} mm.`);
@@ -571,12 +595,16 @@ function layoutRun(run, rules){
     const fenceLen = L - block;
     if (fenceLen < -0.5){
       errs.push(`The gate and its posts need ${fmt(block)} mm but the run is ${fmt(L)} mm. Lengthen the run or narrow the gate.`);
+    } else if (typeof g.position === 'number' && fenceLen*g.position >= p + ex + 300 && fenceLen*(1 - g.position) >= p + ex + 300){
+      // gate anywhere: position 0..1 = share of the free fence length on the start side of the gate
+      const e = fenceLen*g.position;
+      post('end', p); bays(e - p - ex); gateBlock(1, true, true); bays(fenceLen - e - p - ex); post('end', p);
     } else if (g.position === 'middle'){
       const side = fenceLen/2;
       if (side < p + ex + 300) errs.push(`Each side of the gate is only ${fmt(side)} mm. Put the gate at the start or end, or lengthen the run.`);
       else { post('end', p); bays(side - p - ex); gateBlock(1, true, true); bays(side - p - ex); post('end', p); }
     } else {
-      const atStart = g.position === 'start';
+      const atStart = g.position === 'start' || (typeof g.position === 'number' && g.position < 0.5);   // a dragged gate too close to an end snaps to it
       if (fenceLen < 1){ gateBlock(atStart ? 1 : -1, false, false); }
       else if (fenceLen < p + ex + 300) errs.push(`The fence beside the gate is only ${fmt(fenceLen)} mm. Make the run ${fmt(block)} mm (gate only) or at least ${fmt(block+p+ex+300)} mm.`);
       else if (atStart){ gateBlock(1, false, true); bays(fenceLen - p - ex); post('end', p); }
@@ -1271,6 +1299,14 @@ function icon(k){
   if (k === 'temp'){ return `<svg viewBox="0 0 48 30" aria-hidden="true"><rect x="3" y="3" width="20" height="21" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="25" y="3" width="20" height="21" fill="none" stroke="currentColor" stroke-width="1.6"/>${[6,10,14,18].map(x=>`<line x1="${x}" y1="4" x2="${x}" y2="23" stroke="currentColor" stroke-width=".6"/><line x1="${x+22}" y1="4" x2="${x+22}" y2="23" stroke="currentColor" stroke-width=".6"/>`).join('')}<rect x="0" y="24" width="7" height="4" fill="currentColor"/><rect x="20.5" y="24" width="7" height="4" fill="currentColor"/><rect x="41" y="24" width="7" height="4" fill="currentColor"/></svg>`; }
   return `<svg viewBox="0 0 48 30" aria-hidden="true">${posts}${body}</svg>`;
 }
+function panelShiftNow(i, sec = 0){        // first-panel width (mm) of fence section sec: stored, or as the standard layout has it
+  const r = state.runs[i], lay = LAYOUTS[i]; if (!r) return 0;
+  const ps = Array.isArray(r.panelShift) ? r.panelShift[sec] : r.panelShift;
+  if (ps != null && isFinite(ps)) return ps;
+  const b = lay && lay.seq.find(n => n.k === 'bay' && n.sec === sec);
+  return b ? b.w : 0;
+}
+function sectionCount(i){ const lay = LAYOUTS[i]; return lay ? new Set(lay.seq.filter(n => n.k === 'bay').map(n => n.sec)).size : 0; }
 function opt(v, label, cur){ return `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(label)}</option>`; }
 
 function renderProject(){
@@ -1349,6 +1385,11 @@ function renderEditor(){
       ${r.product === 'colorbond' && r.style === 'lattice' ? `<label class="f"><span>Lattice style</span><select id="e-lat" data-k="lattice">${Object.entries(LATTICE_STYLES).map(([k,v]) => opt(k, v, r.lattice)).join('')}</select></label>` : ''}
       ${P.gapLabel ? `<label class="f"><span>${P.gapLabel}</span><input type="number" id="e-gap" data-k="gap" min="0" max="100" step="1" value="${r.gap}"></label>` : ''}
     </div>
+    <div class="slide-row">
+      ${Array.from({length:Math.max(1, sectionCount(state.sel))}, (_, k, a) => `<label class="f"><span>Slide the panels${sectionCount(state.sel) > 1 ? (k ? ' after the gate' : ' before the gate') : ' along the run'}</span><input type="range" id="e-pshift${k}" data-k="panelShift.${k}" data-num min="300" max="${Math.round(clamp(r.maxBay, 300, P.maxBayLimit))}" step="10" value="${Math.round(clamp(panelShiftNow(state.sel, k), 300, clamp(r.maxBay, 300, P.maxBayLimit)))}"></label>`).join('')}
+      ${r.panelShift != null ? `<button type="button" class="btn sm" data-act="pshift-reset">Standard layout</button>` : ''}
+    </div>
+    <p class="hint">Or drag any panel in the 3D view. The cut panels move to where you need them.</p>
     ${r.product === 'paling' ? `<fieldset><legend>Paling build-up</legend>
       <div class="grid2">
         <label class="f"><span>Paling height</span><select id="e-pl" data-k="palingLen" data-num>${opt(1650, '1650 mm (5\'4")', r.palingLen)}${opt(1950, '1950 mm (6\'4")', r.palingLen)}</select></label>
@@ -1387,7 +1428,7 @@ function renderEditor(){
     </fieldset>` : ''}
     <fieldset><legend>Colour</legend>
       <div class="swatches">${COLOURS.map(c => `
-        <label class="sw${c.hex === r.colour ? ' on' : ''}" style="background:${c.hex}" title="${esc(c.name)}"><input type="radio" name="colour" value="${c.hex}" data-k="colour" aria-label="${esc(c.name)}"${c.hex === r.colour ? ' checked' : ''}></label>`).join('')}
+        <label class="sw${c.hex === r.colour ? ' on' : ''}" style="background:${c.hex};--chip:${c.hex}" title="${esc(c.name)}"><input type="radio" name="colour" value="${c.hex}" data-k="colour" aria-label="${esc(c.name)}"${c.hex === r.colour ? ' checked' : ''}></label>`).join('')}
         <input type="color" class="sw-custom" id="e-colour" data-k="colour" value="${r.colour}" aria-label="Custom colour" title="Custom colour${custom ? ' (selected)' : ''}">
       </div>
     </fieldset>
@@ -1403,7 +1444,8 @@ function renderEditor(){
         <label class="f"><span>Gate type</span><select id="e-gtype" data-k="gate.type">${GATES_FOR(r.product).map(k => opt(k, GATE_TYPES[k].label, g.type)).join('')}</select></label>
         ${g.type !== 'none' ? `
         <label class="f"><span>Clear opening (mm)</span><input type="number" id="e-gwidth" data-k="gate.width" min="${gt.min}" max="${gt.max}" step="10" value="${g.width}"></label>
-        <label class="f"><span>Position in run</span><select id="e-gpos" data-k="gate.position">${opt('start','Start',g.position)}${opt('middle','Middle',g.position)}${opt('end','End',g.position)}</select></label>
+        <label class="f"><span>Position in run</span><select id="e-gpos" data-k="gate.position">${opt('start','Start',g.position)}${opt('middle','Middle',g.position)}${opt('end','End',g.position)}${typeof g.position === 'number' ? opt('custom', `Where you put it (${Math.round(g.position*100)}%)`, 'custom') : ''}</select></label>
+        <label class="f"><span>Slide the gate along the run</span><input type="range" id="e-gat" data-k="gate.position" data-num min="0" max="1" step="0.01" value="${typeof g.position === 'number' ? g.position : {start:0, middle:0.5, end:1}[g.position] ?? 0.5}"></label>
         ${LOCKABLE(g.type) && (!isAuto(g) || P.pool) ? `<label class="f"><span>Lock</span><select id="e-glock" data-k="gate.lock">${Object.entries(LOCKS).filter(([k]) => !P.pool || k === 'magna' || k === 'locklatch').map(([k,l]) => opt(k, l.label, g.lock)).join('')}</select></label>` : ''}
         <label class="f"><span>Access control</span><select id="e-gacc" data-k="gate.access">${Object.entries(ACCESS).map(([k,a]) => opt(k, a.label, g.access)).join('')}</select></label>` : ''}
       </div>
@@ -1449,6 +1491,7 @@ function renderSummary(){
     const bays = lay.seq.filter(n => n.k === 'bay').length;
     return `<div class="panel sum">${head}<div class="chips">${chips}<span class="chip post">${posts} posts · ${bays} panels</span></div></div>`;
   }).join('');
+  updateAppStats();
 }
 function renderWarns(){
   if (!$('#warns')) return;
@@ -1577,6 +1620,8 @@ function onEdit(e){
     }
   }
   if (e.type === 'input' && (t.type === 'radio' || t.tagName === 'SELECT' || t.type === 'checkbox')) return; // handled on change
+  if (k === 'gate.position' && v === 'custom') return;                 // "where you put it" is the current value already
+  if (k.startsWith('panelShift.')) r.panelShift = Array.isArray(r.panelShift) ? r.panelShift : [null, null];
   setPath(r, k, v);
   let rebuildEditor = false;
   if (k === 'product'){
@@ -1587,6 +1632,7 @@ function onEdit(e){
     if (PRODUCTS[v].pool) r.gate.lock = 'magna';
   }
   if (k === 'gate.auto') rebuildEditor = true;
+  if ((k === 'gate.position' || k.startsWith('panelShift') || k === 'maxBay') && e.type === 'change') rebuildEditor = true;
   if (k === 'gate.type'){ const gt = GATE_TYPES[v]; if (gt.def && (r.gate.width < gt.min || r.gate.width > gt.max)) r.gate.width = gt.def; rebuildEditor = true; }
   if (k === 'colour' && e.type === 'change') rebuildEditor = true;
   if ((k === 'razor' || k === 'electric' || k === 'style' || k === 'retain.on' || k === 'sleepers' || k === 'front') && e.type === 'change') rebuildEditor = true;
@@ -1600,6 +1646,7 @@ on('#runEditor', 'change', onEdit);
 on('#runEditor', 'click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   if (b.dataset.act.startsWith('q-')) quickVehicle(b.dataset.act);
+  if (b.dataset.act === 'pshift-reset') curRun().panelShift = null;
   if (b.dataset.act === 'dup'){ const c = JSON.parse(JSON.stringify(curRun())); c.id = uid(); c.name = runLetter(state.runs.length); state.runs.splice(state.sel+1, 0, c); state.sel++; }
   if (b.dataset.act === 'del'){
     if (b.dataset.confirm !== '1'){ b.dataset.confirm = '1'; b.textContent = 'Press again to delete'; return; }
@@ -1738,6 +1785,10 @@ function init3D(){
   catch(e){ three = false; host.insertAdjacentHTML('afterbegin', '<p class="v-fallback">The 3D view needs WebGL, which is unavailable in this browser. ' + fallbackHelp + '</p>'); return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Realism: colours are authored as sRGB hex and converted to linear (see linearise()), lit in linear
+  // space, then tone-mapped like a camera (ACES filmic) and written back as sRGB.
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   host.prepend(renderer.domElement);
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(38, 1, 0.05, 600);
@@ -1745,8 +1796,11 @@ function init3D(){
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.maxPolarAngle = Math.PI*0.495; controls.minDistance = 1; controls.maxDistance = 250;
   } else renderer.setClearColor(0x000000, 0);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f86, 0.75));
-  sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0005;
+  scene.add(new THREE.HemisphereLight(new THREE.Color('#ffffff').convertSRGBToLinear(), new THREE.Color('#8a8f86').convertSRGBToLinear(), 0.45));
+  sun = new THREE.DirectionalLight(new THREE.Color('#fff4e2').convertSRGBToLinear(), 2.1); sun.castShadow = true;
+  const big = renderer.capabilities.maxTextureSize >= 8192 && !/Mobi|Android/i.test(navigator.userAgent);
+  sun.shadow.mapSize.set(big ? 4096 : 2048, big ? 4096 : 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.015;
+  scene.environment = skyEnvironment();                  // soft sky reflections on powder coat, steel and glass
   scene.add(sun); scene.add(sun.target);
   ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600),
     OVERLAY ? new THREE.ShadowMaterial({opacity:0.32}) : new THREE.MeshStandardMaterial({roughness:1, metalness:0}));   // overlay: shadows fall on the photo
@@ -1792,11 +1846,66 @@ function startLoop(){
   })(last);
 }
 function resize(){ const h = $('#viewport'); const w = h.clientWidth, ht = h.clientHeight; if (!w || !ht) return; renderer.setSize(w, ht, false); camera.aspect = w/ht; camera.updateProjectionMatrix(); }
+/* Sky used only for reflections: blue zenith, bright hazy horizon, darker ground, and a warm sun glow,
+ * pre-filtered once (PMREM) so rough powder coat gets a soft sheen and glass a sharp reflection. */
+function skyEnvironment(){
+  try {
+    const sc = new THREE.Scene(), c = document.createElement('canvas'); c.width = 16; c.height = 256;
+    const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0, '#6f9fd6'); g.addColorStop(0.42, '#cfe1f0'); g.addColorStop(0.5, '#f4f1ea'); g.addColorStop(0.53, '#8d8f86'); g.addColorStop(1, '#4b4d47');
+    x.fillStyle = g; x.fillRect(0, 0, 16, 256);
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+    sc.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({map:t, side:THREE.BackSide})));
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 8), new THREE.MeshBasicMaterial({color:new THREE.Color(6, 5.4, 4.6)}));
+    glow.position.set(22, 30, 28); sc.add(glow);
+    const pm = new THREE.PMREMGenerator(renderer), rt = pm.fromScene(sc, 0.02); pm.dispose();
+    return rt.texture;
+  } catch(e){ return null; }
+}
+/* Convert every material colour in the model from sRGB to linear once (flagged), and mark colour maps sRGB. */
+function linearise(obj){
+  obj.traverse(o => {
+    const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+    ms.forEach(m => {
+      if (m.userData.lin) return; m.userData.lin = true;
+      if (m.color) m.color.convertSRGBToLinear();
+      if (m.emissive) m.emissive.convertSRGBToLinear();
+      if (m.map && m.map.encoding !== THREE.sRGBEncoding){ m.map.encoding = THREE.sRGBEncoding; m.map.needsUpdate = true; }   // r128 textures have no userData
+      if (o.isSprite) m.toneMapped = false;                 // dimension labels stay crisp and true to colour
+    });
+  });
+}
+function lawnTex(){                                       // procedural lawn: mottled greens with blade speckle, tiles every 4 m
+  const t = canvasTex(512, 512, (x, w, h) => {
+    x.fillStyle = '#6f7b52'; x.fillRect(0, 0, w, h);
+    let seed = 7; const rnd = () => (seed = (seed*16807) % 2147483647)/2147483647;
+    for (let i = 0; i < 220; i++){                         // soft patches, drawn wrapped so the tile has no seams
+      const r = 12 + rnd()*40, cx = rnd()*w, cy = rnd()*h; x.fillStyle = `rgba(${78 + rnd()*30|0},${96 + rnd()*30|0},${52 + rnd()*20|0},.10)`;
+      for (const dx of [-w, 0, w]) for (const dy of [-h, 0, h]){ x.beginPath(); x.arc(cx + dx, cy + dy, r, 0, 7); x.fill(); } }
+    for (let i = 0; i < 26000; i++){ const v = rnd(); x.fillStyle = v < .5 ? 'rgba(52,70,32,.55)' : v < .85 ? 'rgba(128,148,86,.5)' : 'rgba(170,172,120,.45)'; x.fillRect(rnd()*w, rnd()*h, 1, 2 + rnd()*3); }
+  });
+  t.encoding = THREE.sRGBEncoding; t.repeat.set(300, 300); return t;
+}
+function skyBackdrop(){
+  const c = document.createElement('canvas'); c.width = 4; c.height = 512; const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 512);
+  g.addColorStop(0, '#7fa8d6'); g.addColorStop(0.55, '#c6dbec'); g.addColorStop(1, '#eef2f2'); x.fillStyle = g; x.fillRect(0, 0, 4, 512);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+}
 function applySceneTheme(){
   if (!scene) return;
   if (OVERLAY){ scene.background = null; return; }
-  scene.background = new THREE.Color(css('--scene') || '#dde3e8');
-  ground.material.color.set(css('--ground') || '#c3c9bf');
+  const dark = (css('--scene') || '#dde3e8').replace('#', '') < '8';    // dark theme (internal tool only): plain backdrop
+  if (dark){
+    scene.background = new THREE.Color(css('--scene')); scene.fog = null;
+    ground.material.map = null; ground.material.color.set(css('--ground') || '#3a403a').convertSRGBToLinear(); grid.material.opacity = 0.22;
+  } else {
+    // website: daylight sky, lawn fading into a hazy horizon; the 1 m grid is kept faint for scale
+    scene.background = TEX.sky || (TEX.sky = skyBackdrop());
+    scene.fog = new THREE.Fog(new THREE.Color('#e6ecee').convertSRGBToLinear(), 45, 190);
+    ground.material.map = TEX.lawn || (TEX.lawn = lawnTex()); ground.material.color.set('#ffffff'); ground.material.roughness = 1; ground.material.envMapIntensity = 0.3;
+    grid.material.opacity = 0.08;
+  }
+  ground.material.needsUpdate = true;
   grid.material.color = new THREE.Color(css('--grid') || '#9aa39a');
 }
 function canvasTex(w, h, draw){
@@ -2335,6 +2444,7 @@ function buildTurnstiles(){
 function build3D(){
   if (!three || !renderer) return;
   clearRoot();
+  RUN_GRPS.length = 0;
   const pts = [];
   let ox = 0, oz = 0, head = 0, prevEnd = null, prevDir = null, prevW = 0;
   state.runs.forEach((r, i) => {
@@ -2347,6 +2457,7 @@ function build3D(){
     }
     if (!lay.errs.length){
       const grp = new THREE.Group(); grp.position.set(ox, 0, oz); grp.rotation.y = head; root.add(grp);
+      RUN_GRPS[i] = grp;                                   // used by drag-to-move (gate / panels)
       buildRun(r, i, lay, grp);
     }
     const L = lay.L, H = r.height + 900 + retainH(r);
@@ -2354,6 +2465,7 @@ function build3D(){
     prevEnd = [ox + dir[0]*L, oz + dir[1]*L]; prevDir = dir; prevW = lay.seq.length ? lay.seq[lay.seq.length - 1].w : 0;
   });
   buildTurnstiles().forEach(([a,b]) => pts.push([a, -700, 2600], [b, 700, 2600]));
+  linearise(root);
   let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, maxY = 0;
   pts.forEach(([x,z,y]) => { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); maxY = Math.max(maxY, y); });
   if (!isFinite(minX)){ minX = maxX = minZ = maxZ = 0; maxY = 2000; }
@@ -2368,20 +2480,247 @@ function fitCamera(v, keepIfUserMoved){
   const [x0,y0,z0] = sceneBox.min, [x1,y1,z1] = sceneBox.max;
   const c = new THREE.Vector3((x0 + x1)/2, (y0 + y1)/3, (z0 + z1)/2);
   const r = Math.max(x1 - x0, z1 - z0, y1 - y0)/2 + 0.5;
-  const dist = r/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*(camera.aspect < 1 ? 1.25 : 0.78);
-  const dirs = {iso:[0.62, 0.48, 0.78], front:[0, 0.12, 1], top:[0, 1, 0.0001]};
+  const dist = r/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*(camera.aspect < 1 ? 1.25 : (v === 'iso' ? 0.62 : 0.78));   // 3D view sits closer: the fence fills the frame
+  const dirs = {iso:[0.6, 0.24, 0.8], front:[0, 0.12, 1], top:[0, 1, 0.0001]};   // 3D view: lower three-quarter angle, sky in frame
   const d = new THREE.Vector3(...dirs[v]).normalize();
   camera.position.copy(c).addScaledVector(d, dist); controls.target.copy(c); controls.update();
   placeSun(); fitCamera.userMoved = false;
 }
+let sunDir = null;                                        // overlay: unit vector towards the sun, set by setLight({dir})
 function placeSun(){
   const [x0,,z0] = sceneBox.min, [x1,,z1] = sceneBox.max, cx = (x0 + x1)/2, cz = (z0 + z1)/2, r = Math.max(x1 - x0, z1 - z0)/2 + 3;
-  sun.position.set(cx + r*0.6, r*1.6 + 6, cz + r*0.9); sun.target.position.set(cx, 0, cz);
+  if (sunDir){ const d = 2*r + 8; sun.position.set(cx + sunDir[0]*d, sunDir[1]*d, cz + sunDir[2]*d); }
+  else sun.position.set(cx - r*0.85, r*1.25 + 5, cz + r*0.45);     // low from the front-left: grazing light shows the profile, shadows fall where you can see them
+  sun.target.position.set(cx, 0, cz);
   const sc = sun.shadow.camera; sc.left = -r*1.3; sc.right = r*1.3; sc.top = r*1.3; sc.bottom = -r*1.3; sc.near = 0.5; sc.far = r*5 + 20; sc.updateProjectionMatrix();
 }
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => fitCamera(b.dataset.view)));
 on('#btnOpen', 'click', e => { openTarget = openTarget ? 0 : 1; e.currentTarget.setAttribute('aria-pressed', String(!!openTarget)); e.currentTarget.textContent = openTarget ? 'Close gates' : 'Open gates'; });
 on('#btnDims', 'click', e => { state.view.dims = !state.view.dims; e.currentTarget.setAttribute('aria-pressed', String(state.view.dims)); fitCamera.userMoved = true; build3D(); saveState(); });
+
+/* ---------------------------------------------------------------- drag to move (3D view)
+ * Drag the gate to put it anywhere along its run (gate.position becomes 0..1; near an end it snaps to
+ * Start / End). Drag a panel to slide the whole panel layout along the run (run.panelShift, mm).
+ * Mouse: press and drag. Touch: press and hold on the gate or a panel, then drag (a quick swipe still
+ * turns the view). Rebuilds the 3D model at most once per frame while dragging; the materials list,
+ * summary and saved job update when the drag ends.
+ */
+const RUN_GRPS = [];
+function initDrag(){
+  if (OVERLAY || !renderer || !controls) return;
+  const host = $('#viewport'), el = renderer.domElement, ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  let drag = null, hold = null, frame = 0, lastHover = 0;
+  const aim = e => { const b = el.getBoundingClientRect(); ndc.set((e.clientX - b.left)/b.width*2 - 1, -(e.clientY - b.top)/b.height*2 + 1); ray.setFromCamera(ndc, camera); };
+  const runOf = o => { for (; o; o = o.parent){ const i = RUN_GRPS.indexOf(o); if (i >= 0) return i; } return -1; };
+  const gateSpan = lay => {                                // [x0, x1] of gate posts + opening, in run mm
+    const gi = lay.seq.findIndex(n => n.k === 'gate'); if (gi < 0) return null;
+    const a = lay.seq[gi - 1], b = lay.seq[gi + 1];
+    return [a && a.k === 'post' ? a.x : lay.seq[gi].x, b && b.k === 'post' ? b.x + b.w : lay.seq[gi].x + lay.seq[gi].w];
+  };
+  const localX = (i, pt) => RUN_GRPS[i].worldToLocal(pt.clone()).x;
+  function pick(e){
+    aim(e);
+    const hits = ray.intersectObjects(root.children, true);
+    for (const h of hits){
+      if (h.object.isSprite) continue;
+      const i = runOf(h.object); if (i < 0) continue;
+      const lay = LAYOUTS[i]; if (lay.errs.length) return null;
+      const x = localX(i, h.point), span = gateSpan(lay), r = state.runs[i];
+      if (span && x >= span[0] - 50 && x <= span[1] + 50){
+        const block = span[1] - span[0], fenceLen = lay.L - block, ex = r.gate.type === 'boom' ? lay.p : 0, min = lay.p + ex + 300;
+        if (fenceLen < 2*min) return {k:'stuck', i};
+        return {k:'gate', i, point:h.point, off:x - span[0], fenceLen, min};
+      }
+      const n = lay.seq.find(n => x >= n.x && x <= n.x + n.w), sec = n && n.k === 'bay' ? n.sec : (lay.seq.find(n => n.k === 'bay' && n.x > x) || {}).sec;
+      if (sec == null) return null;
+      return {k:'panels', i, sec, point:h.point, x0:x, s0:panelShiftNow(i, sec), Pp:lay.W + lay.p};
+    }
+    return null;
+  }
+  function plane(hit){                                     // vertical plane along the run, or the ground if viewed from above
+    const nrm = new THREE.Vector3(0, 0, 1).transformDirection(RUN_GRPS[hit.i].matrixWorld);
+    return Math.abs(ray.ray.direction.dot(nrm)) > 0.25 ? new THREE.Plane().setFromNormalAndCoplanarPoint(nrm, hit.point)
+                                                        : new THREE.Plane(new THREE.Vector3(0, 1, 0), -hit.point.y);
+  }
+  function begin(hit, e){
+    if (hit.k === 'stuck'){ toast('Make the run longer to move this gate'); return; }
+    const r = state.runs[hit.i];
+    drag = hit; drag.pl = plane(hit); controls.enabled = false;
+    drag.undo = {pos:r.gate.position, ps:r.panelShift};
+    el.classList.add('grabbing'); fitCamera.userMoved = true;
+    toast(hit.k === 'gate' ? 'Moving the gate' : 'Sliding the panels');
+  }
+  function move(e){
+    aim(e); const pt = new THREE.Vector3(); if (!ray.ray.intersectPlane(drag.pl, pt)) return;
+    const r = state.runs[drag.i], x = localX(drag.i, pt);
+    if (drag.k === 'gate'){
+      const e0 = x - drag.off;
+      r.gate.position = e0 < drag.min*0.5 ? 'start' : drag.fenceLen - e0 < drag.min*0.5 ? 'end'
+        : +clamp(e0/drag.fenceLen, drag.min/drag.fenceLen, 1 - drag.min/drag.fenceLen).toFixed(4);
+    } else {
+      const ps = Array.isArray(r.panelShift) ? r.panelShift.slice() : [null, null];   // the other section keeps its own layout
+      ps[drag.sec] = Math.round((((drag.s0 + x - drag.x0) % drag.Pp) + drag.Pp) % drag.Pp); r.panelShift = ps;
+    }
+    if (!frame) frame = requestAnimationFrame(() => { frame = 0; compute(); build3D(); });
+  }
+  function end(){
+    if (!drag) return;
+    drag = null; controls.enabled = true; el.classList.remove('grabbing');
+    refresh({editor:true});
+  }
+  host.addEventListener('pointerdown', e => {
+    if (e.button > 0 || drag || e.target !== el) return;     // buttons over the view keep working
+    const hit = pick(e); if (!hit) return;
+    if (e.pointerType === 'mouse' || e.pointerType === 'pen'){
+      e.stopPropagation(); e.preventDefault(); begin(hit, e);      // OrbitControls never sees this press
+    } else {
+      const x = e.clientX, y = e.clientY;
+      const h0 = hold = {id:e.pointerId, x, y, t0:e.timeStamp, t:setTimeout(() => { hold = null; if (navigator.vibrate) navigator.vibrate(15); begin(hit, e); if (drag) drag.hold = h0; }, 380)};
+    }
+  }, true);
+  window.addEventListener('pointermove', e => {
+    if (hold && e.pointerId === hold.id && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 8){ clearTimeout(hold.t); hold = null; }
+    if (drag && drag.hold && e.pointerId === drag.hold.id && e.timeStamp < drag.hold.t0 + 380 && Math.hypot(e.clientX - drag.hold.x, e.clientY - drag.hold.y) > 8){
+      // a busy phone delivered the swipe late: it was a swipe, not a hold - undo and let the view turn
+      const r = state.runs[drag.i]; r.gate.position = drag.undo.pos; r.panelShift = drag.undo.ps;
+      drag = null; controls.enabled = true; el.classList.remove('grabbing'); compute(); build3D(); return;
+    }
+    if (drag){ e.preventDefault(); move(e); return; }
+    if (e.pointerType === 'mouse' && e.target === el && e.buttons === 0 && e.timeStamp - lastHover > 80){
+      lastHover = e.timeStamp; const h = pick(e); el.classList.toggle('can-grab', !!h && h.k !== 'stuck');
+    }
+  }, {passive:false});
+  const up = () => { if (hold){ clearTimeout(hold.t); hold = null; } end(); };
+  window.addEventListener('pointerup', up, true);           // capture: re-enable OrbitControls before its own handler runs
+  window.addEventListener('pointercancel', up, true);
+}
+
+/* ---------------------------------------------------------------- website: full-screen designer ("app")
+ * Website only. The designer can open as its own full-screen page, laid out like a professional fence
+ * planner in the site's colours: slim top bar (brand, view buttons, Open gates, Dimensions, Add to online
+ * quote, Close), the 3D view as large as the screen allows with a floating summary card, and a right-hand
+ * panel of cards (runs, fence system tiles, size, colour circles, gate, quote). Phones: view on top, cards
+ * below. Opens from "Start designing" links (href="#design"), the designer's own button, or a #design
+ * address; Close, Esc or Back returns to the page. Existing controls are moved, not copied, so every
+ * button keeps its behaviour; Close puts them back.
+ */
+let appOn = false;
+const orbit = () => controls;                      // the 3D camera controls (initApp has its own 'controls' = the side panel)
+/* Live title block on the 3D view and totals on the quote bar (full-screen designer only). */
+function updateAppStats(){
+  if (!appOn) return;
+  const tb = $('#appTitleBlock'), st = $('#appStats');
+  let len = 0, panels = 0, posts = 0, gates = 0;
+  state.runs.forEach((r, i) => { const lay = LAYOUTS[i]; len += +r.length || 0; if (!lay || lay.errs.length) return;
+    panels += lay.seq.filter(n => n.k === 'bay').length; gates += lay.seq.filter(n => n.k === 'gate').length;
+    posts += lay.seq.filter((n, j) => n.k === 'post' && !((j === 0 && JOINS[i].skipFirst) || (j === lay.seq.length - 1 && JOINS[i].skipLast))).length; });
+  if (st) st.innerHTML = `<span><b>${len.toFixed(1)} m</b> of fence</span><span><b>${panels}</b> panels</span><span><b>${posts}</b> posts</span>${gates ? `<span><b>${gates}</b> ${gates > 1 ? 'gates' : 'gate'}</span>` : ''}`;
+  if (!tb) return;
+  const r = curRun(), lay = LAYOUTS[state.sel], P = PRODUCTS[r.product], g = r.gate;
+  const bad = !lay || lay.errs.length;
+  const runPanels = bad ? '–' : lay.seq.filter(n => n.k === 'bay').length;
+  const runPosts = bad ? '–' : lay.seq.filter(n => n.k === 'post').length;
+  const colour = (COLOURS.find(c => c.hex === r.colour) || {name:'Custom'}).name;
+  tb.innerHTML = `<div class="tb-mark" aria-hidden="true">RJL</div>
+    <div class="tb-cell tb-main"><small>${esc(r.name)}${state.runs.length > 1 ? ` of ${state.runs.length} runs` : ''}</small><strong>${esc(P.label)}</strong></div>
+    <div class="tb-cell"><small>Length</small><strong>${(+r.length).toFixed(1)} m</strong></div>
+    <div class="tb-cell"><small>Height</small><strong>${fmt(r.height)} mm</strong></div>
+    <div class="tb-cell"><small>Panels</small><strong>${runPanels}</strong></div>
+    <div class="tb-cell"><small>Posts</small><strong>${runPosts}</strong></div>
+    <div class="tb-cell"><small>Colour</small><strong><i style="background:${esc(r.colour)}"></i>${esc(colour)}</strong></div>
+    <div class="tb-cell tb-gate"><small>Gate</small><strong>${g.type === 'none' ? 'No gate' : esc(GATE_TYPES[g.type].label) + ' ' + fmt(g.width) + ' mm'}</strong></div>
+    ${bad ? `<div class="tb-err">${esc(lay.errs[0] || '')}</div>` : ''}`;
+}
+function initApp(){
+  if (!WEB || !HOST || OVERLAY) return;
+  const work = HOST.querySelector('.work'), stage = HOST.querySelector('.stage'), controls = HOST.querySelector('.controls');
+  const toolbar = HOST.querySelector('.stage .toolbar'), cta = HOST.querySelector('.quote-cta'), warns = $('#warns');
+  if (!work || !stage || !controls || !toolbar) return;
+  const residential = CFG.brand !== 'commercial';
+  const bar = document.createElement('div'); bar.className = 'app-bar';
+  bar.innerHTML = '<img class="app-logo" alt="" height="36"/>' +
+    '<div class="app-title"><strong>3D Fence &amp; Gate Designer</strong><span>Drag the gate or a panel in the view to slide it along the fence</span></div>' +
+    '<div class="app-views" role="group" aria-label="View"></div><span class="app-sp"></span><div class="app-acts"></div>' +
+    '<button type="button" class="btn app-close" aria-label="Close the full-screen designer">✕<span> Close</span></button>';
+  const logo = bar.querySelector('.app-logo');
+  logo.src = residential ? '/images/rjl-logo-trim.webp' : '/rjl-commercial-logo.webp';
+  logo.alt = residential ? 'RJL Fencing and Gates' : 'RJL Commercial';
+  const views = bar.querySelector('.app-views'), acts = bar.querySelector('.app-acts');
+  const quoteBtn = document.createElement('button'); quoteBtn.type = 'button'; quoteBtn.className = 'btn primary app-quote'; quoteBtn.textContent = 'Add to online quote';
+  quoteBtn.addEventListener('click', () => { const b = $('#addToQuote'); if (b) b.click(); });
+  const tblock = document.createElement('div'); tblock.className = 'app-titleblock'; tblock.id = 'appTitleBlock'; tblock.setAttribute('aria-live', 'polite');
+  const stats = document.createElement('div'); stats.className = 'app-stats'; stats.id = 'appStats';
+  const zoomBar = document.createElement('div'); zoomBar.className = 'app-zoom'; zoomBar.setAttribute('role', 'group'); zoomBar.setAttribute('aria-label', 'Zoom');
+  zoomBar.innerHTML = '<button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="fit" aria-label="Fit the whole fence in view">Fit</button>';
+  zoomBar.addEventListener('click', e => {
+    const b = e.target.closest('[data-z]'), oc = orbit(); if (!b || !camera || !oc) return;
+    if (b.dataset.z === 'fit'){ fitCamera.userMoved = false; fitCamera(view); return; }
+    const k = b.dataset.z === 'in' ? 0.8 : 1.25, t = oc.target, d = camera.position.clone().sub(t).multiplyScalar(k);
+    if (d.length() < oc.minDistance || d.length() > oc.maxDistance) return;
+    camera.position.copy(t).add(d); oc.update(); fitCamera.userMoved = true;
+  });
+  // launch section (examples of what it does, then begin). The designer itself only shows full screen.
+  const launch = document.createElement('section'); launch.className = 'dz-launch'; launch.setAttribute('aria-labelledby', 'dzLaunchTitle');
+  launch.innerHTML = `<div class="dz-hero">
+      <div class="dz-copy">
+        <h2 id="dzLaunchTitle">Design your ${residential ? 'fence and gate' : 'site fencing and gates'} in 3D, at real size</h2>
+        <p>Pick a fence system, enter your lengths and add a gate. Panels, posts and gates are laid out the way we build them. When you are happy, send it to us and we measure on site before confirming the quote.</p>
+        <div class="dz-actions"><a class="btn primary dz-begin" href="#design">Start designing</a><span class="dz-small">Free. Your design is saved on this device.</span></div>
+      </div>
+      <figure class="dz-main"><img src="/assets/examples/des-iso.webp" alt="A 3D fence design with a gate, shown at an angle" width="900" height="560" loading="lazy"></figure>
+    </div>
+    <div class="dz-examples">
+      <figure><img src="/assets/examples/des-open.webp" alt="The same design with the gate open" width="900" height="560" loading="lazy"><figcaption><strong>Open the gates</strong>See swing and sliding gates move, and check the space they need.</figcaption></figure>
+      <figure><img src="/assets/examples/des-front.webp" alt="The design seen straight on" width="900" height="560" loading="lazy"><figcaption><strong>Check every view</strong>Turn the model, or jump to the front and plan views.</figcaption></figure>
+      <figure class="dz-list"><figcaption><strong>Everything in one place</strong></figcaption><ul>
+        <li>${residential ? 'Colorbond, timber, slat, batten, picket and pool fencing' : 'Mesh, palisade, tubular, chainmesh and security toppings'}</li>
+        <li>Drag the gate or any panel along the fence</li>
+        <li>Corners and extra runs for a whole boundary</li>
+        <li>${residential ? 'Swing, sliding and automated gates' : 'Sliding and swing gates, boom gates, bollards and turnstiles'}</li>
+        <li>Send the design with your quote request</li></ul></figure>
+    </div>`;
+  HOST.insertBefore(launch, HOST.firstChild);
+  if (/[#&]d=/.test(location.hash || '')) requestAnimationFrame(() => setApp(true, true));   // a shared design link opens straight into the designer
+  const openBtn = document.createElement('button'); openBtn.type = 'button'; openBtn.className = 'btn primary app-open'; openBtn.textContent = '⤢ Full-screen designer';
+  toolbar.insertBefore(openBtn, toolbar.firstChild);
+  let homes = [], pushed = false;
+  const moveTo = (el, parent, before) => { if (!el) return; homes.push([el, el.parentNode, el.nextSibling]); parent.insertBefore(el, before || null); };
+  const restore = () => { for (let i = homes.length - 1; i >= 0; i--){ const [el, p, n] = homes[i]; p.insertBefore(el, n); } homes = []; };
+  function setApp(on, fromHistory){
+    if (appOn === on) return;
+    appOn = on;
+    if (on){
+      HOST.insertBefore(bar, HOST.firstChild);
+      HOST.querySelectorAll('[data-view]').forEach(b => moveTo(b, views));
+      moveTo($('#btnOpen'), acts); moveTo($('#btnDims'), acts); bar.insertBefore(quoteBtn, bar.querySelector('.app-close'));
+      if (warns) moveTo(warns, controls, controls.firstChild);
+      if (cta) moveTo(cta, controls);
+      const copy = HOST.querySelector(':scope > .rjl-copy'); if (copy) moveTo(copy, controls);
+      stage.appendChild(tblock); stage.appendChild(zoomBar); if (cta) cta.insertBefore(stats, cta.querySelector('#addToQuote'));
+      openBtn.hidden = true;
+    } else {
+      restore(); [bar, tblock, zoomBar, stats].forEach(el => { if (el.parentNode) el.remove(); }); openBtn.hidden = false;
+    }
+    HOST.classList.toggle('app', on);
+    document.documentElement.classList.toggle('rjl-app-on', on);
+    if (on && !fromHistory && location.hash !== '#design'){ try { history.pushState({rjlDesigner:1}, '', location.pathname + location.search + '#design'); pushed = true; } catch(e){} }
+    if (!on){
+      if (pushed && !fromHistory){ try { history.back(); } catch(e){} }
+      else if (location.hash === '#design'){ try { history.replaceState(null, '', location.pathname + location.search); } catch(e){} }
+      pushed = false;
+      setTimeout(() => HOST.scrollIntoView({block:'start'}), 0);
+    }
+    fitCamera.userMoved = false;
+    requestAnimationFrame(() => { if (renderer) resize(); fitCamera(view); updateAppStats(); });
+    try { if (window.gtag) window.gtag('event', on ? 'designer_fullscreen_open' : 'designer_fullscreen_close'); } catch(e){}
+  }
+  bar.querySelector('.app-close').addEventListener('click', () => setApp(false));
+  openBtn.addEventListener('click', () => setApp(true));
+  document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a[href="#design"],[data-open-designer]'); if (a){ e.preventDefault(); setApp(true); } });
+  window.addEventListener('popstate', () => { if (appOn && location.hash !== '#design') setApp(false, true); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && appOn && !document.querySelector('.toast')) setApp(false); });
+  if (location.hash === '#design') setApp(true, true);
+}
 
 /* ---------------------------------------------------------------- website: add to online quote */
 function designSummary(){
@@ -2391,7 +2730,7 @@ function designSummary(){
     let t = `- ${r.name}: ${PRODUCTS[r.product].label}${cbStyleText(r, ', ')}${chainDesc(r)}${palingText(r)}, ${(+r.length).toFixed(1)} m long × ${fmt(r.height)} mm high, colour ${(COLOURS.find(c => c.hex === r.colour) || {name:r.colour}).name}`;
     t += retainText(r);
     if (i > 0) t += `, ${r.turn ? (r.turn > 0 ? 'turns left ' : 'turns right ') + Math.abs(r.turn) + '°' : 'straight on'} from the previous run`;
-    if (r.gate.type !== 'none') t += `; ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening at the ${r.gate.position}${r.gate.piers ? ', brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}${LOCKABLE(r.gate.type) && (!isAuto(r.gate) || PRODUCTS[r.product].pool) ? ', ' + (LOCKS[r.gate.lock] || LOCKS.locklatch).label + ' at ' + LOCK_H + ' mm' : ''}${laneText(r.gate)}`;
+    if (r.gate.type !== 'none') t += `; ${GATE_TYPES[r.gate.type].label.toLowerCase()} ${fmt(r.gate.width)} mm opening ${gatePosText(r.gate.position)}${r.gate.piers ? ', brick piers' : ''}${isAuto(r.gate) ? ', automated' : ''}${r.gate.access !== 'none' ? ', ' + ACCESS[r.gate.access].label : ''}${LOCKABLE(r.gate.type) && (!isAuto(r.gate) || PRODUCTS[r.product].pool) ? ', ' + (LOCKS[r.gate.lock] || LOCKS.locklatch).label + ' at ' + LOCK_H + ' mm' : ''}${laneText(r.gate)}`;
     if (lay.errs.length) t += ' (layout needs checking)';
     lines.push(t);
   });
@@ -2401,9 +2740,10 @@ function designSummary(){
   const link = shareLink(); if (link) lines.push('', 'Open this design: ' + link);
   return lines.join('\n').slice(0, 3600);
 }
+function gatePosText(v){ return typeof v === 'number' ? `${Math.round(v*100)}% of the way along the run` : `at the ${v}`; }
 function packDesign(){
   const keep = ['product','name','length','height','maxBay','colour','style','gap','fixing','turn','joinPrev','gate','lattice','rails','barbed','razor','razorMount','electric','elecMount','elecStrands',
-                'palingLen','palingW','capping','plinths','sleepers','front','frontEnd','retain'];   // timber paling + retaining options must survive a share link
+                'palingLen','palingW','capping','plinths','sleepers','front','frontEnd','retain','panelShift'];   // timber paling + retaining options must survive a share link
   const runs = state.runs.map(r => Object.fromEntries(keep.map(k => [k, r[k]])));
   return btoa(unescape(encodeURIComponent(JSON.stringify({r:runs, t:state.turnstiles})))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
@@ -2460,7 +2800,8 @@ function exposeOverlay(){
       renderAll();
       const lay = LAYOUTS[0];
       return { errs: lay.errs.slice(), L: lay.L, bays: lay.seq.filter(n => n.k === 'bay').map(n => Math.round(n.w)),
-               gate: (lay.seq.find(n => n.k === 'gate') || {}).w || 0 };
+               gate: (lay.seq.find(n => n.k === 'gate') || {}).w || 0,
+               W: lay.W, p: lay.p, seq: lay.seq.map(n => ({k:n.k, x:n.x, w:n.w, sec:n.sec})) };   // seq: for the photo's draggable Panels tag
     },
     /* view: {w, h, f, cx, yh, camH, p0:[x,z], p1:[x,z], dpr} - all in photo pixels / metres */
     setView(v){
@@ -2478,6 +2819,19 @@ function exposeOverlay(){
     },
     setLive(on){ overlayLive = !!on; },
     setShadows(on){ if (ground) ground.visible = !!on; },
+    /* {dir:[x,y,z] | null, sun, sunColor, hemi, hemiColor, groundColor, shadow} - match the photo's light */
+    setLight(o){
+      o = o || {};
+      if ('dir' in o){ const d = o.dir; if (d){ const n = Math.hypot(d[0], d[1], d[2]) || 1; sunDir = [d[0]/n, Math.max(0.03, d[1]/n), d[2]/n]; } else sunDir = null; }
+      // intensities use the original scale (sun 0.85, sky 0.75 = normal daylight); mapped to the filmic lighting levels
+      if (o.sun != null) sun.intensity = o.sun*(2.1/0.85); if (o.sunColor) sun.color.set(o.sunColor).convertSRGBToLinear();
+      const hemi = scene.children.find(c => c.isHemisphereLight);
+      if (hemi){ if (o.hemi != null) hemi.intensity = o.hemi*(0.45/0.75); if (o.hemiColor) hemi.color.set(o.hemiColor).convertSRGBToLinear(); if (o.groundColor) hemi.groundColor.set(o.groundColor).convertSRGBToLinear(); }
+      if (o.shadow != null && ground && ground.material) ground.material.opacity = o.shadow;
+      placeSun();
+    },
+    setShadowQuality(n){ if (sun.shadow.mapSize.width !== n){ sun.shadow.mapSize.set(n, n); if (sun.shadow.map){ sun.shadow.map.dispose(); sun.shadow.map = null; } } },
+    get model(){ return root; },                                     // the product's 3D group (mm, scaled 0.001) for AR / 3D export
     /* product list, gate types and options exactly as the designer has them */
     catalog: { products: Object.fromEntries(Object.entries(PRODUCTS).filter(([k]) => productAllowed(k))),
                gates: Object.fromEntries(Object.entries(GATE_TYPES).filter(([k]) => !RES_WEB || !['boom','bollards','bifold'].includes(k))),
@@ -2498,6 +2852,11 @@ function exposeOverlay(){
 
 /* ---------------------------------------------------------------- boot */
 init3D();
+initDrag();
+initApp();
+if (WEB && HOST) HOST.insertAdjacentHTML('beforeend', '<p class="rjl-copy">\u00a9 ' + new Date().getFullYear() + ' RJL Commercial Fencing and Gates (VIC) Pty Ltd. ' +
+  'The RJL 3D Fence &amp; Gate Designer, its software, 3D models and design are protected by copyright. You may use it to plan your own project. ' +
+  'Copying, scraping, reverse engineering or reusing any part of it is not permitted.</p>');
 if (controls) controls.addEventListener('start', () => { fitCamera.userMoved = true; });
 if ($('#btnDims')) $('#btnDims').setAttribute('aria-pressed', String(state.view.dims));
 if (OVERLAY) state.view.dims = false;

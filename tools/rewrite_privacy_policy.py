@@ -6,7 +6,8 @@ Wording checked against the site code on 16 Oct 2026: Google Analytics 4 only (a
 tag or enhanced-conversion/hashed-email code found, so that claim was removed), one Netlify Form
 (photo-visualiser, incl. photo uploads), photo visualiser + object removal run on-device, "Ask RJL" chat
 is keyword-only and sends nothing, quote form opens the visitor's email app, 3D designer uses browser
-storage, outbound links to Google / Instagram / Facebook (no embeds).
+storage, outbound links to Google / Instagram / Facebook (no embeds). Updated 16 Oct 2026 for the optional
+AI photo-real finish (ported from rjlcommercialgroup.com: Netlify AI Gateway -> Google Gemini, consent first).
 DRAFT WORDING - to be reviewed by an Australian solicitor (Privacy Act 1988 / APPs).
 Idempotent. Usage: python3 tools/rewrite_privacy_policy.py
 """
@@ -30,7 +31,7 @@ SECTIONS = [
             'or documents you send. The quote form opens your own email app with the details filled in; nothing is sent until you press '
             'send in your email app.',
             'Photo visualiser enquiries: your contact details, property address, design summary, the photo you upload and the concept '
-            'picture made from it.',
+            'picture made from it, and an AI photo-real picture if you choose to include one.',
             'Phone calls, texts and emails you send us, handled through our normal phone and email services.',
             'Website usage (Google Analytics): pages visited, approximate location (city level), device and browser type, and actions such '
             'as tapping our phone number or opening the chat. We do not use this to identify you.']),
@@ -42,10 +43,15 @@ SECTIONS = [
             'To understand which pages and enquiry options are useful, measure how well our advertising works, and improve the website.']),
         'We do not sell personal information. We will not use photos of your property in our marketing without your separate permission.']),
     ('The photo visualiser, designer and chat', [
-        'The photo visualiser processes your photo on your own device: placing the fence, removing objects and previewing colours all '
-        'happen in your browser and are not sent to us.',
+        'The photo visualiser processes your photo on your own device: placing the fence, removing objects, lighting, video, AR and '
+        '3D model downloads all happen in your browser and are not sent to us.',
         'Your photo is only sent to RJL if you submit the visualiser\'s quote form. It is then delivered to us through Netlify Forms (our '
         'website host) and kept with your enquiry.',
+        'The AI photo-real finish is optional. Only if you choose it and agree to the notice shown at that point, a copy of your concept '
+        'picture (your photo with the design on it) is sent through Netlify\'s AI service to Google\'s Gemini image model, which returns '
+        'an edited picture. It is used only to make that one picture: our website does not store it, and Netlify\'s AI service uses '
+        'providers that do not keep the data. The result is only sent to RJL if you choose to include it with your enquiry. Please do '
+        'not use the AI finish on photos that show people\'s faces, number plates or anything private.',
         'The 3D fence designer keeps your design in your own browser\'s storage so it is there when you come back. It is not sent to us '
         'unless you send an enquiry.',
         'The "Ask RJL" chat answers common questions from a built-in list. What you type stays in your browser and is not sent to us or '
@@ -54,8 +60,9 @@ SECTIONS = [
         'We use a small number of service providers to run the website. They may store or process information outside Australia, '
         'including in the United States:',
         ('ul', [
-            'Netlify, Inc. - website hosting and delivery of photo visualiser enquiries.',
-            'Google LLC - Google Analytics. We may also use Google Ads and link it with Analytics to see which ads lead to enquiries.',
+            'Netlify, Inc. - website hosting, delivery of photo visualiser enquiries and the optional AI service.',
+            'Google LLC - Google Analytics, and the Gemini AI model used only if you choose the AI photo-real finish. We may also use '
+            'Google Ads and link it with Analytics to see which ads lead to enquiries.',
             'Your own email provider, when you send us an email or use the quote form.']),
         'We may also share information with our own staff and subcontractors who carry out the work, or where the law requires it. Links '
         'to Google, Instagram and Facebook take you to services run by those companies, whose own privacy terms apply.']),
