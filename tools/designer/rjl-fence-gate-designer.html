@@ -1835,8 +1835,9 @@ function startLoop(){
         a.led.color.set(down ? '#1fd65a' : '#ff2a2a'); a.led.emissive.set(down ? '#00d84a' : '#ff0000');
         a.led.emissiveIntensity = (Math.abs(openTarget - openT) > 0.02 && !down) ? flash : 2.2;   // flashes while moving
       }
-      else if (a.type === 'tlight'){ const go = openT > 0.97; a.red.emissiveIntensity = go ? 0.05 : 2.6; a.green.emissiveIntensity = go ? 2.6 : 0.05; }
-      else if (a.type === 'beacon') a.m.emissiveIntensity = Math.abs(openTarget - openT) > 0.02 ? (Math.sin(now/90) > 0 ? 3 : 0.3) : 0.6;
+      else if (a.type === 'tlight'){ const go = openT > 0.97; a.red.emissiveIntensity = go ? 0.03 : 3.2; a.green.emissiveIntensity = go ? 3.2 : 0.03;
+        if (a.gR){ a.gR.opacity = go ? 0 : 0.42; a.gG.opacity = go ? 0.42 : 0; } }
+      else if (a.type === 'beacon'){ const on = Math.abs(openTarget - openT) > 0.02 && Math.sin(now/90) > 0; a.m.emissiveIntensity = on ? 3 : 0.35; if (a.glow) a.glow.opacity = on ? 0.5 : 0; }
       else if (a.type === 'spikes') a.obj.position.y = -125*openT;   // spikes drop flush when the lane opens
       else a.obj.position.x = a.base + a.shift*openT;
     }
@@ -1885,6 +1886,18 @@ function lawnTex(){                                       // procedural lawn: mo
     for (let i = 0; i < 26000; i++){ const v = rnd(); x.fillStyle = v < .5 ? 'rgba(52,70,32,.55)' : v < .85 ? 'rgba(128,148,86,.5)' : 'rgba(170,172,120,.45)'; x.fillRect(rnd()*w, rnd()*h, 1, 2 + rnd()*3); }
   });
   t.encoding = THREE.sRGBEncoding; t.repeat.set(300, 300); return t;
+}
+function concreteTex(){                                   // procedural broom-finished concrete, one 2 m bay per tile with a saw-cut joint
+  const t = canvasTex(512, 512, (x, w, h) => {
+    x.fillStyle = '#b9b6ae'; x.fillRect(0, 0, w, h);
+    let seed = 11; const rnd = () => (seed = (seed*16807) % 2147483647)/2147483647;
+    for (let i = 0; i < 160; i++){ const r = 20 + rnd()*70, cx = rnd()*w, cy = rnd()*h, v = rnd() < .5 ? 0 : 255;
+      x.fillStyle = `rgba(${v},${v},${v},.018)`; for (const dx of [-w, 0, w]) for (const dy of [-h, 0, h]){ x.beginPath(); x.arc(cx + dx, cy + dy, r, 0, 7); x.fill(); } }
+    for (let i = 0; i < 900; i++){ const y = rnd()*h; x.fillStyle = `rgba(90,88,82,${.03 + rnd()*.05})`; x.fillRect(0, y, w, 1); }   // broom lines across the drive
+    for (let i = 0; i < 9000; i++){ const v = rnd(); x.fillStyle = v < .5 ? 'rgba(70,68,64,.25)' : 'rgba(235,232,225,.25)'; x.fillRect(rnd()*w, rnd()*h, 1, 1); }
+    x.fillStyle = 'rgba(60,58,54,.55)'; x.fillRect(0, 0, w, 3); x.fillRect(0, 0, 2, h);   // saw-cut joints
+  });
+  t.encoding = THREE.sRGBEncoding; return t;
 }
 function skyBackdrop(){
   const c = document.createElement('canvas'); c.width = 4; c.height = 512; const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 512);
@@ -2150,6 +2163,134 @@ function buildGate(run, lay, n, grp, mF, mDark){
   buildGateBody(run, lay, n, grp, mF, mDark);
   if (VEHICLE(run.gate.type)) buildLaneAccessories(run, lay, n, grp);
 }
+/* 2-aspect traffic signal (red over green) as used at RJL vehicle gates: black target board with a white border,
+ * housing, 200 mm lenses in bezels, open visor hoods, and brackets back to the post (fence line z = 0).
+ * face = +1 faces the street (+z), -1 faces inside. Lenses animate through the 'tlight' entry in anims. */
+/* ---- realistic hardware helpers (rounded mouldings, LED lenses, glow) ---- */
+/* Rounded-edge box: rounded rectangle w x h in the x/y plane, extruded d along z with a soft bevel, centred on 0. */
+function rboxGeo(w, h, d, r){
+  const b = Math.max(1, Math.min(r*0.5, d/4, w/6, h/6)), rr = Math.max(1, Math.min(r, w/2 - b - 1, h/2 - b - 1));
+  const x0 = -w/2 + b, y0 = -h/2 + b, x1 = w/2 - b, y1 = h/2 - b, s = new THREE.Shape();
+  s.moveTo(x0 + rr, y0); s.lineTo(x1 - rr, y0); s.quadraticCurveTo(x1, y0, x1, y0 + rr); s.lineTo(x1, y1 - rr); s.quadraticCurveTo(x1, y1, x1 - rr, y1);
+  s.lineTo(x0 + rr, y1); s.quadraticCurveTo(x0, y1, x0, y1 - rr); s.lineTo(x0, y0 + rr); s.quadraticCurveTo(x0, y0, x0 + rr, y0);
+  const g = new THREE.ExtrudeGeometry(s, {depth:Math.max(1, d - 2*b), bevelEnabled:true, bevelThickness:b, bevelSize:b, bevelSegments:3, curveSegments:8});
+  g.translate(0, 0, -Math.max(1, d - 2*b)/2); g.computeVertexNormals(); return g;
+}
+/* Add one ordinary mesh (shadows on, removed and disposed with the model). */
+function addMesh(grp, geo, m, x, y, z, rx=0, ry=0, rz=0){
+  const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.rotation.set(rx, ry, rz);
+  o.castShadow = o.receiveShadow = true; o.userData.own = true; grp.add(o); return o;
+}
+/* LED cluster texture for signal lenses: hex-packed LED dots on a faintly lit diffuser (used as the emissive map). */
+function ledTex(){
+  if (TEX.led) return TEX.led;
+  const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  x.fillStyle = '#2a2a2a'; x.fillRect(0, 0, 256, 256);
+  const step = 19;
+  for (let row = 0, y = 10; y < 250; y += step*0.866, row++) for (let cx = (row % 2 ? step/2 : 0) + 8; cx < 250; cx += step){
+    if ((cx - 128)**2 + (y - 128)**2 > 118*118) continue;
+    const g = x.createRadialGradient(cx, y, 0, cx, y, 8.5); g.addColorStop(0, '#ffffff'); g.addColorStop(0.55, '#e8e8e8'); g.addColorStop(1, 'rgba(60,60,60,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(cx, y, 8.5, 0, Math.PI*2); x.fill();
+  }
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; TEX.led = t; return t;
+}
+/* Soft round glow (additive sprite) shown in front of a lit lamp; opacity is animated. */
+function glowTex(){
+  if (TEX.glow) return TEX.glow;
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128); TEX.glow = new THREE.CanvasTexture(c); return TEX.glow;
+}
+function glowSprite(grp, colour, x, y, z, size){
+  const m = new THREE.SpriteMaterial({map:glowTex(), color:colour, transparent:true, opacity:0, blending:THREE.AdditiveBlending, depthWrite:false});
+  const s = new THREE.Sprite(m); s.scale.set(size, size, 1); s.position.set(x, y, z); s.userData.own = true; grp.add(s); return m;
+}
+/* Amber LED beacon: black ribbed base, ribbed translucent amber lens (lathe profile), glow while flashing.
+ * by = underside of the base. */
+function beacon(grp, x, by, z, mA){
+  mA.color.set('#f08c10'); mA.transparent = true; mA.opacity = 0.92; mA.roughness = 0.2;
+  addMesh(grp, new THREE.CylinderGeometry(62, 70, 46, 32), mat('#121314', 0.2, 0.45), x, by + 23, z);
+  addMesh(grp, new THREE.CylinderGeometry(52, 52, 10, 32), mat('#2a2c2e', 0.3, 0.4), x, by + 51, z);
+  const pts = [];                                                     // ribbed cylinder rising into a dome
+  for (let i = 0; i <= 18; i++){ const h = i/18*110; pts.push(new THREE.Vector2(50 + (i % 2 ? 2.5 : 0), h)); }
+  for (let i = 1; i <= 10; i++){ const a = i/10*Math.PI/2; pts.push(new THREE.Vector2(50*Math.cos(a) + (i === 10 ? 0.01 : 0), 110 + 42*Math.sin(a))); }
+  const lens = addMesh(grp, new THREE.LatheGeometry(pts, 40), mA, x, by + 56, z); lens.castShadow = false;
+  addMesh(grp, new THREE.CylinderGeometry(18, 18, 70, 16), new THREE.MeshStandardMaterial({color:'#fff2c0', emissive:'#ffb000', emissiveIntensity:0.4}), x, by + 100, z);   // LED core
+  anims.push({type:'beacon', m:mA, glow:glowSprite(grp, '#ffa020', x, by + 120, z, 520)});
+}
+/* Linear swing operator (BFT Phobos / Smarty class) in the leaf's pivot group: post bracket with clevis,
+ * rounded motor body, chrome push rod in a rubber gaiter, front clevis bracket bolted to the leaf.
+ * s = +1 leaf extends to +x, -1 to -x; y = mounting height; zc = depth (inside face). */
+function swingOperator(pv, s, y, zc){
+  const mBody = mat('#2a2d30', 0.12, 0.38), mAlu = mat('#a2a8ad', 0.75, 0.36), mChrome = mat('#e4e7ea', 1.0, 0.12);
+  const mRub = mat('#0d0e0f', 0, 0.8), mAcc = mat('#d95420', 0.15, 0.4), mPlate = mat('#3a3d40', 0.6, 0.4);
+  addMesh(pv, rboxGeo(130, 180, 14, 6), mPlate, s*30, y, -57);                        // plate bolted to the post's inside face
+  [-34, 34].forEach(dy => addMesh(pv, rboxGeo(60, 12, 130, 4), mPlate, s*50, y + dy, -122));    // rear clevis
+  addMesh(pv, new THREE.CylinderGeometry(9, 9, 84, 12), mAlu, s*50, y, zc);              // pivot pin
+  addMesh(pv, rboxGeo(330, 120, 116, 46), mBody, s*240, y, zc);                         // gearbox body
+  addMesh(pv, new THREE.CylinderGeometry(56, 56, 120, 28), mBody, s*120, y - 70, zc, 0, 0, 0);   // motor can hanging below the rear
+  addMesh(pv, new THREE.SphereGeometry(56, 20, 10, 0, Math.PI*2, Math.PI/2, Math.PI/2), mBody, s*120, y - 130, zc);
+  addMesh(pv, rboxGeo(300, 14, 118, 6), mAcc, s*240, y - 30, zc);                        // accent band
+  addMesh(pv, new THREE.CylinderGeometry(24, 24, 120, 20), mRub, s*455, y, zc, 0, 0, Math.PI/2);   // rubber gaiter
+  addMesh(pv, new THREE.CylinderGeometry(15, 15, 360, 20), mChrome, s*690, y, zc, 0, 0, Math.PI/2); // push rod
+  addMesh(pv, rboxGeo(60, 70, 140, 10), mPlate, s*880, y, -105);                       // front clevis out to the leaf
+  addMesh(pv, rboxGeo(150, 120, 12, 5), mPlate, s*880, y, -38);                         // bracket plate on the leaf
+  [[-50, -40], [50, -40], [-50, 40], [50, 40]].forEach(([dx, dy]) => addMesh(pv, new THREE.CylinderGeometry(8, 8, 10, 10), mAlu, s*880 + dx, y + dy, -46, Math.PI/2));
+}
+/* 2-aspect LED vehicle signal (200 mm lenses) as used on RJL gates: black target board with a white
+ * reflective border, rounded die-cast housing, LED cluster lenses under clear domed covers, tunnel visors.
+ * face = +1 lenses face +z (street), -1 face -z. hy = centre height. */
+function trafficHead(grp, B, x, hy, z, face, onPost){
+  const mGalv = mat('#8e9399', 0.7, 0.4), mWhite = mat('#f3f3f0', 0, 0.5), mBoard = mat('#0d0e0f', 0.1, 0.62);
+  const mHouse = mat('#16181a', 0.35, 0.36), mBez = mat('#0a0b0c', 0.3, 0.42);
+  const fz = d => z + face*d;                                        // depth measured out from the board's back
+  if (onPost){
+    [hy + 230, hy - 230].forEach(y => { B.box(mGalv, x, y, z/2, 60, 40, Math.abs(z)); B.cylZ(mGalv, x, y, fz(-4), 70, 10); });   // brackets + clamp plates
+    B.cylY(mat('#2b2e31', 0.1, 0.6), x + 120, hy - 420, z/2 + face*20, 22, 260);                 // cable conduit down to the post
+  }
+  addMesh(grp, rboxGeo(450, 790, 8, 34), mWhite, x, hy, fz(4));       // reflective border board
+  addMesh(grp, rboxGeo(414, 754, 8, 26), mBoard, x, hy, fz(10));      // black target board
+  addMesh(grp, rboxGeo(300, 640, 200, 46), mHouse, x, hy, fz(14 + 100));   // housing
+  B.box(mBez, x, hy, fz(215), 270, 6, 6);                              // door seam between aspects
+  const hood = new THREE.MeshStandardMaterial({color:'#121314', roughness:0.45, metalness:0.25, side:THREE.DoubleSide});
+  const dome = new THREE.MeshStandardMaterial({color:'#ffffff', transparent:true, opacity:0.16, roughness:0.04, metalness:0, depthWrite:false, envMapIntensity:1.6});
+  const lamps = [];
+  [['#ff2414', '#3a0605', hy + 155], ['#17e868', '#03200d', hy - 155]].forEach(([em, base, y]) => {
+    B.cylZ(mBez, x, y, fz(214 + 6), 236, 12);                          // door bezel ring
+    const m = new THREE.MeshStandardMaterial({color:base, emissive:em, emissiveMap:ledTex(), emissiveIntensity:0.03, roughness:0.12, metalness:0.05});
+    const l = new THREE.Mesh(new THREE.CylinderGeometry(100, 100, 8, 48), m);
+    l.rotation.x = Math.PI/2; l.position.set(x, y, fz(214 + 12 + 4)); l.userData.own = true; grp.add(l);
+    // clear domed cover over the LED board (sphere cap R 180 mm, base radius 100 mm)
+    const R = 180, th = Math.asin(100/R), cap = new THREE.Mesh(new THREE.SphereGeometry(R, 36, 8, 0, Math.PI*2, 0, th), dome);
+    cap.rotation.x = face*Math.PI/2; cap.position.set(x, y, fz(214 + 16) - face*R*Math.cos(th)); cap.userData.own = true; grp.add(cap);
+    // tunnel visor: open tube over the top and sides of the lens, cut away underneath
+    const v = new THREE.Mesh(new THREE.CylinderGeometry(118, 118, 210, 32, 1, true, Math.PI/2 - 0.55, Math.PI + 1.1), hood);
+    v.rotation.x = Math.PI/2; v.position.set(x, y, fz(214 + 105)); v.castShadow = true; v.userData.own = true; grp.add(v);
+    lamps.push({m, glow:glowSprite(grp, em, x, y, fz(214 + 60), 420)});
+  });
+  anims.push({type:'tlight', red:lamps[0].m, green:lamps[1].m, gR:lamps[0].glow, gG:lamps[1].glow});
+}
+/* Sliding gate operator (BFT / FAAC / Roger class) on its concrete plinth, behind the gate past the opening.
+ * mx, zc = operator centre; toGate = +1 when the gate (and its rack) is on the +z side. rackZ = rack centre z,
+ * rackY = underside of the rack teeth. The pinion sits under the rack, clear of the cover, like a real install. */
+function slideOperator(B, grp, mx, zc, toGate, rackZ, rackY){
+  const mCon = mat('#a7a59d', 0, 0.95), mAlu = mat('#a2a8ad', 0.75, 0.38), mCover = mat('#26292c', 0.12, 0.4), mCap = mat('#34383c', 0.12, 0.34);
+  const mSS = mat('#d3d6d9', 0.9, 0.22), mBlk = mat('#111213', 0.2, 0.55), mAcc = mat('#d95420', 0.15, 0.4);
+  addMesh(grp, rboxGeo(540, 440, 100, 18), mCon, mx, 50, zc + toGate*20, -Math.PI/2);    // concrete plinth (rounded in plan)
+  [[-200, -150], [200, -150], [-200, 150], [200, 150]].forEach(([dx, dz]) => B.cylY(mSS, mx + dx*0.7, 108, zc + dz*0.7, 16, 16));   // anchor bolts
+  addMesh(grp, rboxGeo(360, 250, 64, 22), mAlu, mx, 132, zc, -Math.PI/2);                 // die-cast gearbox base
+  addMesh(grp, rboxGeo(330, 260, 214, 70), mCover, mx, 292, zc);                          // moulded cover (rounded top corners)
+  addMesh(grp, rboxGeo(300, 30, 190, 14), mCap, mx, 418, zc);                             // top cap
+  B.box(mAcc, mx - 40, 330, zc - toGate*108, 150, 26, 2);                                 // brand label on the inside face
+  for (let k = 0; k < 5; k++) B.box(mBlk, mx + 168, 240 + k*22, zc - 40, 2, 8, 90);       // vent slots on the end
+  B.cylH(mSS, mx - 168, 300, zc - 40, 34, 10); B.box(mSS, mx - 178, 300, zc - 40, 8, 90, 18);   // key cylinder + release lever
+  // pinion: boss on the gearbox, stainless shaft, 12-tooth steel gear meshing under the rack
+  const pz = rackZ, gy = rackY - 15;
+  B.cylY(mAlu, mx, 150, pz, 64, 40); B.cylY(mSS, mx, gy - 14, pz, 20, 34);
+  B.cylY(mat('#3b3e41', 0.85, 0.35), mx, gy, pz, 70, 28);
+  for (let t = 0; t < 12; t++){ const a = t/12*Math.PI*2; B.box(mat('#3b3e41', 0.85, 0.35), mx + Math.cos(a)*38, gy, pz + Math.sin(a)*38, 12, 28, 10, -a); }
+  B.box(mAlu, mx, 142, (zc + pz)/2 + toGate*10, 80, 28, Math.abs(pz - zc) - 60);           // gearbox arm out to the pinion
+}
 /* Traffic lights, photocell beams, beacon, loops and tyre spikes around a vehicle opening.
  * Fence line is z = 0; inside (where gates swing to) is -z, street side is +z. */
 function buildLaneAccessories(run, lay, n, grp){
@@ -2159,32 +2300,38 @@ function buildLaneAccessories(run, lay, n, grp){
   const tl = g.tlights|0;
   [[leftX, 1], [rightX, -1]].slice(0, tl).forEach(([px, side], idx) => {
     const z = idx === 0 ? 230 : -230, face = idx === 0 ? 1 : -1, x = onPosts ? px : px - side*450;
-    if (!onPosts){ B.cylY(mBlk, x, 1200, z - face*60, 76, 2400); }
     const hy = onPosts ? Math.min(run.height - 150, 2000) : 2150;
-    B.box(mBlk, x, hy, z, 260, 560, 200);
-    const red = new THREE.MeshStandardMaterial({color:'#5a0d0d', emissive:'#ff1a1a', emissiveIntensity:0, roughness:0.3});
-    const green = new THREE.MeshStandardMaterial({color:'#0d3a17', emissive:'#18e05a', emissiveIntensity:0, roughness:0.3});
-    [[red, hy + 130], [green, hy - 130]].forEach(([m, y]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(95, 95, 34, 24), m);
-      l.rotation.x = Math.PI/2; l.position.set(x, y, z + face*105); l.userData.own = true; grp.add(l); });
-    anims.push({type:'tlight', red, green});
+    if (!onPosts){ B.cylY(mat('#8e9399', 0.7, 0.4), x, (hy + 450)/2, z - face*60, 100, hy + 450); }   // galvanised pole
+    trafficHead(grp, B, x, hy, z, face, onPosts);
   });
   // photocell beams (automated): emitters both faces at 500 mm; posts for boom / bollard lanes
   if (auto){
-    const mLens = new THREE.MeshStandardMaterial({color:'#330000', emissive:'#ff2020', emissiveIntensity:2});
+    const mCell = mat('#1a1c1e', 0.15, 0.38), mCellLens = mat('#200606', 0.1, 0.08);
     [450, -450].forEach(z => {
       [leftX, rightX].forEach(px => {
         const x = onPosts ? px : px + (px < n.x ? 250 : -250);
         if (!onPosts) B.box(mSS, x, 280, z, 90, 560, 90);
-        B.box(mBlk, x, 500, onPosts ? z/9 : z, 70, 130, 70);
+        const pz = onPosts ? z/9 : z, toward = x < n.x + n.w/2 ? 1 : -1;      // lens faces across the opening
+        addMesh(grp, rboxGeo(64, 130, 56, 16), mCell, x + toward*6, 500, pz);  // photocell body (rounded moulding)
+        B.cylH(mCellLens, x + toward*36, 520, pz, 30, 6);                       // dark lens
+        B.box(mCellLens, x + toward*35, 470, pz, 4, 26, 40);                    // status window
       });
       const beam = new THREE.Mesh(new THREE.BoxGeometry(n.w + (onPosts ? lay.gw : 0), 6, 6), new THREE.MeshBasicMaterial({color:'#ff3030', transparent:true, opacity:0.35}));
       beam.position.set(n.x + n.w/2, 500, onPosts ? z/9 : z); beam.userData.own = true; grp.add(beam);
     });
     if (g.beacon !== false && g.type !== 'boom'){
       const mA = new THREE.MeshStandardMaterial({color:'#ff9a1a', emissive:'#ff7a00', emissiveIntensity:0.6, roughness:0.4});
-      const bc = new THREE.Mesh(new THREE.CylinderGeometry(35, 40, 80, 16), mA); bc.position.set(rightX, Math.min(run.height, 2100) + 90, 0); bc.userData.own = true; grp.add(bc);
-      anims.push({type:'beacon', m:mA});
+      const by = Math.min(run.height, 2100) + 30;
+      beacon(grp, rightX, by, 0, mA);
     }
+  }
+  // concrete driveway through a vehicle opening (3D designer only - the photo visualiser has the real ground)
+  if (!OVERLAY && VEHICLE(g.type)){
+    const dw = n.w + lay.gw + 800, dl = 14000, tex = (TEX.concrete || (TEX.concrete = concreteTex())).clone();
+    tex.needsUpdate = true; tex.repeat.set(dw/2000, dl/2000);
+    const slab = new THREE.Mesh(new THREE.PlaneGeometry(dw, dl), new THREE.MeshStandardMaterial({map:tex, color:'#ffffff', roughness:0.92, metalness:0, envMapIntensity:0.4}));
+    slab.rotation.x = -Math.PI/2; slab.position.set(n.x + n.w/2, 3, 0); slab.receiveShadow = true;
+    slab.userData.own = true; slab.userData.noPick = true; grp.add(slab);
   }
   // inductive loops (boom, bollards, automated spikes): outlines cut in the road both sides
   if (g.type === 'boom' || g.type === 'bollards' || g.spikes === 'auto'){
@@ -2227,8 +2374,7 @@ function buildGateBody(run, lay, n, grp, mF, mDark){
     B.box(mCream, cabX, 540, -147, 60, 960, 4);                     // rear stripe
     B.box(mBlk, cabX, 1086, 0, 324, 14, 294);                       // black top
     if (g.beacon !== false){ const mA = new THREE.MeshStandardMaterial({color:'#ff9a1a', emissive:'#ff7a00', emissiveIntensity:0.6, roughness:0.4});
-      const bc = new THREE.Mesh(new THREE.CylinderGeometry(35, 40, 80, 16), mA); bc.position.set(cabX + 90, 1133, 60); bc.userData.own = true; grp.add(bc);
-      anims.push({type:'beacon', m:mA}); }
+      beacon(grp, cabX + 90, 1093, 60, mA); }
     B.box(mRed, restX, 420, 0, 90, 840, 90); B.box(mBlk, restX, 860, 0, 200, 40, 110);   // boom rest
     const pv = new THREE.Group(); pv.position.set(cabX, 960, -205); grp.add(pv);
     const ab = new Batch(), len = lv.w;
@@ -2288,7 +2434,16 @@ function buildGateBody(run, lay, n, grp, mF, mDark){
       const cxr = dir > 0 ? n.x + n.w + lay.gw + 400 : n.x - lay.gw - 400;
       [0, 1].forEach(k => B.box(mDark, cxr + dir*k*900, 25, z, 260, 50, 200));               // roller carriages on footings
     } else B.box(mDark, (lo + hi)/2, 8, z, hi - lo, 16, 30);
-    if (isAuto(g)){ const mx = dir > 0 ? n.x + n.w + lay.gw + 420 : n.x - lay.gw - 420; B.box(mat('#2b2e31',0.2,0.6), mx, 180, z - 260, 320, 360, 220); }
+    if (isAuto(g)){
+      // gear rack along the inside face of the leaf (moves with it), teeth every 60 mm on the underside
+      const rb = new Batch(), mRack = mat('#1c1d1e', 0.05, 0.7), rz = -48;
+      rb.box(mRack, lv.w/2, 200, rz, lv.w, 30, 22);
+      for (let t = 30; t < lv.w; t += 60) rb.box(mRack, t, 180, rz, 22, 12, 22);
+      [60, lv.w - 60].forEach(t => rb.box(mat('#2b2e31', 0.2, 0.5), t, 232, rz - 4, 70, 36, 26));   // limit-switch magnets at the rack ends
+      rb.flush(lg);
+      const mx = dir > 0 ? n.x + n.w + lay.gw + 320 : n.x - lay.gw - 320;
+      slideOperator(B, grp, mx, z - 205, 1, z + rz, 174);
+    }
     anims.push({type:'slide', obj:lg, base:closedX0, shift:dir*n.w});
   } else {
     const leafH = H - 50, y0 = 50;
@@ -2297,7 +2452,9 @@ function buildGateBody(run, lay, n, grp, mF, mDark){
       leaf(run, pv, lv.w, leafH, y0, mF, mDark, xOff, latchRight);
       const hx = xOff < 0 ? -10 : 10;
       B.box(mDark, px - hx, y0 + 250, 0, 30, 120, 60); B.box(mDark, px - hx, y0 + leafH - 250, 0, 30, 120, 60);
-      if (isAuto(g)){ const ob = new Batch(); ob.box(mat('#2b2e31',0.2,0.6), xOff < 0 ? -420 : 420, y0 + 650, -150, 820, 110, 110); ob.flush(pv); }
+      if (isAuto(g)){                                                  // linear swing operator (Smarty-7 style)
+        swingOperator(pv, xOff < 0 ? -1 : 1, y0 + 650, -170);
+      }
       anims.push({type:'swing', obj:pv, sign});
     };
     if (lv.n === 1) mkPivot(n.x + gap, 1, 0, true);
@@ -2522,7 +2679,7 @@ function initDrag(){
     aim(e);
     const hits = ray.intersectObjects(root.children, true);
     for (const h of hits){
-      if (h.object.isSprite) continue;
+      if (h.object.isSprite || h.object.userData.noPick) continue;
       const i = runOf(h.object); if (i < 0) continue;
       const lay = LAYOUTS[i]; if (lay.errs.length) return null;
       const x = localX(i, h.point), span = gateSpan(lay), r = state.runs[i];
