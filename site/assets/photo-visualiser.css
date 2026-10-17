@@ -273,3 +273,40 @@ html.viz-studio-on [class*="rjl-chat"], html.viz-studio-on .sticky-quote { displ
 #rjl-viz.viz-studio .viz-readout, #rjl-viz.viz-studio .viz-f select, #rjl-viz.viz-studio .viz-f input, #rjl-viz.viz-studio .viz-colour-name,
 #rjl-viz.viz-studio .viz-send p, #rjl-viz.viz-studio .viz-send input, #rjl-viz.viz-studio .viz-send textarea, #rjl-viz.viz-studio .viz-send label {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important; }
+
+/* ---------- launch page: examples of what it does, then begin. The editor itself only opens full screen. */
+#rjl-viz:not(.viz-studio) { display: block; }
+#rjl-viz:not(.viz-studio) > :not(.viz-launch) { display: none !important; }
+#rjl-viz.viz-studio > .viz-launch { display: none !important; }
+#rjl-viz .viz-launch { color: #071f38; }
+#rjl-viz .vl-hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px; align-items: center; }
+#rjl-viz .vl-copy h2 { font-size: clamp(1.6rem, 2.6vw, 2.3rem); line-height: 1.1; margin: 0 0 14px; color: #071f38; }
+#rjl-viz .vl-copy > p { max-width: 52ch; margin: 0 0 22px; font: 400 1.05rem/1.6 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; text-transform: none; color: #2f3b47; }
+#rjl-viz .vl-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+#rjl-viz .vl-begin { cursor: pointer; font-size: 1.05rem; padding: 15px 26px; }
+#rjl-viz .vl-sample { background: none; border: 0; padding: 4px 0; font: 600 .98rem system-ui, -apple-system, "Segoe UI", Arial, sans-serif; text-transform: none;
+  color: #071f38; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: #d95420; cursor: pointer; }
+#rjl-viz .vl-sample:disabled { opacity: .6; cursor: progress; }
+#rjl-viz .vl-continue { display: none; }
+#rjl-viz.has-photo .vl-continue { display: inline-flex; }
+#rjl-viz .vl-small { margin: 16px 0 0; font: 400 .85rem/1.5 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; text-transform: none; color: #5b6570; }
+#rjl-viz .vl-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; }
+#rjl-viz .vl-compare figure, #rjl-viz .vl-examples figure { margin: 0; position: relative; }
+#rjl-viz .vl-compare img, #rjl-viz .vl-examples img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(7,31,56,.22); }
+#rjl-viz .vl-compare figcaption { position: absolute; left: 10px; bottom: 10px; background: #071f38; color: #fff; padding: 5px 10px; border-radius: 6px;
+  font: 600 .8rem system-ui, -apple-system, "Segoe UI", Arial, sans-serif; text-transform: none; }
+#rjl-viz .vl-compare figure + figure figcaption { background: #d95420; }
+#rjl-viz .vl-examples { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; margin: 56px 0 0; }
+#rjl-viz .vl-examples figcaption { margin-top: 14px; font: 400 .95rem/1.5 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; text-transform: none; color: #2f3b47; }
+#rjl-viz .vl-examples figcaption strong, #rjl-viz .vl-features strong { display: block; font-size: 1.05rem; color: #071f38; margin-bottom: 2px; }
+#rjl-viz .vl-features { list-style: none; margin: 48px 0 0; padding: 26px 0 0; border-top: 1px solid #d9dee4; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 30px; }
+#rjl-viz .vl-features li { position: relative; padding-left: 30px; font: 400 .92rem/1.5 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; text-transform: none; color: #3a4652; }
+#rjl-viz .vl-features li::before { content: "\2713"; position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: #d95420; color: #fff;
+  font: 700 12px/20px system-ui, sans-serif; text-align: center; }
+@media (max-width: 900px) {
+  #rjl-viz .vl-hero { grid-template-columns: 1fr; gap: 24px; }
+  #rjl-viz .vl-examples { grid-template-columns: 1fr; gap: 28px; margin-top: 36px; }
+  #rjl-viz .vl-features { grid-template-columns: 1fr; }
+  #rjl-viz .vl-begin { width: 100%; justify-content: center; }
+}

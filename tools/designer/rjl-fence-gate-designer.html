@@ -1428,7 +1428,7 @@ function renderEditor(){
     </fieldset>` : ''}
     <fieldset><legend>Colour</legend>
       <div class="swatches">${COLOURS.map(c => `
-        <label class="sw${c.hex === r.colour ? ' on' : ''}" style="background:${c.hex}" title="${esc(c.name)}"><input type="radio" name="colour" value="${c.hex}" data-k="colour" aria-label="${esc(c.name)}"${c.hex === r.colour ? ' checked' : ''}></label>`).join('')}
+        <label class="sw${c.hex === r.colour ? ' on' : ''}" style="background:${c.hex};--chip:${c.hex}" title="${esc(c.name)}"><input type="radio" name="colour" value="${c.hex}" data-k="colour" aria-label="${esc(c.name)}"${c.hex === r.colour ? ' checked' : ''}></label>`).join('')}
         <input type="color" class="sw-custom" id="e-colour" data-k="colour" value="${r.colour}" aria-label="Custom colour" title="Custom colour${custom ? ' (selected)' : ''}">
       </div>
     </fieldset>
@@ -1491,6 +1491,7 @@ function renderSummary(){
     const bays = lay.seq.filter(n => n.k === 'bay').length;
     return `<div class="panel sum">${head}<div class="chips">${chips}<span class="chip post">${posts} posts · ${bays} panels</span></div></div>`;
   }).join('');
+  updateAppStats();
 }
 function renderWarns(){
   if (!$('#warns')) return;
@@ -2479,8 +2480,8 @@ function fitCamera(v, keepIfUserMoved){
   const [x0,y0,z0] = sceneBox.min, [x1,y1,z1] = sceneBox.max;
   const c = new THREE.Vector3((x0 + x1)/2, (y0 + y1)/3, (z0 + z1)/2);
   const r = Math.max(x1 - x0, z1 - z0, y1 - y0)/2 + 0.5;
-  const dist = r/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*(camera.aspect < 1 ? 1.25 : 0.78);
-  const dirs = {iso:[0.62, 0.48, 0.78], front:[0, 0.12, 1], top:[0, 1, 0.0001]};
+  const dist = r/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*(camera.aspect < 1 ? 1.25 : (v === 'iso' ? 0.62 : 0.78));   // 3D view sits closer: the fence fills the frame
+  const dirs = {iso:[0.6, 0.24, 0.8], front:[0, 0.12, 1], top:[0, 1, 0.0001]};   // 3D view: lower three-quarter angle, sky in frame
   const d = new THREE.Vector3(...dirs[v]).normalize();
   camera.position.copy(c).addScaledVector(d, dist); controls.target.copy(c); controls.update();
   placeSun(); fitCamera.userMoved = false;
@@ -2604,6 +2605,32 @@ function initDrag(){
  * button keeps its behaviour; Close puts them back.
  */
 let appOn = false;
+const orbit = () => controls;                      // the 3D camera controls (initApp has its own 'controls' = the side panel)
+/* Live title block on the 3D view and totals on the quote bar (full-screen designer only). */
+function updateAppStats(){
+  if (!appOn) return;
+  const tb = $('#appTitleBlock'), st = $('#appStats');
+  let len = 0, panels = 0, posts = 0, gates = 0;
+  state.runs.forEach((r, i) => { const lay = LAYOUTS[i]; len += +r.length || 0; if (!lay || lay.errs.length) return;
+    panels += lay.seq.filter(n => n.k === 'bay').length; gates += lay.seq.filter(n => n.k === 'gate').length;
+    posts += lay.seq.filter((n, j) => n.k === 'post' && !((j === 0 && JOINS[i].skipFirst) || (j === lay.seq.length - 1 && JOINS[i].skipLast))).length; });
+  if (st) st.innerHTML = `<span><b>${len.toFixed(1)} m</b> of fence</span><span><b>${panels}</b> panels</span><span><b>${posts}</b> posts</span>${gates ? `<span><b>${gates}</b> ${gates > 1 ? 'gates' : 'gate'}</span>` : ''}`;
+  if (!tb) return;
+  const r = curRun(), lay = LAYOUTS[state.sel], P = PRODUCTS[r.product], g = r.gate;
+  const bad = !lay || lay.errs.length;
+  const runPanels = bad ? '–' : lay.seq.filter(n => n.k === 'bay').length;
+  const runPosts = bad ? '–' : lay.seq.filter(n => n.k === 'post').length;
+  const colour = (COLOURS.find(c => c.hex === r.colour) || {name:'Custom'}).name;
+  tb.innerHTML = `<div class="tb-mark" aria-hidden="true">RJL</div>
+    <div class="tb-cell tb-main"><small>${esc(r.name)}${state.runs.length > 1 ? ` of ${state.runs.length} runs` : ''}</small><strong>${esc(P.label)}</strong></div>
+    <div class="tb-cell"><small>Length</small><strong>${(+r.length).toFixed(1)} m</strong></div>
+    <div class="tb-cell"><small>Height</small><strong>${fmt(r.height)} mm</strong></div>
+    <div class="tb-cell"><small>Panels</small><strong>${runPanels}</strong></div>
+    <div class="tb-cell"><small>Posts</small><strong>${runPosts}</strong></div>
+    <div class="tb-cell"><small>Colour</small><strong><i style="background:${esc(r.colour)}"></i>${esc(colour)}</strong></div>
+    <div class="tb-cell tb-gate"><small>Gate</small><strong>${g.type === 'none' ? 'No gate' : esc(GATE_TYPES[g.type].label) + ' ' + fmt(g.width) + ' mm'}</strong></div>
+    ${bad ? `<div class="tb-err">${esc(lay.errs[0] || '')}</div>` : ''}`;
+}
 function initApp(){
   if (!WEB || !HOST || OVERLAY) return;
   const work = HOST.querySelector('.work'), stage = HOST.querySelector('.stage'), controls = HOST.querySelector('.controls');
@@ -2621,6 +2648,39 @@ function initApp(){
   const views = bar.querySelector('.app-views'), acts = bar.querySelector('.app-acts');
   const quoteBtn = document.createElement('button'); quoteBtn.type = 'button'; quoteBtn.className = 'btn primary app-quote'; quoteBtn.textContent = 'Add to online quote';
   quoteBtn.addEventListener('click', () => { const b = $('#addToQuote'); if (b) b.click(); });
+  const tblock = document.createElement('div'); tblock.className = 'app-titleblock'; tblock.id = 'appTitleBlock'; tblock.setAttribute('aria-live', 'polite');
+  const stats = document.createElement('div'); stats.className = 'app-stats'; stats.id = 'appStats';
+  const zoomBar = document.createElement('div'); zoomBar.className = 'app-zoom'; zoomBar.setAttribute('role', 'group'); zoomBar.setAttribute('aria-label', 'Zoom');
+  zoomBar.innerHTML = '<button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="fit" aria-label="Fit the whole fence in view">Fit</button>';
+  zoomBar.addEventListener('click', e => {
+    const b = e.target.closest('[data-z]'), oc = orbit(); if (!b || !camera || !oc) return;
+    if (b.dataset.z === 'fit'){ fitCamera.userMoved = false; fitCamera(view); return; }
+    const k = b.dataset.z === 'in' ? 0.8 : 1.25, t = oc.target, d = camera.position.clone().sub(t).multiplyScalar(k);
+    if (d.length() < oc.minDistance || d.length() > oc.maxDistance) return;
+    camera.position.copy(t).add(d); oc.update(); fitCamera.userMoved = true;
+  });
+  // launch section (examples of what it does, then begin). The designer itself only shows full screen.
+  const launch = document.createElement('section'); launch.className = 'dz-launch'; launch.setAttribute('aria-labelledby', 'dzLaunchTitle');
+  launch.innerHTML = `<div class="dz-hero">
+      <div class="dz-copy">
+        <h2 id="dzLaunchTitle">Design your ${residential ? 'fence and gate' : 'site fencing and gates'} in 3D, at real size</h2>
+        <p>Pick a fence system, enter your lengths and add a gate. Panels, posts and gates are laid out the way we build them. When you are happy, send it to us and we measure on site before confirming the quote.</p>
+        <div class="dz-actions"><a class="btn primary dz-begin" href="#design">Start designing</a><span class="dz-small">Free. Your design is saved on this device.</span></div>
+      </div>
+      <figure class="dz-main"><img src="/assets/examples/des-iso.webp" alt="A 3D fence design with a gate, shown at an angle" width="900" height="560" loading="lazy"></figure>
+    </div>
+    <div class="dz-examples">
+      <figure><img src="/assets/examples/des-open.webp" alt="The same design with the gate open" width="900" height="560" loading="lazy"><figcaption><strong>Open the gates</strong>See swing and sliding gates move, and check the space they need.</figcaption></figure>
+      <figure><img src="/assets/examples/des-front.webp" alt="The design seen straight on" width="900" height="560" loading="lazy"><figcaption><strong>Check every view</strong>Turn the model, or jump to the front and plan views.</figcaption></figure>
+      <figure class="dz-list"><figcaption><strong>Everything in one place</strong></figcaption><ul>
+        <li>${residential ? 'Colorbond, timber, slat, batten, picket and pool fencing' : 'Mesh, palisade, tubular, chainmesh and security toppings'}</li>
+        <li>Drag the gate or any panel along the fence</li>
+        <li>Corners and extra runs for a whole boundary</li>
+        <li>${residential ? 'Swing, sliding and automated gates' : 'Sliding and swing gates, boom gates, bollards and turnstiles'}</li>
+        <li>Send the design with your quote request</li></ul></figure>
+    </div>`;
+  HOST.insertBefore(launch, HOST.firstChild);
+  if (/[#&]d=/.test(location.hash || '')) requestAnimationFrame(() => setApp(true, true));   // a shared design link opens straight into the designer
   const openBtn = document.createElement('button'); openBtn.type = 'button'; openBtn.className = 'btn primary app-open'; openBtn.textContent = '⤢ Full-screen designer';
   toolbar.insertBefore(openBtn, toolbar.firstChild);
   let homes = [], pushed = false;
@@ -2636,9 +2696,10 @@ function initApp(){
       if (warns) moveTo(warns, controls, controls.firstChild);
       if (cta) moveTo(cta, controls);
       const copy = HOST.querySelector(':scope > .rjl-copy'); if (copy) moveTo(copy, controls);
+      stage.appendChild(tblock); stage.appendChild(zoomBar); if (cta) cta.insertBefore(stats, cta.querySelector('#addToQuote'));
       openBtn.hidden = true;
     } else {
-      restore(); if (bar.parentNode) bar.remove(); openBtn.hidden = false;
+      restore(); [bar, tblock, zoomBar, stats].forEach(el => { if (el.parentNode) el.remove(); }); openBtn.hidden = false;
     }
     HOST.classList.toggle('app', on);
     document.documentElement.classList.toggle('rjl-app-on', on);
@@ -2650,7 +2711,7 @@ function initApp(){
       setTimeout(() => HOST.scrollIntoView({block:'start'}), 0);
     }
     fitCamera.userMoved = false;
-    requestAnimationFrame(() => { if (renderer) resize(); fitCamera(view); });
+    requestAnimationFrame(() => { if (renderer) resize(); fitCamera(view); updateAppStats(); });
     try { if (window.gtag) window.gtag('event', on ? 'designer_fullscreen_open' : 'designer_fullscreen_close'); } catch(e){}
   }
   bar.querySelector('.app-close').addEventListener('click', () => setApp(false));
