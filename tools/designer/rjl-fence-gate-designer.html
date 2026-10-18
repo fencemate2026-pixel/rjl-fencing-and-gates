@@ -2237,59 +2237,89 @@ function swingOperator(pv, s, y, zc){
   addMesh(pv, rboxGeo(150, 120, 12, 5), mPlate, s*880, y, -38);                         // bracket plate on the leaf
   [[-50, -40], [50, -40], [-50, 40], [50, 40]].forEach(([dx, dy]) => addMesh(pv, new THREE.CylinderGeometry(8, 8, 10, 10), mAlu, s*880 + dx, y + dy, -46, Math.PI/2));
 }
-/* 2-aspect LED vehicle signal (200 mm lenses) as used on RJL gates: black target board with a white
- * reflective border, rounded die-cast housing, LED cluster lenses under clear domed covers, tunnel visors.
+/* Perforated black face for the signal housing (fine dot grid, as on compact LED gate signals). */
+function perfTex(){
+  if (TEX.perf) return TEX.perf;
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = '#1b1d1f'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#060707';
+  for (let yy = 4; yy < 128; yy += 8) for (let xx = 4; xx < 128; xx += 8){ x.beginPath(); x.arc(xx, yy, 1.8, 0, Math.PI*2); x.fill(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; TEX.perf = t; return t;
+}
+/* Compact 2-aspect LED gate signal (160 mm red/green lenses), modelled on the units RJL fits:
+ * slim black housing with a perforated face, brushed aluminium side rail, hooded visors cut away
+ * underneath, LED clusters behind clear lenses, cable glands top and bottom, galvanised post clamps.
  * face = +1 lenses face +z (street), -1 face -z. hy = centre height. */
 function trafficHead(grp, B, x, hy, z, face, onPost){
-  const mGalv = mat('#8e9399', 0.7, 0.4), mWhite = mat('#f3f3f0', 0, 0.5), mBoard = mat('#0d0e0f', 0.1, 0.62);
-  const mHouse = mat('#16181a', 0.35, 0.36), mBez = mat('#0a0b0c', 0.3, 0.42);
-  const fz = d => z + face*d;                                        // depth measured out from the board's back
+  const W = 230, H = 440, D = 110, LR = 80;                          // housing mm, lens radius
+  const mGalv = mat('#9aa0a5', 0.75, 0.35), mHouse = mat('#121314', 0.3, 0.42), mRail = mat('#b9bdc1', 0.9, 0.3);
+  const mBez = mat('#08090a', 0.3, 0.38), mGland = mat('#0c0d0e', 0.1, 0.6);
+  const fz = d => z + face*d;                                        // depth from the housing's back
   if (onPost){
-    [hy + 230, hy - 230].forEach(y => { B.box(mGalv, x, y, z/2, 60, 40, Math.abs(z)); B.cylZ(mGalv, x, y, fz(-4), 70, 10); });   // brackets + clamp plates
-    B.cylY(mat('#2b2e31', 0.1, 0.6), x + 120, hy - 420, z/2 + face*20, 22, 260);                 // cable conduit down to the post
+    [hy + H/2 - 60, hy - H/2 + 60].forEach(y => {
+      B.box(mGalv, x, y, z/2, 50, 30, Math.abs(z));                   // arm from the post to the housing
+      B.box(mGalv, x, y, fz(-3), 90, 60, 6);                          // clamp plate on the housing back
+    });
   }
-  addMesh(grp, rboxGeo(450, 790, 8, 34), mWhite, x, hy, fz(4));       // reflective border board
-  addMesh(grp, rboxGeo(414, 754, 8, 26), mBoard, x, hy, fz(10));      // black target board
-  addMesh(grp, rboxGeo(300, 640, 200, 46), mHouse, x, hy, fz(14 + 100));   // housing
-  B.box(mBez, x, hy, fz(215), 270, 6, 6);                              // door seam between aspects
-  const hood = new THREE.MeshStandardMaterial({color:'#121314', roughness:0.45, metalness:0.25, side:THREE.DoubleSide});
-  const dome = new THREE.MeshStandardMaterial({color:'#ffffff', transparent:true, opacity:0.16, roughness:0.04, metalness:0, depthWrite:false, envMapIntensity:1.6});
+  addMesh(grp, rboxGeo(W, H, D, 22), mHouse, x, hy, fz(D/2));         // housing
+  const pm = new THREE.MeshStandardMaterial({map:perfTex().clone(), color:'#ffffff', roughness:0.6, metalness:0.2});
+  pm.map.needsUpdate = true; pm.map.repeat.set(W/40, H/40);
+  const face_ = new THREE.Mesh(new THREE.PlaneGeometry(W - 24, H - 24), pm);                  // perforated front
+  face_.rotation.y = face > 0 ? 0 : Math.PI; face_.position.set(x, hy, fz(D + 1)); face_.userData.own = true; grp.add(face_);
+  const side = face > 0 ? 1 : -1;
+  addMesh(grp, rboxGeo(18, H + 4, D - 6, 6), mRail, x + side*(W/2 + 2), hy, fz(D/2));        // aluminium side rail
+  [hy + H/2 + 12, hy - H/2 - 12].forEach(y => B.cylY(mGland, x, y, fz(D/2), 26, 24));        // cable glands
+  const hood = new THREE.MeshStandardMaterial({color:'#0e0f10', roughness:0.35, metalness:0.3, side:THREE.DoubleSide});
+  const dome = new THREE.MeshStandardMaterial({color:'#ffffff', transparent:true, opacity:0.18, roughness:0.03, metalness:0, depthWrite:false, envMapIntensity:1.8});
   const lamps = [];
-  [['#ff2414', '#3a0605', hy + 155], ['#17e868', '#03200d', hy - 155]].forEach(([em, base, y]) => {
-    B.cylZ(mBez, x, y, fz(214 + 6), 236, 12);                          // door bezel ring
+  [['#ff2414', '#3a0605', hy + H/4], ['#17e868', '#03200d', hy - H/4]].forEach(([em, base, y]) => {
+    B.cylZ(mBez, x, y, fz(D + 4), LR*2 + 26, 8);                       // lens ring
     const m = new THREE.MeshStandardMaterial({color:base, emissive:em, emissiveMap:ledTex(), emissiveIntensity:0.03, roughness:0.12, metalness:0.05});
-    const l = new THREE.Mesh(new THREE.CylinderGeometry(100, 100, 8, 48), m);
-    l.rotation.x = Math.PI/2; l.position.set(x, y, fz(214 + 12 + 4)); l.userData.own = true; grp.add(l);
-    // clear domed cover over the LED board (sphere cap R 180 mm, base radius 100 mm)
-    const R = 180, th = Math.asin(100/R), cap = new THREE.Mesh(new THREE.SphereGeometry(R, 36, 8, 0, Math.PI*2, 0, th), dome);
-    cap.rotation.x = face*Math.PI/2; cap.position.set(x, y, fz(214 + 16) - face*R*Math.cos(th)); cap.userData.own = true; grp.add(cap);
-    // tunnel visor: open tube over the top and sides of the lens, cut away underneath
-    const v = new THREE.Mesh(new THREE.CylinderGeometry(118, 118, 210, 32, 1, true, Math.PI/2 - 0.55, Math.PI + 1.1), hood);
-    v.rotation.x = Math.PI/2; v.position.set(x, y, fz(214 + 105)); v.castShadow = true; v.userData.own = true; grp.add(v);
-    lamps.push({m, glow:glowSprite(grp, em, x, y, fz(214 + 60), 420)});
+    const l = new THREE.Mesh(new THREE.CylinderGeometry(LR, LR, 6, 48), m);
+    l.rotation.x = Math.PI/2; l.position.set(x, y, fz(D + 10)); l.userData.own = true; grp.add(l);
+    const R = 150, th = Math.asin(LR/R), cap = new THREE.Mesh(new THREE.SphereGeometry(R, 36, 8, 0, Math.PI*2, 0, th), dome);
+    cap.rotation.x = face*Math.PI/2; cap.position.set(x, y, fz(D + 12) - face*R*Math.cos(th)); cap.userData.own = true; grp.add(cap);
+    // hooded visor: deep over the top, tapering away down the sides, open underneath
+    const v = new THREE.Mesh(new THREE.CylinderGeometry(LR + 14, LR + 14, 150, 32, 1, true, Math.PI/2 - 0.35, Math.PI + 0.7), hood);
+    v.rotation.x = Math.PI/2; v.position.set(x, y, fz(D + 8 + 75)); v.castShadow = true; v.userData.own = true; grp.add(v);
+    lamps.push({m, glow:glowSprite(grp, em, x, y, fz(D + 50), 340)});
   });
   anims.push({type:'tlight', red:lamps[0].m, green:lamps[1].m, gR:lamps[0].glow, gG:lamps[1].glow});
 }
-/* Sliding gate operator (BFT / FAAC / Roger class) on its concrete plinth, behind the gate past the opening.
- * mx, zc = operator centre; toGate = +1 when the gate (and its rack) is on the +z side. rackZ = rack centre z,
- * rackY = underside of the rack teeth. The pinion sits under the rack, clear of the cover, like a real install. */
+/* Sliding gate operator modelled on the white sculpted units RJL installs (Roger R30 / Nice class):
+ * white moulded cover with a high rounded back and a sweeping parting line, matching white base tray,
+ * round key release on the end, all on a concrete plinth; steel pinion under the gate rack.
+ * mx, zc = operator centre; toGate = +1 when the gate (and its rack) is on the +z side.
+ * rackZ = rack centre z, rackY = underside of the rack teeth. */
+function opCoverGeo(W){
+  // side profile (u = depth toward the gate, v = height above the tray): low at the gate side, high rounded back
+  const s = new THREE.Shape();
+  s.moveTo(-105, 0); s.lineTo(105, 0); s.lineTo(105, 150);
+  s.bezierCurveTo(105, 215, 80, 250, 30, 262);
+  s.bezierCurveTo(-30, 274, -80, 270, -100, 238);
+  s.bezierCurveTo(-108, 220, -105, 200, -105, 180); s.lineTo(-105, 0);
+  const g = new THREE.ExtrudeGeometry(s, {depth:W - 16, bevelEnabled:true, bevelThickness:8, bevelSize:8, bevelSegments:4, curveSegments:16});
+  g.translate(0, 0, -(W - 16)/2); g.rotateY(-Math.PI/2); g.computeVertexNormals(); return g;   // extrusion along x, low side toward +z
+}
 function slideOperator(B, grp, mx, zc, toGate, rackZ, rackY){
-  const mCon = mat('#a7a59d', 0, 0.95), mAlu = mat('#a2a8ad', 0.75, 0.38), mCover = mat('#26292c', 0.12, 0.4), mCap = mat('#34383c', 0.12, 0.34);
-  const mSS = mat('#d3d6d9', 0.9, 0.22), mBlk = mat('#111213', 0.2, 0.55), mAcc = mat('#d95420', 0.15, 0.4);
-  addMesh(grp, rboxGeo(540, 440, 100, 18), mCon, mx, 50, zc + toGate*20, -Math.PI/2);    // concrete plinth (rounded in plan)
-  [[-200, -150], [200, -150], [-200, 150], [200, 150]].forEach(([dx, dz]) => B.cylY(mSS, mx + dx*0.7, 108, zc + dz*0.7, 16, 16));   // anchor bolts
-  addMesh(grp, rboxGeo(360, 250, 64, 22), mAlu, mx, 132, zc, -Math.PI/2);                 // die-cast gearbox base
-  addMesh(grp, rboxGeo(330, 260, 214, 70), mCover, mx, 292, zc);                          // moulded cover (rounded top corners)
-  addMesh(grp, rboxGeo(300, 30, 190, 14), mCap, mx, 418, zc);                             // top cap
-  B.box(mAcc, mx - 40, 330, zc - toGate*108, 150, 26, 2);                                 // brand label on the inside face
-  for (let k = 0; k < 5; k++) B.box(mBlk, mx + 168, 240 + k*22, zc - 40, 2, 8, 90);       // vent slots on the end
-  B.cylH(mSS, mx - 168, 300, zc - 40, 34, 10); B.box(mSS, mx - 178, 300, zc - 40, 8, 90, 18);   // key cylinder + release lever
+  const mCon = mat('#a7a59d', 0, 0.95), mWhite = mat('#eef0f1', 0.05, 0.3), mTray = mat('#e3e6e8', 0.05, 0.38);
+  const mSeam = mat('#b9bdc0', 0.1, 0.5), mLock = mat('#6c7175', 0.6, 0.35), mSS = mat('#d3d6d9', 0.9, 0.22), mSteel = mat('#3b3e41', 0.85, 0.35);
+  addMesh(grp, rboxGeo(560, 460, 100, 18), mCon, mx, 50, zc + toGate*20, -Math.PI/2);      // concrete plinth
+  [[-200, -150], [200, -150], [-200, 150], [200, 150]].forEach(([dx, dz]) => B.cylY(mSS, mx + dx*0.75, 106, zc + dz*0.8, 14, 12));   // anchor bolts
+  addMesh(grp, rboxGeo(420, 300, 46, 16), mTray, mx, 123, zc, -Math.PI/2);                // white base tray
+  const cover = addMesh(grp, opCoverGeo(330), mWhite, mx, 146, zc);                        // sculpted cover
+  if (toGate < 0) cover.rotation.y = Math.PI;                                              // low side faces the gate
+  // sweeping parting line across both ends and the long faces (thin grey seam)
+  [-1, 1].forEach(e => B.boxR(mSeam, mx + e*174, 230, zc, 2, 4, 200, 0.28*toGate, 0, 0));
+  B.box(mSeam, mx, 205, zc - toGate*113, 330, 3, 2);
+  B.box(mSeam, mx, 300, zc - toGate*55, 330, 2, 2);
+  B.cylH(mLock, mx - 172, 200, zc + toGate*20, 34, 8);                                     // round key release
+  B.box(mat('#2a2c2e', 0.2, 0.5), mx - 172, 245, zc + toGate*30, 4, 8, 90);              // handle slot
   // pinion: boss on the gearbox, stainless shaft, 12-tooth steel gear meshing under the rack
   const pz = rackZ, gy = rackY - 15;
-  B.cylY(mAlu, mx, 150, pz, 64, 40); B.cylY(mSS, mx, gy - 14, pz, 20, 34);
-  B.cylY(mat('#3b3e41', 0.85, 0.35), mx, gy, pz, 70, 28);
-  for (let t = 0; t < 12; t++){ const a = t/12*Math.PI*2; B.box(mat('#3b3e41', 0.85, 0.35), mx + Math.cos(a)*38, gy, pz + Math.sin(a)*38, 12, 28, 10, -a); }
-  B.box(mAlu, mx, 142, (zc + pz)/2 + toGate*10, 80, 28, Math.abs(pz - zc) - 60);           // gearbox arm out to the pinion
+  B.cylY(mTray, mx, 150, pz, 64, 40); B.cylY(mSS, mx, gy - 14, pz, 20, 34);
+  B.cylY(mSteel, mx, gy, pz, 70, 28);
+  for (let t = 0; t < 12; t++){ const a = t/12*Math.PI*2; B.box(mSteel, mx + Math.cos(a)*38, gy, pz + Math.sin(a)*38, 12, 28, 10, -a); }
+  B.box(mTray, mx, 138, (zc + pz)/2 + toGate*10, 80, 26, Math.abs(pz - zc) - 60);           // gearbox arm out to the pinion
 }
 /* Traffic lights, photocell beams, beacon, loops and tyre spikes around a vehicle opening.
  * Fence line is z = 0; inside (where gates swing to) is -z, street side is +z. */
@@ -2299,9 +2329,9 @@ function buildLaneAccessories(run, lay, n, grp){
   // traffic lights: 2-aspect head on the post (or on its own pole beside a boom / bollard lane), facing the street
   const tl = g.tlights|0;
   [[leftX, 1], [rightX, -1]].slice(0, tl).forEach(([px, side], idx) => {
-    const z = idx === 0 ? 230 : -230, face = idx === 0 ? 1 : -1, x = onPosts ? px : px - side*450;
+    const z = (idx === 0 ? 1 : -1)*(onPosts ? 150 : 230), face = idx === 0 ? 1 : -1, x = onPosts ? px : px - side*450;
     const hy = onPosts ? Math.min(run.height - 150, 2000) : 2150;
-    if (!onPosts){ B.cylY(mat('#8e9399', 0.7, 0.4), x, (hy + 450)/2, z - face*60, 100, hy + 450); }   // galvanised pole
+    if (!onPosts){ B.cylY(mat('#8e9399', 0.7, 0.4), x, (hy + 260)/2, z - face*60, 100, hy + 260); }   // galvanised pole
     trafficHead(grp, B, x, hy, z, face, onPosts);
   });
   // photocell beams (automated): emitters both faces at 500 mm; posts for boom / bollard lanes
