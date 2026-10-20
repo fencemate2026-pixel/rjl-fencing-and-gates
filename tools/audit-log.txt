@@ -661,3 +661,6 @@ fencing-greensborough.html	created suburb page (title 55, desc 149)	1
 2026-10-18T15:56:22 build_fence_designer: website js: 220428 -> 151176 bytes minified, 9 price ranges removed, domain lock on
 2026-10-18T15:56:22 build_fence_designer: ok - css 33622 B, js 151411 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
 2026-10-18T15:56:22 version_examples: example pictures versioned: 9 files, 1 files updated
+2026-10-20T21:55:40 build_fence_designer: website js: 240731 -> 162150 bytes minified, 9 price ranges removed, domain lock on
+2026-10-20T21:55:40 build_fence_designer: ok - css 34012 B, js 162385 B, page fence-designer.html, commercial folder dist/commercial-fence-designer
+2026-10-20T22:03:19 port_visualiser: visualiser ported from /home/claude/website/site; 1 pages version-bumped

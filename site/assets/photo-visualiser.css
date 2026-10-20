@@ -324,3 +324,10 @@ html.viz-studio-on [class*="rjl-chat"], html.viz-studio-on .sticky-quote { displ
 #rjl-viz .vl-examples figcaption, #rjl-viz .vl-features li {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important; }
 #rjl-viz .vl-examples figcaption strong, #rjl-viz .vl-features strong { font-family: "Zing Sans Rust", system-ui, sans-serif !important; }
+
+/* ---------- several gates on one fence line (Gates tab, 20 Oct 2026) */
+#rjl-viz .viz-gate { border: 1px solid rgba(7,31,56,.18); border-radius: 10px; padding: 10px 12px 12px; margin: 0 0 12px; }
+#rjl-viz .viz-gate legend { font-weight: 800; padding: 0 6px; }
+#rjl-viz .viz-gate .viz-btn-sm { margin-top: 2px; }
+#rjl-viz .viz-gate-add { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 10px; }
+#rjl-viz .viz-gate-add .viz-f { flex: 1; min-width: 170px; margin-bottom: 0; }
