@@ -385,6 +385,8 @@ def main():
     apply_mobile_navigation(OUT)
     from add_home_design_promo import apply_home_design_promo
     apply_home_design_promo(OUT)
+    from refine_location_wording import refine_location_wording
+    refine_location_wording(OUT)
     print(f"OK: {len(pages)} pages built, {len(AUDIT)} logged edits, banned-suburb check passed")
 
 
