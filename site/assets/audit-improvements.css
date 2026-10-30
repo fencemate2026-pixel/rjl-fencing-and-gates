@@ -1,0 +1,77 @@
+/* Residential usability pass: retain Zing headings, readable supporting copy. */
+:root{--rjl-reading:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+html body main p:not(.eyebrow):not(.design-launch-kicker),html body main p:not(.eyebrow):not(.design-launch-kicker) *,html body .content-body li,html body .content-body li *,html body .faq-list details>div,html body .faq-list details>div *,html body .form-field label,html body .form-note,html body input,html body select,html body textarea,html body .review-card footer span,html body .reviews-actions small,html body .footer p,html body .footer small,html body .chat-panel p,html body .chat-panel input,html body figcaption{font-family:var(--rjl-reading)!important;letter-spacing:normal}
+html body main p:not(.eyebrow){line-height:1.65}
+html body input,html body select,html body textarea{font-size:16px}
+html body main :is(.eyebrow,.eyebrow-light){font-size:12px;line-height:1.5}
+html body .res-hero .eyebrow{color:#ffba8e!important}
+html body .res-hero-content{padding-bottom:65px!important;min-height:440px!important}
+html body .hero-scroll{display:none}
+:is(.shell,.section-heading,.review-heading,.rating-lockup,.content-grid,.project-feature-grid,.story-grid,.footer-grid)>*{min-width:0}
+html body :is(h1,h2,h3,summary){overflow-wrap:anywhere}
+html body .section-heading{gap:24px;flex-wrap:wrap}
+html body .rating-lockup{max-width:100%;flex-wrap:wrap;gap:12px}
+html body .rating-lockup>div{min-width:0}
+html body .rating-lockup span{white-space:normal}
+html body .section-heading h2{max-width:850px}
+html body .reviews-section h2{max-width:720px}
+html body .services-home{padding-top:58px;padding-bottom:58px}
+html body .service-card-body small{font-size:12px}
+html body .service-card-body p{font-size:15px}
+.home-process-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;list-style:none;padding:0;margin:28px 0 0}
+.home-process-grid li{padding:26px;border:1px solid #d9dfe3;border-radius:14px;background:#fff;min-width:0}
+.home-process-grid h3{font-size:22px;line-height:1.25;margin:12px 0}
+.home-process-grid p{font-size:16px;color:#555d63}
+.process-number{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:#071f38;color:#ffad79;font-size:17px}
+.home-group-note{padding:26px 0;background:#edf1f4;border-block:1px solid #dce3e9}
+.home-group-note>.shell{display:flex;align-items:center;gap:24px;justify-content:space-between}
+.home-group-note p{max-width:620px;margin:0;color:#344858;font-size:15px}
+.home-group-note .shell>div{display:flex;flex-wrap:wrap;gap:12px 20px}
+.home-group-note a{font-size:13px;text-decoration:underline;text-underline-offset:4px}
+html body a:focus-visible,html body button:focus-visible,html body summary:focus-visible{outline:3px solid #d95420;outline-offset:4px}
+html body :is(.reviews-section,.res-hero,.project-feature,.quote-band) :is(a,button):focus-visible{outline-color:#ffba8e}
+html body .footer .footer-suburb-links a{padding:8px 0;min-height:36px}
+html body .chat-launcher{font-size:13px;min-height:44px}
+html body .review-card p{font-size:16px}
+@media(max-width:900px){
+ html body .res-hero-content{min-height:0!important;padding:32px 0 36px!important}
+ html body .trust-rail-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+ .home-process-grid{grid-template-columns:1fr}
+ .home-group-note>.shell{align-items:flex-start;flex-direction:column;gap:14px}
+}
+@media(max-width:600px){
+ html body .shell{width:calc(100% - 32px);max-width:100%}
+ html body .res-hero .button-row{gap:12px}
+ html body .res-hero .button-row>.button{width:100%;justify-content:center}
+ html body .section-heading h2,html body .client-proof h2{font-size:clamp(27px,7.5vw,36px);line-height:1.15}
+ html body .section-heading{align-items:flex-start;gap:18px}
+ html body .rating-lockup{align-items:center}
+ html body .rating-lockup>strong{font-size:42px}
+ html body .rating-lockup>div>span:last-child{font-size:12px}
+ html body .trust-rail-grid strong{font-size:15px}
+ html body .trust-rail-grid span{font-size:12px}
+ html body .services-home{padding:36px 0}
+ html body .services-grid{gap:20px}
+ html body .service-card-image{height:200px}
+ html body .project-mosaic .mosaic-wide{height:230px}
+ html body .project-mosaic figure{height:200px}
+ html body .home-process{padding:36px 0}
+ html body .review-grid{gap:16px}
+ html body .review-card{padding:24px}
+ .home-process-grid{gap:14px}
+ .home-process-grid li{padding:22px}
+ html body .chat-widget{right:10px;bottom:10px;max-width:calc(100vw - 20px)}
+ html body .chat-launcher{padding:11px 14px}
+ html body .chat-panel{max-width:calc(100vw - 20px)}
+ html body .footer-base{overflow-wrap:anywhere}
+}
+@media(prefers-reduced-motion:reduce){html body .rapid-dot,html body .desktop-nav a.nav-rapid::before{animation:none!important}}
+@media(max-width:600px){
+ html body .trust-rail-grid{gap:0}
+ html body .trust-rail-grid>div{padding:14px 10px;gap:5px;align-content:start}
+ html body .trust-rail-grid strong{font-size:14px;line-height:1.4}
+ html body .trust-rail-grid span{font-size:12px;line-height:1.5}
+}
+html body main :is(label,input,select,textarea,button){font-family:var(--rjl-reading)!important;letter-spacing:normal}
+html body main .quote-consent,html body main .quote-consent *{font-family:var(--rjl-reading)!important;font-size:14px;line-height:1.6;letter-spacing:normal;text-transform:none}
+@media(max-width:900px){html body .contact-grid>.email-enquiry{order:-1}html body .contact-grid{gap:32px}}

@@ -1,0 +1,17 @@
+/* Quote-specific refinements; branding remains shared with the rest of the site. */
+.online-enquiry { min-width: 0; }
+.online-enquiry .form-grid, .online-enquiry .form-field { min-width: 0; }
+.online-enquiry input[type="file"] { width: 100%; min-width: 0; font-size: 14px; line-height: 1.5; padding: .75rem; }
+.online-enquiry input[type="file"]::file-selector-button { border: 0; border-radius: .35rem; padding: .65rem .8rem; background: #e7edf2; color: #172b39; margin-right: .65rem; font-weight: 700; cursor: pointer; }
+.online-enquiry .field-optional { font-weight: 400; }
+.online-enquiry .quote-consent { display: flex; align-items: flex-start; gap: .7rem; line-height: 1.55; font-size: 14px; }
+.online-enquiry .quote-consent input { width: 20px; height: 20px; flex: 0 0 20px; margin-top: .15rem; accent-color: #b94716; }
+.online-enquiry .quote-consent a, .online-enquiry .form-note a { text-decoration: underline; text-underline-offset: .15em; }
+.online-enquiry .form-status { grid-column: 1/-1; margin-top: 1.2rem; padding: 1.2rem; border-radius: .7rem; border: 1px solid #a6cbb4; background: #edf8f1; color: #173e2b; line-height: 1.6; overflow-wrap: anywhere; }
+.online-enquiry .form-status:focus { outline: 3px solid #f3a565; outline-offset: 3px; }
+.online-enquiry .form-status.is-error { color: #71250e; background: #fff2e9; border-color: #d58a65; }
+.online-enquiry .form-status a { color: inherit; text-decoration: underline; }
+.online-enquiry button[disabled] { opacity: .7; cursor: wait; }
+.online-enquiry [hidden] { display: none !important; }
+.online-enquiry .form-note { font-size: 14px; line-height: 1.6; }
+@media(max-width: 480px) { .online-enquiry .form-grid { grid-template-columns: minmax(0, 1fr); } .online-enquiry .button { width: 100%; } }

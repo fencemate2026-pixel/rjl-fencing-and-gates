@@ -52,3 +52,38 @@
   .design-launch .design-launch-preview-footer > small { font-size: 7px; }
 }
 @media (prefers-reduced-motion: reduce) { .design-launch .design-launch-button { transition: none; } }
+/* Compact launch: the tools stay first without pushing the quote journey away. */
+.design-launch .design-launch-card{padding:24px 30px;gap:32px}
+.design-launch .design-launch-kicker{font-size:12px;flex-wrap:wrap;gap:8px}
+.design-launch .design-launch-new{font-size:11px}
+.design-launch .design-launch-quote{margin-left:auto;color:#ffba8e;text-underline-offset:4px;text-decoration:underline;min-height:24px}
+.design-launch .design-launch-description{font-size:15px}
+.design-launch .design-launch-button{font-size:13px}
+.design-launch .design-launch-preview-bar,.design-launch .design-launch-preview-footer{font-size:12px}
+.design-launch .design-launch-preview-tag,.design-launch .design-launch-preview-footer>small{font-size:11px}
+.design-launch .design-launch-image-label{font-size:11px}
+@media(max-width:760px){
+ .design-launch{padding:10px 0}
+ .design-launch .design-launch-card{gap:14px;padding:18px;border-radius:14px}
+ .design-launch .design-launch-kicker{font-size:11px;margin-bottom:10px;letter-spacing:0}
+ .design-launch #design-launch-title{font-size:clamp(26px,6.5vw,36px);line-height:1.06;margin-bottom:8px}
+ .design-launch #design-launch-title br{display:none}
+ .design-launch #design-launch-title em::before{content:" "}
+ .design-launch .design-launch-description{font-size:14px;line-height:1.5;margin-bottom:12px}
+ .design-launch .design-launch-button{font-size:12px;padding:10px;gap:6px;min-height:44px}
+ .design-launch .design-launch-preview-bar{padding:7px 9px;font-size:11px}
+ .design-launch .design-launch-preview-tag{display:none}
+ .design-launch .design-launch-preview-footer{padding:7px 9px;font-size:11px;flex-wrap:wrap}
+ .design-launch .design-launch-preview-footer>small{font-size:11px}
+ .design-launch .design-launch-preview{transform:none}
+}
+@media(max-width:760px){
+ .design-launch .design-launch-kicker{flex-wrap:nowrap;font-size:10px;gap:7px}
+ .design-launch .design-launch-kicker .design-launch-quote{white-space:nowrap;font-size:10px}
+ .design-launch .design-launch-preview{position:relative}
+ .design-launch .design-launch-preview-bar{display:none}
+ .design-launch .design-launch-compare{aspect-ratio:3.2}
+ .design-launch .design-launch-preview-footer{padding:4px 7px;font-size:10px}
+ .design-launch .design-launch-preview-footer>small{font-size:10px}
+}
+@media(max-width:760px){.design-launch .design-launch-kicker .design-launch-quote{font-size:12px;min-height:32px;display:inline-flex;align-items:center;color:#ffba8e}.design-launch .design-launch-kicker{margin-top:-4px}}

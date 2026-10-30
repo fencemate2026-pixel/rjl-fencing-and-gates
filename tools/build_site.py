@@ -34,6 +34,8 @@ import seo_perf
 
 MIRROR = Path(sys.argv[1])
 OUT = Path(sys.argv[2])
+if OUT.resolve() == Path(__file__).resolve().parents[1] / "site":
+    raise SystemExit("site/ is maintained directly. This historical converter may only write to a separate output directory; see README.md.")
 AUDIT = []  # (file, description, count)
 
 GOOGLE_URL = ("https://www.google.com/maps/place/RJL+Fencing+Pty+Ltd/@-37.6492188,144.9227316,9z/"

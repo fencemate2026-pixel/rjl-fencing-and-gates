@@ -9,7 +9,9 @@
  * phone numbers, emails or form text; only the page and the link type):
  *   phone_click        - visitor taps/clicks a tel: link
  *   email_click        - visitor clicks a mailto: link
- *   quote_form_submit  - enquiry form passed validation and opened the email
+ *   form_start         - first input/change in the online quote form
+ *   generate_lead      - Netlify accepted an online quote submission
+ *   design_quote_added - a saved design was transferred to the quote form
  *   chat_open          - visitor opens the Ask RJL assistant
  *   google_reviews_click - visitor opens the Google review profile
  * Mark these as Key events in GA4 (Admin > Events) once they first appear.
@@ -43,11 +45,20 @@
   function gtag() { window.dataLayer.push(arguments); }
   window.gtag = gtag;
   gtag("js", new Date());
-  gtag("config", ID);
+  // Quote and address query strings can contain personal information.
+  // Report only the origin and route, including for the initial page view.
+  var pageLocation = location.origin + location.pathname;
+  var referrer = "";
+  try { var ref = new URL(document.referrer); referrer = ref.origin + ref.pathname; } catch (error) { /* no referrer */ }
+  gtag("config", ID, { page_location: pageLocation, page_referrer: referrer });
 
   function send(name, extra) {
-    var p = { page_path: location.pathname };
-    if (extra) for (var k in extra) p[k] = extra[k];
+    var p = { page_path: location.pathname, page_location: pageLocation };
+    // Keep event metadata bounded; never copy form values or URL queries.
+    var allowed = { link_location: ["header", "footer", "chat", "page"], form_name: ["residential-quote"], tool: ["fence-designer", "photo-visualiser"] };
+    if (extra) Object.keys(extra).forEach(function (key) {
+      if (allowed[key] && allowed[key].indexOf(extra[key]) !== -1) p[key] = extra[key];
+    });
     gtag("event", name, p);
   }
 
@@ -67,8 +78,14 @@
     if (launcher && launcher.getAttribute("aria-expanded") === "false") send("chat_open");
   }, true);
 
-  // Fired by site.js once the enquiry passes validation.
-  document.addEventListener("rjl:enquiry-ready", function (e) {
-    send("quote_form_submit", { service: (e.detail && e.detail.service) || "" });
+  document.addEventListener("rjl:quote-start", function () {
+    send("form_start", { form_name: "residential-quote" });
+  });
+  // Only emitted after the host acknowledges the multipart POST.
+  document.addEventListener("rjl:quote-submitted", function () {
+    send("generate_lead", { form_name: "residential-quote" });
+  });
+  document.addEventListener("rjl:design-quote-added", function () {
+    send("design_quote_added", { tool: "fence-designer" });
   });
 })();

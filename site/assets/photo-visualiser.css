@@ -331,3 +331,23 @@ html.viz-studio-on [class*="rjl-chat"], html.viz-studio-on .sticky-quote { displ
 #rjl-viz .viz-gate .viz-btn-sm { margin-top: 2px; }
 #rjl-viz .viz-gate-add { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 10px; }
 #rjl-viz .viz-gate-add .viz-f { flex: 1; min-width: 170px; margin-bottom: 0; }
+
+/* Guided entry and optional controls: preserve the complete editor. */
+.photo-visualiser-page .page-hero .lead { max-width: 36ch; font-size: clamp(1.15rem, 2.2vw, 1.65rem); line-height: 1.35; }
+.design-journey { list-style: none; display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 24px 0; padding: 0; }
+.design-journey li { display: flex; align-items: center; gap: 9px; font-size: .95rem; line-height: 1.4; }
+.design-journey b { display: grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%; color: #fff; background: #a94213; }
+#rjl-viz .viz-compatibility { padding: 18px; margin: 18px 0; color: #071f38; background: #fff4df; border: 1px solid #a94213; border-radius: 12px; line-height: 1.6; }
+#rjl-viz .viz-compatibility .button { display: flex; width: fit-content; margin-top: 12px; color: #fff; background: #071f38; }
+#rjl-viz .vl-actions label[hidden] { display: none; }
+#rjl-viz .vl-sample:disabled { opacity: .6; cursor: not-allowed; }
+#rjl-viz .viz-more-tools { margin-top: 10px; border-top: 1px solid #d6dce2; padding-top: 8px; }
+#rjl-viz .viz-more-tools summary { padding: 12px; min-height: 44px; cursor: pointer; font-size: .95rem; font-weight: 700; color: #071f38; }
+#rjl-viz .viz-tools-advanced { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; }
+#rjl-viz .vl-small, #rjl-viz .vl-credit, #rjl-viz .vl-app figcaption { font-size: .9rem; line-height: 1.6; }
+#rjl-viz .vl-app img { height: auto; aspect-ratio: 8 / 3; object-fit: cover; }
+@media (max-width: 600px) {
+ .design-journey { flex-direction: column; gap: 10px; margin: 18px 0; }
+ #rjl-viz .viz-tools-advanced { grid-template-columns: 1fr; }
+ #rjl-viz .vl-copy h2 { overflow-wrap: anywhere; }
+}
