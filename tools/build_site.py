@@ -381,6 +381,8 @@ def main():
     with open(OUT.parent / "audit-log.txt", "w", encoding="utf-8") as fh:
         for f, w, n in AUDIT:
             fh.write(f"{f}\t{w}\t{n}\n")
+    from group_mobile_navigation import apply_mobile_navigation
+    apply_mobile_navigation(OUT)
     print(f"OK: {len(pages)} pages built, {len(AUDIT)} logged edits, banned-suburb check passed")
 
 
