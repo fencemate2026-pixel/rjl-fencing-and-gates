@@ -1,0 +1,54 @@
+/* Homepage launch banner, isolated from the design tools and existing page styles. */
+.design-launch { background: #f4f1ea; padding: 18px 0; }
+.design-launch .design-launch-card {
+  display: grid; grid-template-columns: 1.05fr 1fr; align-items: center;
+  gap: clamp(24px, 4vw, 64px); padding: 30px clamp(24px, 3vw, 44px);
+  border: 1px solid #f36f2166; border-radius: 20px; overflow: hidden;
+  background: radial-gradient(ellipse at 100% 0%, #f36f212b, transparent 55%), linear-gradient(115deg, #061b31, #102e4d);
+  color: #fff; box-shadow: 0 12px 32px #071f381c, inset 0 1px 0 #ffffff12;
+}
+.design-launch .design-launch-copy { position: relative; z-index: 1; min-width: 0; }
+.design-launch .design-launch-kicker { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: #d4e3ef; font-size: 11px; line-height: 1.4; letter-spacing: .08em; }
+.design-launch .design-launch-new { display: inline-flex; padding: 5px 9px; border-radius: 5px; background: #f36f21; color: #071f38; font-size: 10px; font-weight: 900; letter-spacing: .05em; box-shadow: 0 0 24px #f36f2133; }
+.design-launch #design-launch-title { margin: 0 0 12px; color: #fff; font-size: clamp(30px, 3.3vw, 48px); line-height: 1.05; letter-spacing: -.025em; font-weight: 600; }
+.design-launch #design-launch-title em { color: #ff9655; font-style: normal; }
+.design-launch .design-launch-description { max-width: 470px; margin: 0 0 20px; color: #d4e3ef; font-size: 14px; line-height: 1.6; }
+.design-launch .design-launch-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.design-launch .design-launch-button { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 46px; padding: 12px 17px; border: 1px solid #ffffff40; border-radius: 8px; font-size: 12px; font-weight: 700; line-height: 1.4; text-decoration: none; transition: transform .2s, background .2s, box-shadow .2s; }
+.design-launch .design-launch-primary { background: #f36f21; color: #071f38; border-color: #f36f21; box-shadow: 0 5px 18px #f36f2126; }
+.design-launch .design-launch-secondary { color: #fff; background: #ffffff08; }
+.design-launch .design-launch-button > span { font-size: 19px; line-height: 1; }
+.design-launch .design-launch-button:hover { transform: translateY(-2px); background: #ff9655; color: #071f38; border-color: #ff9655; box-shadow: 0 8px 24px #f36f2133; }
+.design-launch .design-launch-button:focus-visible { outline: 3px solid #ffb17e; outline-offset: 4px; }
+.design-launch .design-launch-preview { min-width: 0; border: 1px solid #ffffff30; border-radius: 12px; background: #06182c; overflow: hidden; transform: rotate(-1deg); box-shadow: 0 18px 36px #0004; }
+.design-launch .design-launch-preview-bar { display: flex; gap: 7px; align-items: center; padding: 10px 12px; color: #e0eaf3; font-size: 10px; letter-spacing: .04em; }
+.design-launch .design-launch-live { width: 6px; height: 6px; background: #ff9655; border-radius: 50%; box-shadow: 0 0 0 3px #ff96551a; flex-shrink: 0; }
+.design-launch .design-launch-preview-tag { margin-left: auto; font-size: 8px; color: #aac2d6; }
+.design-launch .design-launch-compare { --reveal: 55%; position: relative; aspect-ratio: 8 / 3; background: #ccdae5; isolation: isolate; }
+.design-launch .design-launch-compare > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.design-launch .design-launch-after { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--reveal)) 0 0); }
+.design-launch .design-launch-image-label { position: absolute; top: 8px; padding: 4px 7px; border: 1px solid #ffffff38; border-radius: 4px; background: #071f38cf; color: #fff; font-size: 9px; line-height: 1.2; pointer-events: none; }
+.design-launch .design-launch-label-before { right: 8px; }
+.design-launch .design-launch-label-after { left: 8px; }
+.design-launch .design-launch-divider { position: absolute; top: 0; bottom: 0; left: var(--reveal); width: 2px; background: #fff; transform: translateX(-1px); pointer-events: none; box-shadow: 0 0 10px #071f3860; }
+.design-launch .design-launch-divider > span { position: absolute; top: 50%; left: 50%; display: flex; justify-content: center; align-items: center; width: 36px; height: 36px; border-radius: 50%; background: #f36f21; border: 2px solid #fff; color: #071f38; font-size: 21px; line-height: 1; transform: translate(-50%, -50%); box-shadow: 0 3px 12px #071f3840; white-space: nowrap; }
+.design-launch .design-launch-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; touch-action: pan-y; }
+.design-launch .design-launch-compare:focus-within { outline: 3px solid #ffb17e; outline-offset: -3px; }
+.design-launch .design-launch-preview-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; font-size: 10px; color: #fff; }
+.design-launch .design-launch-preview-footer > span { color: #ffad79; }
+.design-launch .design-launch-preview-footer > small { color: #aac2d6; font-size: 8px; }
+@media (max-width: 760px) {
+  .design-launch { padding: 12px 0; }
+  .design-launch .design-launch-card { grid-template-columns: 1fr; gap: 20px; padding: 23px 20px; border-radius: 15px; }
+  .design-launch .design-launch-kicker { margin-bottom: 12px; font-size: 9px; letter-spacing: .045em; }
+  .design-launch #design-launch-title { font-size: clamp(30px, 6.8vw, 40px); }
+  .design-launch .design-launch-description { font-size: 12px; margin-bottom: 16px; }
+  .design-launch .design-launch-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .design-launch .design-launch-button { min-width: 0; gap: 8px; padding: 11px 12px; font-size: 10px; }
+  .design-launch .design-launch-preview { transform: none; }
+  .design-launch .design-launch-preview-bar { padding: 8px 10px; font-size: 8px; }
+  .design-launch .design-launch-preview-tag { font-size: 7px; }
+  .design-launch .design-launch-preview-footer { padding: 8px 10px; font-size: 9px; }
+  .design-launch .design-launch-preview-footer > small { font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .design-launch .design-launch-button { transition: none; } }

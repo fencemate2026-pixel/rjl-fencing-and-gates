@@ -383,6 +383,8 @@ def main():
             fh.write(f"{f}\t{w}\t{n}\n")
     from group_mobile_navigation import apply_mobile_navigation
     apply_mobile_navigation(OUT)
+    from add_home_design_promo import apply_home_design_promo
+    apply_home_design_promo(OUT)
     print(f"OK: {len(pages)} pages built, {len(AUDIT)} logged edits, banned-suburb check passed")
 
 
