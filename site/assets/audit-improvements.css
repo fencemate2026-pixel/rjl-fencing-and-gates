@@ -75,3 +75,11 @@ html body .review-card p{font-size:16px}
 html body main :is(label,input,select,textarea,button){font-family:var(--rjl-reading)!important;letter-spacing:normal}
 html body main .quote-consent,html body main .quote-consent *{font-family:var(--rjl-reading)!important;font-size:14px;line-height:1.6;letter-spacing:normal;text-transform:none}
 @media(max-width:900px){html body .contact-grid>.email-enquiry{order:-1}html body .contact-grid{gap:32px}}
+
+/* Measured Lighthouse contrast correction: this footer has a light background. */
+html body .footer .footer-suburb-links{color:#334155;border-top-color:#cbd5e1}
+html body .footer .footer-suburb-links a{color:#334155}
+html body .footer .footer-suburb-links a:hover{color:#a83c0e}
+/* Picture is structural only, preserving existing image positioning. */
+html body picture{display:contents}
+html body .design-launch .design-launch-compare img{display:block;width:100%;height:100%;object-fit:cover}

@@ -135,6 +135,9 @@
       });
     }
     var projects = {
+      "richmond-automated-gates": "Richmond shared-entry project from across the RJL Group",
+      "ringwood-custom-entry": "Ringwood custom-entry project from across the RJL Group",
+      "toorak-pedestrian-fencing": "Toorak pedestrian-fencing project from across the RJL Group",
       "sliding-driveway-gate": "Custom sliding driveway gate",
       "timber-boundary": "Timber boundary fencing",
       "black-pool-barrier": "Architectural pool barrier",
@@ -147,7 +150,7 @@
     };
     var project = params.get("project"), messageField = form.querySelector("#enquiry-message");
     if (Object.prototype.hasOwnProperty.call(projects, project) && messageField && !messageField.value) {
-      messageField.value = "I am interested in the " + projects[project] + " shown in the RJL gallery. Please quote a design suited to my property.\n\n";
+      messageField.value = "I am interested in the " + projects[project] + " shown on the RJL website. Please quote a design suited to my property.\n\n";
     }
   }
 

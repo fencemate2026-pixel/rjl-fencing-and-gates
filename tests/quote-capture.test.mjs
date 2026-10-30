@@ -94,3 +94,19 @@ test('analytics excludes personal query values and ignores the retired email-pre
   const payload=JSON.stringify(window.dataLayer);
   assert.equal(payload.includes('private'),false); assert.equal(payload.includes('Private Person'),false);
 });
+test('Core Web Vitals report bounded measurements, deduplicate repeats and omit page/customer details', () => {
+  const callbacks={},scripts=[];
+  const document={referrer:'https://example.test/?address=private',addEventListener(){},createElement(){return {};},head:{appendChild(script){scripts.push(script);}}};
+  const location={hostname:'www.rjlfencingandgates.com.au',origin:'https://www.rjlfencingandgates.com.au',pathname:'/',search:'?email=private@example.test'};
+  const window={addEventListener(){},PerformanceObserver:function(){},webVitals:{onLCP(fn){callbacks.LCP=fn;},onINP(fn){callbacks.INP=fn;},onCLS(fn){callbacks.CLS=fn;}}};
+  vm.runInNewContext(gaCode,{document,window,location,URL,setTimeout(){}});
+  assert.equal(scripts[0].src,'/assets/vendor/web-vitals-6.2.3.js');scripts[0].onload();
+  const metric={name:'LCP',value:2100,delta:2100,id:'v6-123-456',rating:'good',entries:[{name:'private@example.test',target:{value:'Private Person'}}]};
+  callbacks.LCP(metric);callbacks.LCP(metric);
+  callbacks.INP({...metric,name:'INP',value:75,delta:75});
+  callbacks.CLS({...metric,name:'CLS',value:0.005,delta:0.005});
+  callbacks.LCP({...metric,id:'private@example.test'});callbacks.LCP({...metric,value:NaN});
+  const events=window.dataLayer.filter(args=>args[0]==='event');assert.equal(events.length,3);
+  assert.equal(events[0][2].metric_value,2100);assert.equal(events[2][2].metric_value,0.005);
+  assert.equal(JSON.stringify(window.dataLayer).includes('private'),false);assert.equal(JSON.stringify(window.dataLayer).includes('Private Person'),false);
+});

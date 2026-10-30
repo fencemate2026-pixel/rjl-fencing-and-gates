@@ -88,4 +88,36 @@
   document.addEventListener("rjl:design-quote-added", function () {
     send("design_quote_added", { tool: "fence-designer" });
   });
+
+  // Google's pinned, self-hosted standard web-vitals build. Report technical
+  // measurements only: no element selectors, form data, query strings or photos.
+  if (typeof window.PerformanceObserver !== "undefined") {
+    var reportedMetrics = new Set();
+    function reportVital(metric) {
+      if (["LCP", "INP", "CLS"].indexOf(metric.name) === -1 ||
+          !Number.isFinite(metric.value) || metric.value < 0 ||
+          !Number.isFinite(metric.delta) || typeof metric.id !== "string" ||
+          !/^[A-Za-z0-9._-]{1,100}$/.test(metric.id)) return;
+      var identity = metric.name + ":" + metric.id + ":" + metric.value;
+      if (reportedMetrics.has(identity)) return;
+      reportedMetrics.add(identity);
+      if (reportedMetrics.size > 32) reportedMetrics.delete(reportedMetrics.values().next().value);
+      var payload = { value: metric.delta, metric_id: metric.id,
+        metric_value: metric.value, metric_delta: metric.delta,
+        page_path: location.pathname, page_location: pageLocation,
+        non_interaction: true, transport_type: "beacon" };
+      if (["good", "needs-improvement", "poor"].indexOf(metric.rating) !== -1) payload.metric_rating = metric.rating;
+      gtag("event", metric.name, payload);
+    }
+    var vitalsScript = document.createElement("script");
+    vitalsScript.src = "/assets/vendor/web-vitals-6.2.3.js";
+    vitalsScript.async = true;
+    vitalsScript.onload = function () {
+      if (!window.webVitals) return;
+      ["onLCP", "onINP", "onCLS"].forEach(function (method) {
+        if (typeof window.webVitals[method] === "function") window.webVitals[method](reportVital);
+      });
+    };
+    document.head.appendChild(vitalsScript);
+  }
 })();
