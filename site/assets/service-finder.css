@@ -1,0 +1,40 @@
+/* Scoped to the service finder and its homepage invitation. */
+.service-finder-invite{background:#071f38;color:#fff;padding:clamp(26px,4vw,48px) 24px;border-block:1px solid #29435e}
+.service-finder-invite-inner{max-width:1240px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.service-finder-invite h2{font-size:clamp(24px,3vw,36px);line-height:1.2;margin:0 0 10px;color:#fff}
+.service-finder-invite p{margin:0;color:#e3e9ef;font:17px/1.6 system-ui,sans-serif;max-width:720px}
+.service-finder-invite a,.service-finder-submit{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 22px;background:#a83c0e;color:#fff;border:2px solid #f58a56;border-radius:4px;font:700 16px/1.4 system-ui,sans-serif;text-decoration:none;white-space:nowrap;cursor:pointer}
+.service-finder-page{background:#f4f1ea;color:#0b0d0f;padding:clamp(32px,5vw,64px) 24px}
+.service-finder-wrap{max-width:1160px;margin:auto}
+.service-finder-page h1{max-width:900px;color:#071f38;font-size:clamp(34px,4.6vw,58px);line-height:1.12;margin:16px 0 20px}
+.service-finder-intro{max-width:760px;font:19px/1.6 system-ui,sans-serif;color:#344555;margin-bottom:28px}
+.service-finder-back{font:600 15px/1.5 system-ui,sans-serif;color:#071f38;text-underline-offset:4px}
+.service-finder-search{padding:clamp(20px,3vw,32px);background:#fff;border:1px solid #c8d0d7;border-top:4px solid #d95420;border-radius:6px;margin:28px 0}
+.service-finder-search label{display:block;font:700 18px/1.5 system-ui,sans-serif;margin-bottom:12px;color:#071f38}
+.service-finder-input-row{display:flex;gap:12px}
+.service-finder-input-row input{width:100%;min-width:0;min-height:52px;border:1px solid #667787;border-radius:4px;padding:12px 16px;font:18px/1.5 system-ui,sans-serif;background:#fff;color:#0b0d0f}
+.service-finder-examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.service-finder-examples button{min-height:44px;border:1px solid #b5c0ca;background:#f4f6f8;color:#071f38;padding:8px 14px;border-radius:4px;font:600 14px/1.5 system-ui,sans-serif;cursor:pointer}
+.service-finder-page h2{font-size:clamp(24px,3vw,32px);color:#071f38;margin:30px 0 10px;line-height:1.25}
+.service-finder-page p,.service-finder-page li{font-family:system-ui,sans-serif;line-height:1.65}
+.service-finder-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:20px 0 28px}
+.service-finder-card{display:flex;flex-direction:column;align-items:flex-start;background:#fff;border:1px solid #c8d0d7;border-radius:6px;padding:24px}
+.service-finder-number{font:700 14px/1.5 system-ui,sans-serif;color:#a83c0e;margin-bottom:14px}
+.service-finder-card h3{font-size:24px;line-height:1.25;margin:0 0 12px;color:#071f38}
+.service-finder-card h3 a{color:#071f38;text-decoration:none}
+.service-finder-card h3 a:hover{text-decoration:underline}
+.service-finder-card p{margin:0 0 24px;color:#344555;font-size:16px}
+.service-finder-quote{margin-top:auto;color:#a83c0e;font:700 16px/1.5 system-ui,sans-serif;text-underline-offset:4px}
+.service-finder-urgent{border-left:4px solid #9e0f1b;background:#fff1ef;padding:20px 24px;margin:20px 0;color:#59131b}
+.service-finder-urgent a{color:#59131b;font-weight:700;text-underline-offset:4px}
+.service-finder-directory{border-top:1px solid #bbc5cd;padding-top:12px;margin-top:32px}
+.service-finder-directory ul{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px}
+.service-finder-directory li{border-bottom:1px solid #c8d0d7}
+.service-finder-directory a{display:block;padding:12px 0;min-height:44px;color:#071f38;text-underline-offset:4px}
+.service-finder-help{margin-top:28px;padding-top:12px;border-top:1px solid #c8d0d7;color:#344555;font-size:16px}
+.service-finder-help a{color:#071f38;text-underline-offset:4px}
+.service-finder-page [hidden]{display:none!important}
+.service-finder-page :focus-visible,.service-finder-invite :focus-visible{outline:3px solid #1264c4;outline-offset:4px}
+.service-finder-page #service-finder-results-title:focus{outline-offset:6px}
+.service-finder-page #service-finder-results-title{scroll-margin-top:180px}
+@media(max-width:760px){.service-finder-invite-inner{align-items:flex-start;flex-direction:column}.service-finder-input-row{flex-direction:column}.service-finder-grid{grid-template-columns:1fr}.service-finder-directory ul{grid-template-columns:1fr}.service-finder-page{padding-inline:18px}.service-finder-card{padding:22px}.service-finder-submit{white-space:normal}.service-finder-page #service-finder-results-title{scroll-margin-top:130px}}
