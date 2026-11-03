@@ -99,3 +99,7 @@ Run the complete current checks listed above; `tests/quote-capture.test.mjs` rem
 ### Verified publication — 3 November 2026
 
 Merged via [https://github.com/fencemate2026-pixel/rjl-fencing-and-gates/pull/27](https://github.com/fencemate2026-pixel/rjl-fencing-and-gates/pull/27). The live guide, feed and sitemap links, designer entry and compiled photo-finish route were checked. IndexNow accepted this site's changed public URLs with HTTP 202; indexing and traffic growth remain unverified. The full audit records remaining account/integration checks and end-to-end verification limits.
+
+## SEO quick wins — 4 November 2026
+
+`tools/seo_quick_wins.py` (idempotent, edits `site/` directly) adds managed "Related services and advice" blocks (`<!-- RJL seo: related -->`) linking services, advice posts, suburb pages and projects, contextual links to RJL Commercial Group on the body corporate/school/council, servicing, emergency and automation pages, BreadcrumbList JSON-LD on every indexable page without one, and `legalName` "RJL FENCING PTY. LTD." (already published as the Article publisher) on the business node. Phone numbers, emails, map pins, hours and prices are unchanged pending Jarrod's confirmation. No stylesheet changes, so `tools/perf_pass.py` was not required.
