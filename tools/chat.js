@@ -63,7 +63,7 @@
       answer: "RJL's published website history traces the family's fencing work to 1990. RJL's official Facebook and Instagram profiles describe the fencing business as established in 1997. The current company ABN has been active since 1 July 2012. These dates describe different milestones, so this assistant shows all three rather than collapsing them into one claim.",
       sources: [{ label: "RJL company story", href: "/about-rjlfencing-and-gates" }, { label: "Official Facebook", href: R.facebook }, { label: "Official Instagram", href: R.instagram }, { label: "Australian Business Register", href: R.abnLookupUrl }] },
     { title: "Contact RJL", keywords: ["contact", "phone", "call", "email", "address", "location", "based", "visit", "open", "hours"],
-      answer: "Call " + R.phoneDisplay + " or email " + R.email + ". RJL is based in " + R.base + ". Hours on RJL's Google Business Profile are Monday to Friday 8 am to 5 pm and weekends 9 am to 5 pm. No customer walk-in street address is published, so please call before visiting.",
+      answer: "Call " + R.phoneDisplay + " or email " + R.email + ". RJL is based in " + R.base + ". RJL is available 24/7 on 0412 467 840 for quotes and urgent gate or fence problems. No customer walk-in street address is published, so please call before visiting.",
       sources: [{ label: "Contact RJL", href: "/contact-us" }, { label: "Australian Business Register", href: R.abnLookupUrl }] },
     { title: "Fencing and gate services", keywords: ["service", "services", "build", "install", "fence", "fencing", "gate", "gates", "what do you do"],
       answer: "RJL's published residential services are " + SERVICES + ". Every quote depends on the actual site, access, levels, dimensions, material and approvals.",

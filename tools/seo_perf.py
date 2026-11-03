@@ -37,11 +37,10 @@ WIDTHS = [480, 800, 1200, 1600]
 SITE = "https://www.rjlfencingandgates.com.au"
 TODAY = "2026-10-07"
 
-# Hours exactly as shown on RJL's Google Business Profile (fetched 7 Oct 2026).
+# 4 Nov 2026 (FROM JARROD): RJL Fencing and Gates is available 24/7.
 HOURS = [
-    {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-     "opens": "08:00", "closes": "17:00"},
-    {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Saturday", "Sunday"], "opens": "09:00", "closes": "17:00"},
+    {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+     "opens": "00:00", "closes": "23:59"},
 ]
 
 PRIVACY_SECTION = (
