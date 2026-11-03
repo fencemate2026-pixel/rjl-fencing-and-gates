@@ -91,12 +91,50 @@ def crumbs(rel):
             'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'name': n, 'item': u} for i, (n, u) in enumerate(items)]}
 
 
+MAP = 'https://www.google.com/maps/search/?api=1&query=Unit%201%2F12%20Merchant%20Avenue%2C%20Thomastown%20VIC%203074'
+HOURS_24_7 = [{'@type': 'OpeningHoursSpecification', 'dayOfWeek': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], 'opens': '00:00', 'closes': '23:59'}]
+
+
+def fix_contact(o):
+    """4 Nov 2026 (FROM JARROD): residential site shows only 0412 467 840; email info@rjlfencing.com.au;
+    map at Unit 1/12 Merchant Ave, Thomastown; 24/7 hours. geo = the coordinates rjlcommercialgroup.com
+    already publishes for the same address."""
+    hit = []
+    def walk(x):
+        if isinstance(x, dict):
+            if x.get('@id') == BASE + '/#business' and 'address' in x:
+                want = {'telephone': '+61 412 467 840', 'email': 'info@rjlfencing.com.au', 'hasMap': MAP, 'openingHoursSpecification': HOURS_24_7,
+                        'geo': {'@type': 'GeoCoordinates', 'latitude': -37.691136, 'longitude': 145.041026},
+                        'contactPoint': {'@type': 'ContactPoint', 'telephone': '+61 412 467 840', 'email': 'info@rjlfencing.com.au', 'contactType': 'customer service', 'areaServed': 'AU-VIC', 'availableLanguage': 'English', 'hoursAvailable': HOURS_24_7}}
+                for k, v in want.items():
+                    if x.get(k) != v:
+                        x[k] = v; hit.append(k)
+            for v in x.values(): walk(v)
+        elif isinstance(x, list):
+            for v in x: walk(v)
+    walk(o)
+    return bool(hit)
+
+
+def label_phones(s):
+    """Only 0412 467 840 is shown on the residential site."""
+    s = s.replace('<a href="tel:+61400101132">24/7: 0400 101 132</a>', '')
+    s = s.replace('Chris: 0412 467 840', '0412 467 840')
+    s = s.replace('call 0412 467 840 or use the quote form. Keep 0400 101 132 for emergencies.', 'call 0412 467 840 or use the quote form; the same number is answered 24/7 for emergencies.')
+    s = s.replace('"+61 400 101 132"', '"+61 412 467 840"')
+    return s.replace('tel:+61400101132', 'tel:+61412467840').replace('0400 101 132', '0412 467 840')
+
+
 def main():
     n = 0
     for p in sorted(SITE.rglob('*.html')):
         s0 = s = p.read_text(encoding='utf-8'); rel = route(p)
+        s = label_phones(s)
         if '<html' not in s[:3000].lower() or 'noindex' in s[:6000]:
+            if s != s0:
+                p.write_text(s, encoding='utf-8'); n += 1
             continue
+        s = label_phones(s)
         a, b = '<!-- RJL seo: related -->', '<!-- /RJL seo: related -->'
         s = re.sub(re.escape(a) + '.*?' + re.escape(b), '', s, flags=re.S)
         items = [(name_of(t), '/' + t) for t in LINKS.get(rel, []) if read(t) is not None] + CROSS.get(rel, [])
@@ -121,6 +159,8 @@ def main():
                 elif isinstance(x, list):
                     for v in x: walk(v)
             walk(o)
+            if fix_contact(o):
+                changed.append(1)
             if changed:
                 s = s[:m.start(2)] + json.dumps(o, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/') + s[m.end(2):]
         if rel and 'BreadcrumbList' not in s:
