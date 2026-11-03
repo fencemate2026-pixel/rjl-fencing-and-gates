@@ -1,5 +1,24 @@
 # rjlfencingandgates.com.au
 
+## Current checks and owner instructions — 3 November 2026
+
+Production is `https://www.rjlfencingandgates.com.au/`, from `fencemate2026-pixel/rjl-fencing-and-gates`, branch `main`. The service area includes Melbourne's north, north-east **and north-west**.
+
+Use Node.js 20+ and Python 3.11+:
+
+```bash
+npm test
+npm run check:site
+python3 tests/site_integrity.py
+```
+
+The GitHub website-quality workflow runs the current source validator and Node tests. They make no customer submissions or paid image requests. They cover the maintained pages, discoverable links, metadata, structured data, image attributes, asset versions, service matching, quote behaviour, AR lifecycle and concurrent AI usage limits. Physical AR placement and office receipt still require separate end-to-end verification.
+
+Read [the audit and traffic plan](docs/website-audit-2026-11-03.md), [business-claim rules](docs/business-claims.md) and [editorial policy](docs/editorial-policy.md). **RJL is not VBA registered.** Never add that claim to copy, metadata, structured data, images or downloads. Keep the README, relevant docs, tests and source changes committed in this repository. Refresh the production branch before integration and report whether changes are prepared, committed, merged or verified live.
+
+This audit fixes the designer start anchor and AR startup/retry path, strengthens service-and-location titles, removes the undated review count from homepage metadata, adds a sourced fencing-cost/quote-planning guide and preserves the 3D promotion and residential enquiry address. The photo-finish allowance remains unchanged; conditional writes prevent concurrent requests from losing counter updates. No new traffic, ranking, speed score, physical AR test or delivered email is claimed by the source checks.
+
+
 Static HTML site with shared styles and scripts. Netlify publishes `site/` without a build step.
 
 - `site/` - the website. Each page is `site/<page-name>.html`.
@@ -9,8 +28,7 @@ Static HTML site with shared styles and scripts. Netlify publishes `site/` witho
 - `tools/build_site.py` - converted the original ChatGPT-built site to this
   static version and applied the Oct 2026 changes (service area limited to
   Melbourne's north and north-east; Google reviews featured site-wide).
-- `tools/verify.py` - browser test: every page loads with no errors, form and
-  mobile menu work. Run `python3 tools/serve.py site` then `python3 tools/verify.py`.
+- `tools/verify.py` - historical browser test for the retired workflow; use the current checks above.
 - `tools/audit-log.txt` - every automated edit, per page.
 
 Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
@@ -19,7 +37,7 @@ Hosting: Netlify project `rjlfencingandgates`, publish directory `site`.
 
 `site/` is the maintained source of truth. The mirror converter and designer/visualiser generators under `tools/` are historical import tools; do not run them over the published source. The October30 audit pass changed the published tool JS/CSS, quote workflow and page structure directly. The mirror converter refuses to overwrite `site/`. When intentionally migrating a generator, use a separate output directory and review the full diff.
 
-Run `node --test tests/quote-capture.test.mjs` and `python tests/site_integrity.py` for current checks. The old `tools/verify.py` expects the retired email form and is not the current acceptance test. Browser QA uses the approved Sites preview and browser surface.
+Run the complete current checks listed above; `tests/quote-capture.test.mjs` remains part of that suite. The old `tools/verify.py` expects the retired email form and is not the current acceptance test. Browser QA uses the approved Sites preview and browser surface.
 
 ## 3D fence designer (/fence-designer)
 - Master file: `tools/designer/rjl-fence-gate-designer.html` (the full internal RJL tool with materials and quote).

@@ -16,7 +16,7 @@
  *   - per-visitor limit AI_PER_IP_DAY (default 4/day) keyed on a salted daily hash of the IP (raw IPs not stored)
  *   - site-wide daily cap AI_DAILY_CAP (default 60/day) so a burst cannot run up credits
  *   - 50 s time-out (sync functions stop at 60 s); failed calls do not use up the visitor's allowance
- *   - images are not stored; only the two counters are kept (Netlify Blobs store "ai-finish")
+ *   - images are not stored; only hashed daily quota records are kept (Netlify Blobs store "ai-finish")
  *   - one JSON log line per call (model, ok, ms, counts) for auditing
  * Config (Netlify environment variables, all optional): AI_IMAGE_MODEL (default gemini-2.5-flash-image),
  * AI_DAILY_CAP, AI_PER_IP_DAY, AI_FINISH_OFF=1 switches the feature off without a deploy.
@@ -24,6 +24,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { getStore } from '@netlify/blobs';
 import { createHash } from 'node:crypto';
+import { reserveAIQuota, refundAIVisitor } from '../lib/ai-quota.mjs';
 
 const MODEL = process.env.AI_IMAGE_MODEL || 'gemini-2.5-flash-image';
 const DAILY_CAP = +process.env.AI_DAILY_CAP || 60;
@@ -58,39 +59,42 @@ export default async (req, context) => {
   if (m[2].length * 0.75 > MAX_BYTES) return json({ error: 'That image is too large.' }, 413);
   const note = String(body.design || '').slice(0, 300).replace(/[\r\n]+/g, ' ');
 
-  // ---- limits (strong consistency so the cap holds across instances)
+  // ---- atomic quota reservation across concurrent Function instances
   const store = getStore({ name: 'ai-finish', consistency: 'strong' });
   const day = today();
   const ip = context.ip || req.headers.get('x-nf-client-connection-ip') || 'unknown';
   const who = createHash('sha256').update('rjl-ai-finish|' + day + '|' + ip).digest('hex').slice(0, 24);
-  const kDay = 'day-' + day, kWho = 'v-' + day + '-' + who;
-  const [total, mine] = await Promise.all([store.get(kDay, { type: 'json' }), store.get(kWho, { type: 'json' })]);
-  const nTotal = (total && total.n) || 0, nMine = (mine && mine.n) || 0;
-  if (nTotal >= DAILY_CAP) return json({ error: 'The AI finish has reached today\'s limit. Please try again tomorrow, or send your concept to RJL as it is.' }, 429);
-  if (nMine >= PER_IP) return json({ error: `You have used today's ${PER_IP} AI finishes. Please try again tomorrow.` }, 429);
-  await Promise.all([store.setJSON(kDay, { n: nTotal + 1 }), store.setJSON(kWho, { n: nMine + 1 })]);
+  let quota;
+  try {
+    quota = await reserveAIQuota(store, { day, visitor: who, dailyCap: DAILY_CAP, visitorCap: PER_IP });
+  } catch {
+    return json({ error: 'The AI finish is busy or unavailable. Please try again later, or send your concept as it is.' }, 503);
+  }
+  if (!quota.ok) return json({ error: quota.reason === 'site'
+    ? 'The AI finish has reached today’s limit. Please try again tomorrow, or send your concept as it is.'
+    : `You have used today's ${PER_IP} AI finishes. Please try again tomorrow.` }, 429);
 
   try {
     const ai = new GoogleGenAI({});                  // GEMINI_API_KEY + GOOGLE_GEMINI_BASE_URL injected by Netlify
     const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 50000);
-    const res = await ai.models.generateContent({
+    let res;
+    try { res = await ai.models.generateContent({
       model: MODEL,
       contents: [{ role: 'user', parts: [
         { inlineData: { mimeType: m[1], data: m[2] } },
         { text: PROMPT + (note ? `\nThe added product is: ${note}` : '') },
       ] }],
       config: { responseModalities: ['IMAGE', 'TEXT'], abortSignal: ctrl.signal },
-    });
-    clearTimeout(timer);
+    }); } finally { clearTimeout(timer); }
     const parts = (res && res.candidates && res.candidates[0] && res.candidates[0].content && res.candidates[0].content.parts) || [];
     const img = parts.find((p) => p.inlineData && p.inlineData.data);
-    console.log(JSON.stringify({ fn: 'ai-finish', model: MODEL, ok: !!img, ms: Date.now() - t0, day: nTotal + 1, visitor: nMine + 1 }));
-    if (!img) { await store.setJSON(kWho, { n: nMine }).catch(() => {}); return json({ error: 'The AI could not finish this picture. Please try again, or send your concept as it is.' }, 502); }
-    return json({ image: `data:${img.inlineData.mimeType || 'image/png'};base64,${img.inlineData.data}`, left: PER_IP - nMine - 1 });
+    console.log(JSON.stringify({ fn: 'ai-finish', model: MODEL, ok: !!img, ms: Date.now() - t0, day: quota.total, visitor: quota.used }));
+    if (!img) { await refundAIVisitor(store, quota).catch(() => {}); return json({ error: 'The AI could not finish this picture. Please try again, or send your concept as it is.' }, 502); }
+    return json({ image: `data:${img.inlineData.mimeType || 'image/png'};base64,${img.inlineData.data}`, left: quota.left });
   } catch (e) {
-    await store.setJSON(kWho, { n: nMine }).catch(() => {});        // a failed call does not use up the allowance
+    await refundAIVisitor(store, quota).catch(() => {});        // a failed call does not use up the allowance
     const timeout = e && (e.name === 'AbortError' || /abort/i.test(String(e)));
-    console.log(JSON.stringify({ fn: 'ai-finish', model: MODEL, ok: false, ms: Date.now() - t0, error: String(e).slice(0, 300) }));
+    console.log(JSON.stringify({ fn: 'ai-finish', model: MODEL, ok: false, ms: Date.now() - t0, error: timeout ? 'timeout' : 'provider_failure' }));
     return json({ error: timeout ? 'The AI took too long. Please try again.' : 'The AI finish is not available right now. Please try again later.' }, 502);
   }
 };
