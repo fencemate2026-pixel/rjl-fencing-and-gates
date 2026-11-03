@@ -130,14 +130,13 @@ def main():
     for p in sorted(SITE.rglob('*.html')):
         s0 = s = p.read_text(encoding='utf-8'); rel = route(p)
         s = label_phones(s)
-        if '<html' not in s[:3000].lower() or 'noindex' in s[:6000]:
-            if s != s0:
-                p.write_text(s, encoding='utf-8'); n += 1
+        if '<html' not in s[:3000].lower():
             continue
+        noindex = 'noindex' in s[:6000]  # 404 / thank-you: business schema only, no related links or breadcrumbs
         s = label_phones(s)
         a, b = '<!-- RJL seo: related -->', '<!-- /RJL seo: related -->'
         s = re.sub(re.escape(a) + '.*?' + re.escape(b), '', s, flags=re.S)
-        items = [(name_of(t), '/' + t) for t in LINKS.get(rel, []) if read(t) is not None] + CROSS.get(rel, [])
+        items = [] if noindex else [(name_of(t), '/' + t) for t in LINKS.get(rel, []) if read(t) is not None] + CROSS.get(rel, [])
         if items:
             if rel.startswith('blogs/') and '<div class="prose">' in s:
                 frag = a + '<section><h2>Related services and advice</h2>' + ul(items) + '</section>' + b
@@ -163,7 +162,7 @@ def main():
                 changed.append(1)
             if changed:
                 s = s[:m.start(2)] + json.dumps(o, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/') + s[m.end(2):]
-        if rel and 'BreadcrumbList' not in s:
+        if rel and not noindex and 'BreadcrumbList' not in s:
             s = s.replace('</head>', '<script type="application/ld+json" id="breadcrumb-schema">' + json.dumps(crumbs(rel), ensure_ascii=False, separators=(',', ':')) + '</script></head>', 1)
         if s != s0:
             p.write_text(s, encoding='utf-8'); n += 1
