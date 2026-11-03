@@ -16,7 +16,7 @@ Prepared 3 November 2026. Applies to RJL Commercial Group and RJL Fencing and Ga
 | Finding | Evidence | Work prepared |
 |---|---|---|
 | Incorrect VBA registration claim | Two cards on the commercial compliance page | Removed both; the urgent correction was verified live. No further matching claim remained in either site's current HTML after the correction; the Residential HTML contained none. The public bollard brochure's searchable text was also checked and contained no matching registration claim. |
-| Broken designer start anchor | Both wrappers linked to `#design`, while the designer has `id="rjl-designer"` | Point the start links at the real designer element. |
+| Designer entry uses a JavaScript-only fragment | `#design` is intentional application state, but has no static target when scripts are unavailable | Use `#rjl-designer` as the fallback and preserve `data-open-designer` so the normal button still opens the full editor. |
 | AR startup can lose the visitor's activating tap | Published launcher awaited dependency loading before requesting an immersive session; the residential regression test failed | Prepare dependencies first and ask for a fresh Open AR tap. Port the cleanup/retry fixes to Commercial and test each published bundle. |
 | AR retry can reuse a rejected preparation promise | Outer loader retained an exporter-preparation failure | Clear the cached promise on failure; verify a subsequent attempt can prepare again. |
 | Stale commercial mobile stylesheet reference | The version in 117 page references matched none of the current file's MD5/SHA-1/SHA-256 prefixes | Refresh the version without redesigning the stylesheet. |
