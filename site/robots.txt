@@ -6,3 +6,5 @@ Allow: /
 
 Sitemap: https://www.rjlfencingandgates.com.au/sitemap.xml
 Host: https://www.rjlfencingandgates.com.au
+
+Sitemap: https://www.rjlfencingandgates.com.au/blog-feed.xml
