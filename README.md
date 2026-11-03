@@ -94,3 +94,8 @@ Run the complete current checks listed above; `tests/quote-capture.test.mjs` rem
 - Corrected footer-suburb contrast measured by Lighthouse. First independent mobile baseline: Performance86, Accessibility96, Best Practices100, SEO100; LCP3.8s, TBT110ms, CLS0.001. This is a throttled emulated mobile lab result, not field data or a physical handset test.
 - Google web-vitals6.2.3 is pinned and self-hosted under `site/assets/vendor/`, with its Apache2.0 licence. GA4 receives only LCP/INP/CLS numeric measurements and bounded metadata; metric duplicates, query strings, customer inputs and DOM selectors are excluded. Reception in GA4 and key-event configuration require account access.
 - Both Netlify projects have any-form notifications: residential to info@rjlfencing.com.au; commercial to info@rjlcommercialgroup.com. Authorised labelled tests are stored, including a residential image fixture. Commercial inbox delivery was confirmed. Residential inbox receipt remains to be verified.
+
+
+### Verified publication — 3 November 2026
+
+Merged via [https://github.com/fencemate2026-pixel/rjl-fencing-and-gates/pull/27](https://github.com/fencemate2026-pixel/rjl-fencing-and-gates/pull/27). The live guide, feed and sitemap links, designer entry and compiled photo-finish route were checked. IndexNow accepted this site's changed public URLs with HTTP 202; indexing and traffic growth remain unverified. The full audit records remaining account/integration checks and end-to-end verification limits.

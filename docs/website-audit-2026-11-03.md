@@ -13,7 +13,7 @@ Prepared 3 November 2026. Applies to RJL Commercial Group and RJL Fencing and Ga
 
 ## What the audit found
 
-| Finding | Evidence | Work prepared |
+| Finding | Evidence | Work applied |
 |---|---|---|
 | Incorrect VBA registration claim | Two cards on the commercial compliance page | Removed both; the urgent correction was verified live. No further matching claim remained in either site's current HTML after the correction; the Residential HTML contained none. The public bollard brochure's searchable text was also checked and contained no matching registration claim. |
 | Designer entry uses a JavaScript-only fragment | `#design` is intentional application state, but has no static target when scripts are unavailable | Use `#rjl-designer` as the fallback and preserve `data-open-designer` so the normal button still opens the full editor. |
@@ -28,14 +28,14 @@ The original sitemap pages had one H1 each, distinct titles and descriptions, se
 
 ## Work aimed at relevant traffic
 
-Two distinct evergreen guides were prepared using existing page designs and clearly labelled reference imagery:
+Two distinct evergreen guides were published after their Netlify previews passed, using existing page designs and clearly labelled reference imagery:
 
 - Commercial: **Commercial gate maintenance checklist for Melbourne facilities** — `/blog/commercial-gate-maintenance-checklist-melbourne`. Based on current RJL service scope and [WorkSafe Victoria's motorised sliding-gate maintenance guidance](https://www.worksafe.vic.gov.au/news/2024-12/company-fined-350000-after-fatal-gate-crush). It separates facility-manager observations from technical repair/testing and directs readers to the existing free report.
 - Residential: **What affects the cost of fencing and gates in Melbourne?** — `/blogs/fencing-costs-melbourne-quote-checklist`. Explains quote inputs and scope comparisons without invented dollar rates. Links to the existing quote form and [Victorian BPC landscaping, fence and practitioner guidance](https://www.bpc.vic.gov.au/home-owners/home-renovation-and-building-essentials/landscaping).
 
 Each guide has a research-assisted organisational byline, source links, real publication dates, canonical metadata and BlogPosting data. It is linked from the existing blog listing, homepage and relevant service pages, and included in the RSS feed and sitemap. The commercial recognition story and the residential 3D promotion are retained. No near-duplicate suburb pages or purchased links were added.
 
-Once published, inspect the new URLs and sitemap in authorised Search Console/Bing Webmaster accounts. IndexNow notification is an acknowledgement, not an indexing or ranking guarantee. The existing weekly article tasks should follow the updated editorial policy, business-claim rules, README and source checks.
+Next, inspect the new URLs and sitemap in authorised Search Console/Bing Webmaster accounts. IndexNow notification is an acknowledgement, not an indexing or ranking guarantee. The existing weekly article tasks should follow the updated editorial policy, business-claim rules, README and source checks.
 
 ## Traffic priorities after publication
 
@@ -63,4 +63,21 @@ Content and technical work can improve the opportunity to be discovered, but thi
 
 ## Publishing record
 
-The urgent VBA correction is already live. The remaining source changes, documentation and guides must pass repository checks and the intended Netlify preview before article publication. Record the PR, final commit and independently verified production result when integrating. Do not describe prepared work as published.
+Both articles and the source fixes were merged after passing their intended Netlify deployment previews and website-quality checks. The live URLs, homepage links, RSS feeds, XML sitemaps, designer launch attributes, current photo-tool script versions and compiled photo-finish GET responses were independently verified. The commercial production Netlify alias now redirects to the official domain.
+
+| Site | Merged pull request | Published code commit | Live guide |
+|---|---|---|---|
+| Commercial | [PR](https://github.com/fencemate2026-pixel/website/pull/46) | `ee5f279ee5c75d42fcf68fa3074fcfb708671a61` | [Open guide](https://www.rjlcommercialgroup.com/blog/commercial-gate-maintenance-checklist-melbourne) |
+| Residential | [PR](https://github.com/fencemate2026-pixel/rjl-fencing-and-gates/pull/27) | `0501994acb1f350e5cc545cdec54d475d75d75cf` | [Open guide](https://www.rjlfencingandgates.com.au/blogs/fencing-costs-melbourne-quote-checklist) |
+
+Commercial: 36 automated tests passed. Residential: 35 automated tests passed. Both complete source checkouts passed the GitHub website-quality workflow. Browser preview tests confirmed that both Start designing buttons enter the full editor; `#design` remains the application's intentional editor state, with a valid static anchor fallback.
+
+IndexNow returned HTTP 202 for 10 changed Commercial URLs and 11 changed Residential URLs after the live verification files and pages were confirmed. This acknowledges submission; it does not establish crawling, indexing, ranking or traffic growth.
+
+The two existing weekly article tasks were updated with the owner's no-VBA-claim, actual-source, Git/README/documentation and verification requirements. Their schedules were preserved.
+
+### Separate account/integration checks still open
+
+The Residential repository's Vercel deployment check reports an account deployment block, and its Cloudflare Workers build check reports failure. The current website deployment and the checks described above were verified through Netlify. The causes of those separate integration failures were not repaired or assumed to be code defects. The optional Cursor PR automation also reported a trial usage limit and did not start; the website-quality checks and Netlify previews did pass. These are recorded for account/configuration cleanup, without changing permissions, plans or providers.
+
+Analytics/Search Console access, owner-held evidence for existing certification/approval/insurance claims, live enquiry receipt and physical AR-device testing remain the limitations described above. No visitor, revenue or ranking increase is claimed.
