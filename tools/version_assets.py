@@ -7,6 +7,7 @@ for p in root.rglob('*.html'):
  def version(m):
   f=root/m[2].lstrip('/')
   return m[1]+m[2]+'?v='+hashlib.md5(f.read_bytes()).hexdigest()[:8]+m[3] if f.exists() else m.group()
- s=p.read_text();n=re.sub(r'(["\'])(/assets/[^"\'?]+\.(?:js|css))(?:\?v=[^"\']*)?(["\'])',version,s)
+ # Only single-URL href/src values: a multi-URL list such as data-bundle (tools/perf_pass.py) is left alone.
+ s=p.read_text();n=re.sub(r'(?:(?<=href=)|(?<=src=))(["\'])(/assets/[^"\'?\s]+\.(?:js|css))(?:\?v=[^"\'\s]*)?(["\'])',version,s)
  if n!=s:p.write_text(n)
 print('Asset versions refreshed.')
