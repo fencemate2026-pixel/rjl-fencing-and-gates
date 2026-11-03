@@ -19,6 +19,8 @@
 (function () {
   "use strict";
   var ID = "G-N0LPMXRT3D";
+  var FORM_NAMES = ["residential-quote", "photo-visualiser"];
+  var DEFAULT_FORM = "residential-quote";
 
   // Do not record visits from local testing or Netlify preview links.
   var host = location.hostname;
@@ -50,12 +52,12 @@
   var pageLocation = location.origin + location.pathname;
   var referrer = "";
   try { var ref = new URL(document.referrer); referrer = ref.origin + ref.pathname; } catch (error) { /* no referrer */ }
-  gtag("config", ID, { page_location: pageLocation, page_referrer: referrer });
+  gtag("config", ID, { page_location: pageLocation, page_referrer: referrer, allow_google_signals: false, allow_ad_personalization_signals: false });
 
   function send(name, extra) {
     var p = { page_path: location.pathname, page_location: pageLocation };
     // Keep event metadata bounded; never copy form values or URL queries.
-    var allowed = { link_location: ["header", "footer", "chat", "page"], form_name: ["residential-quote"], tool: ["fence-designer", "photo-visualiser"] };
+    var allowed = { link_location: ["header", "footer", "chat", "page"], form_name: FORM_NAMES, tool: ["fence-designer", "photo-visualiser"] };
     if (extra) Object.keys(extra).forEach(function (key) {
       if (allowed[key] && allowed[key].indexOf(extra[key]) !== -1) p[key] = extra[key];
     });
@@ -78,12 +80,20 @@
     if (launcher && launcher.getAttribute("aria-expanded") === "false") send("chat_open");
   }, true);
 
-  document.addEventListener("rjl:quote-start", function () {
-    send("form_start", { form_name: "residential-quote" });
+  var acceptedForms = new Set();
+  function formName(event) {
+    var name = event && event.detail && event.detail.form;
+    return FORM_NAMES.indexOf(name) !== -1 ? name : DEFAULT_FORM;
+  }
+  document.addEventListener("rjl:quote-start", function (event) {
+    send("form_start", { form_name: formName(event) });
   });
-  // Only emitted after the host acknowledges the multipart POST.
-  document.addEventListener("rjl:quote-submitted", function () {
-    send("generate_lead", { form_name: "residential-quote" });
+  // Only emitted after the host acknowledges the POST; one accepted event per form/page.
+  document.addEventListener("rjl:quote-submitted", function (event) {
+    var name = formName(event);
+    if (acceptedForms.has(name)) return;
+    acceptedForms.add(name);
+    send("generate_lead", { form_name: name });
   });
   document.addEventListener("rjl:design-quote-added", function () {
     send("design_quote_added", { tool: "fence-designer" });
