@@ -107,3 +107,15 @@ Merged via [https://github.com/fencemate2026-pixel/rjl-fencing-and-gates/pull/27
 ## Contact details — 4 November 2026 (confirmed by Jarrod)
 
 The residential site shows only **0412 467 840** (header, rapid bar, footer, contact links, chat, service finder and schema `telephone`/`contactPoint`); email stays `info@rjlfencing.com.au`. Schema `hasMap` points to Unit 1/12 Merchant Avenue, Thomastown VIC 3074, `geo` uses the coordinates already published for that address on rjlcommercialgroup.com, and hours are 24/7 (00:00–23:59, every day). `tools/seo_quick_wins.py` enforces all of this on every run, so older generators that still mention 0400 101 132 (e.g. `add_rapid_maintenance.py`) cannot reintroduce it; `seo_perf.py` HOURS also updated. "See Google reviews" links still open the Google Business Profile listing; that listing's own map pin must be corrected in Google Business Profile.
+
+
+## Victorian terms and warranty booklet - 4 November 2026
+
+The footer links to `/terms-and-conditions` with the full warranty and all 24 sale and installation clauses. The versioned client PDF is served from `/downloads/RJL_Warranty_Terms_Booklet_Victoria.pdf`. The contracting entity and contact details remain specific to this website. The booklet records the 10-year custom steelwork and powdercoating warranty, 2-year general workmanship period, 3-year sliding motor/automation period (longer explicit quote promises remain valid), care requirements and claim process. Mandatory domestic-building payment rules, consumer rights and lawful recovery limits take precedence. Changes apply to future accepted terms and do not retrospectively reduce existing warranties.
+
+Canonical content: `docs/terms-and-warranty-victoria.json`. The printable booklet uses the supplied RJL logo and the existing Zing Sans Rust font. Run `python3 tools/render_terms_booklet.py` with ReportLab, pypdf and FontTools available to recreate the PDF; it is already committed for the buildless production deploy. The readable HTML and versioned PDF must be updated together. The booklet supplements, rather than replaces, any mandatory project-specific domestic building contract, prescribed notices or checklist.
+
+
+## Homepage completed-job counter - 4 November 2026
+
+The homepage displays **10,520+ completed jobs**, supplied by the owner on this date. The number counts up once when visible and remains at that recorded total. It does not automatically add jobs or connect to a job database. Update both the visible number and `data-total` in `site/index.html` when the owner supplies a new verified total. `site/assets/job-counter.js` respects reduced-motion preferences; the final number remains readable with JavaScript disabled and has a static screen-reader equivalent. `site/assets/job-counter.css` provides the outlined, responsive brand treatment.

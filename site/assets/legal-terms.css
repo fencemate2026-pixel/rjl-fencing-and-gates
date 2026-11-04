@@ -1,0 +1,11 @@
+
+.rjl-legal-wrap{max-width:1180px;margin:auto;padding:42px 22px 70px;color:#17212b}
+.rjl-legal-intro{padding:26px;background:#f3f5f7;border-left:5px solid #c51d26;border-radius:8px;margin:0 0 28px}
+.rjl-legal-intro p{margin:10px 0}.rjl-legal-download{display:inline-flex;align-items:center;padding:13px 19px;background:#17212b;color:#fff!important;text-decoration:none;border-radius:6px;font-weight:700;margin:10px 0}
+.rjl-legal-nav{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 32px}.rjl-legal-nav a{border:1px solid #cbd2d9;padding:9px 12px;border-radius:6px;color:inherit}
+.rjl-legal-part{margin-top:42px}.rjl-legal-part>h2{font-size:clamp(24px,4vw,34px);line-height:1.3;margin:0 0 20px}
+.rjl-legal-clause{scroll-margin-top:120px;margin:25px 0}.rjl-legal-clause h3{font-size:21px;line-height:1.35;margin:0 0 10px;color:#a61a22}.rjl-legal-wrap p,.rjl-legal-wrap li{font-size:16px;line-height:1.7;margin-top:8px;margin-bottom:12px}
+.rjl-legal-wrap table{width:100%;border-collapse:collapse;margin:18px 0;font-size:16px;table-layout:fixed}.rjl-legal-wrap th,.rjl-legal-wrap td{padding:12px;border:1px solid #d8dee5;vertical-align:top;overflow-wrap:anywhere;line-height:1.5}.rjl-legal-wrap th{background:#17212b;color:white;text-align:left}.rjl-legal-wrap tbody tr:nth-child(odd){background:#f3f5f7}.rjl-legal-wrap a{overflow-wrap:anywhere}
+.rjl-legal-contact{padding:22px;border:1px solid #d5dbe2;border-radius:8px;margin-top:30px}.rjl-legal-contact p{margin:6px 0}.rjl-legal-sources{margin-top:30px;padding-top:20px;border-top:1px solid #d5dbe2}
+@media(max-width:600px){.rjl-legal-wrap{padding:25px 16px 45px}.rjl-legal-intro{padding:18px}.rjl-legal-wrap th,.rjl-legal-wrap td{padding:9px;font-size:14px}.rjl-legal-nav{display:grid;grid-template-columns:1fr 1fr}.rjl-legal-clause h3{font-size:19px}}
+@media print{header,footer,.rjl-chat,.rjl-legal-nav,.rjl-legal-download{display:none!important}.rjl-legal-wrap{max-width:none;padding:0}.rjl-legal-wrap p,.rjl-legal-wrap li{font-size:10pt;line-height:1.4}.rjl-legal-clause{break-inside:avoid-page}.rjl-legal-wrap a{color:#000;text-decoration:none}}

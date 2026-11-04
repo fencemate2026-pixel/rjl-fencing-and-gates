@@ -1,0 +1,749 @@
+{
+  "title": "Warranty and Terms Booklet",
+  "subtitle": "Fencing gates and powdercoating care for Victorian installations",
+  "document_code": "RJL-WTC-VIC-20261104-1.0",
+  "issue_date": "4 November 2026",
+  "version": "1.0",
+  "companies": {
+    "commercial": {
+      "name": "RJL Commercial Fencing and Gates (VIC) Pty Ltd",
+      "brand": "RJL Commercial Group",
+      "abn": "37 652 237 431",
+      "email": "info@rjlcommercialgroup.com",
+      "phone": "0400 101 132",
+      "address": "Unit 1 / 12 Merchant Avenue, Thomastown VIC 3074",
+      "website": "https://www.rjlcommercialgroup.com",
+      "terms_path": "/terms"
+    },
+    "residential": {
+      "name": "RJL FENCING PTY. LTD.",
+      "brand": "RJL Fencing and Gates",
+      "abn": "82 159 036 781",
+      "email": "info@rjlfencing.com.au",
+      "phone": "0412 467 840",
+      "address": "Unit 1 / 12 Merchant Avenue, Thomastown VIC 3074",
+      "website": "https://www.rjlfencingandgates.com.au",
+      "terms_path": "/terms-and-conditions"
+    }
+  },
+  "introduction": "Keep this booklet with your quotation, project specifications, invoices and maintenance records. It explains the applicable warranties, client care requirements, sale and installation terms and how to make a claim. The contracting Company is the legal entity named in your accepted quotation. Each company is responsible for its own contracts; use that company's contact details when requesting service.",
+  "contract_notice": "These terms must be supplied before acceptance and read with any mandatory project contract or statutory documents. The version supplied and accepted for the project applies. Published updates do not retrospectively reduce an existing warranty or remove a statutory right.",
+  "warranty": [
+    {
+      "id": "w1",
+      "number": 1,
+      "title": "Warranty periods and cover",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Company named in the accepted quotation provides a 10-year warranty on its Australian-made custom steel fencing panels and gates, including their powdercoated finish, supplied and installed under that quotation. Cover starts at practical completion and applies to the original Client at the original installation address. The 10-year cover does not extend to timber, prefinished proprietary sheet fencing or other products unless expressly stated; their quoted warranties and statutory rights continue to apply."
+        },
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Item",
+              "RJL warranty period"
+            ],
+            [
+              "Australian-made custom steel panels and gates, including their powdercoating",
+              "10 years"
+            ],
+            [
+              "General installation labour and workmanship",
+              "2 years"
+            ],
+            [
+              "Supplied sliding gate motor and automation accessories, including remotes, photocells, control board and racking",
+              "3 years; annual servicing applies"
+            ]
+          ]
+        },
+        {
+          "type": "p",
+          "text": "Cover includes defective steelwork, welds and structural fabrication, and powdercoating failure caused by defective materials, unsuitable original coating selection, preparation or application. Covered coating defects include peeling, blistering, flaking, loss of adhesion and premature or excessive fading or chalking attributable to a defect. Reasonable labour and materials needed to rectify a covered defect are included. A separate general workmanship period does not shorten this specific 10-year cover."
+        },
+        {
+          "type": "p",
+          "text": "Motors, electronics, remotes and moving hardware have the separate warranty periods stated in the quotation. Their servicing requirements do not automatically cancel the steelwork or powdercoating warranty."
+        },
+        {
+          "type": "p",
+          "text": "A longer motor or product warranty expressly promised in the accepted quotation will be honoured. Manufacturer warranties are additional where applicable and do not reduce the Company's own promises. The 2-year general workmanship period does not shorten the specific 10-year steelwork and coating cover."
+        },
+        {
+          "type": "p",
+          "text": "Have the sliding gate motor and automation serviced at least every 12 months, and more frequently where the supplied manufacturer instructions or duty cycle require. Use the Company or a suitably qualified technician following the supplied service instructions. Keep the service record. Damage caused or materially worsened by missed or improper servicing is excluded to that extent; an unrelated defect or statutory right is not automatically cancelled."
+        }
+      ]
+    },
+    {
+      "id": "w2",
+      "number": 2,
+      "title": "Cleaning and inspection schedule",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "As a condition of this 10-year warranty, the Client must follow the Company's minimum care schedule below, or a more frequent product or site-specific schedule where supplied with the quotation. Manufacturer guidance can differ between coating products."
+        },
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Site conditions",
+              "Minimum client care"
+            ],
+            [
+              "Ordinary inland or suburban Victorian sites",
+              "Wash all accessible coated surfaces at least every 6 months."
+            ],
+            [
+              "Coastal, industrial, poolside or heavily vegetated sites; areas sheltered from rain",
+              "Wash at least every 3 months and sooner whenever deposits accumulate."
+            ],
+            [
+              "All sites",
+              "Inspect monthly and after storms, building work or chemical exposure. Remove sap, droppings, wet leaves and other contaminants promptly; do not wait for the next scheduled wash."
+            ]
+          ]
+        },
+        {
+          "type": "p",
+          "text": "Coastal exposure depends on sea spray, wind and site conditions, rather than postcode alone. Rinse salt deposits promptly after significant salt spray. Heavy marine or chemical exposure may require a more frequent written site schedule. Rainfall alone is not an adequate cleaning program."
+        }
+      ]
+    },
+    {
+      "id": "w3",
+      "number": 3,
+      "title": "Approved washing method",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Clean in shade when the coated surface is cool and below 25 degrees Celsius. Gently rinse away loose grit with clean fresh water. Wash with a soft cloth, sponge or soft-bristle brush and diluted, mild, non-abrasive, pH-neutral detergent. Work in small sections, without hard rubbing, and rinse thoroughly before detergent dries. Use a normal low-pressure garden hose. Keep water away from electrical enclosures and motor equipment, following their separate instructions."
+        }
+      ]
+    },
+    {
+      "id": "w4",
+      "number": 4,
+      "title": "Trees and plant deposits at Victorian sites",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Tree-related risks depend on the material deposited, its concentration, contact time and the coating system. The examples below identify conditions requiring attention; they do not mean that every tree of a named species damages powdercoating. A nearby tree, by itself, does not invalidate the warranty."
+        },
+        {
+          "type": "table",
+          "rows": [
+            [
+              "Trees or exposure",
+              "What the Client must watch for and remove"
+            ],
+            [
+              "Gums and eucalypts",
+              "Sap or gum deposits, bark, wet leaf litter and tannin-stained runoff accumulating on rails, panels or around post bases."
+            ],
+            [
+              "Pines and resin-producing conifers",
+              "Sticky resin deposits and needles or other debris lodged in rails, joints and drainage points."
+            ],
+            [
+              "Oaks and other trees dropping tannin-containing leaves",
+              "Wet leaves and brown runoff left on horizontal surfaces or trapped against the steelwork, especially during autumn and winter."
+            ],
+            [
+              "Fruiting or berry-bearing trees and vines",
+              "Fallen fruit, berries and decomposing plant material staining surfaces or retaining moisture."
+            ],
+            [
+              "Trees or shrubs with sap-feeding insects",
+              "Sticky honeydew deposits, associated dirt or sooty growth, and deposits beneath overhanging branches."
+            ],
+            [
+              "Any overhanging vegetation",
+              "Branches rubbing the coating, climbers attached to the fence, and bird or animal droppings."
+            ]
+          ]
+        },
+        {
+          "type": "p",
+          "text": "Inspect areas beneath trees more often during active sap or resin fall, leaf fall and after wind or rain. Remove loose plant material carefully. Soften fresh deposits using clean water and mild detergent, then gently lift them with a soft wet cloth. Do not scrape, dry-scrub or chip off hardened sap. If ordinary washing does not remove a deposit, ask the Company for instructions for the actual coating before using a solvent or stain remover."
+        },
+        {
+          "type": "p",
+          "text": "Keep branches and climbers from rubbing or growing through the fence where lawfully and safely practicable. This clause does not require the removal or unlawful pruning of a protected tree. Increase cleaning where vegetation cannot be kept clear. Damage demonstrably caused by deposits left untreated, abrasion or trapped moisture is subject to clause 10."
+        }
+      ]
+    },
+    {
+      "id": "w5",
+      "number": 5,
+      "title": "Gardens irrigation and moisture",
+      "blocks": [
+        {
+          "type": "bullet",
+          "text": "Keep above-ground coated components clear of soil, mulch, compost, grass clippings, manure, wet leaves and stored materials. Do not raise garden levels or bury bottom rails, panels or above-ground post surfaces. Maintain the clearance provided at installation; designed below-ground post embedment is not prohibited."
+        },
+        {
+          "type": "bullet",
+          "text": "Keep drainage and any designed drain or vent openings clear. Do not allow prolonged ponding or alter drainage so that water remains against the steelwork. Direct sprinklers away from the fence and rinse off irrigation residues, fertilisers, pesticides and pool chemicals promptly."
+        },
+        {
+          "type": "bullet",
+          "text": "Avoid sustained contact with animal urine, agricultural chemicals, bore-water deposits and pool or spa water. Prevent branches, equipment, bins and garden tools from repeatedly rubbing or striking the finish."
+        }
+      ]
+    },
+    {
+      "id": "w6",
+      "number": 6,
+      "title": "Cleaning products and treatments to avoid",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Unless expressly approved for the actual finish in written instructions from the Company and coating manufacturer, the Client must not use:"
+        },
+        {
+          "type": "bullet",
+          "text": "Pressure washers, concentrated water jets, steam cleaners, sandblasting or other blasting methods."
+        },
+        {
+          "type": "bullet",
+          "text": "Wire brushes, steel wool, abrasive pads, melamine cleaning pads, sandpaper, scraping blades, cutting compounds or abrasive polishes."
+        },
+        {
+          "type": "bullet",
+          "text": "Brick or concrete acid, strong acidic or alkaline cleaners, bleach or chlorine cleaners, caustic soda, oven cleaner or aggressive degreasers."
+        },
+        {
+          "type": "bullet",
+          "text": "Paint thinners, acetone, petrol, kerosene, turpentine, white spirits, citrus solvent cleaners, paint strippers or unapproved graffiti, tar and adhesive removers."
+        },
+        {
+          "type": "bullet",
+          "text": "Unapproved waxes, sealants, ceramic coatings, repainting products, rust converters, chemical treatments or adhesive films."
+        },
+        {
+          "type": "p",
+          "text": "Cleaning advice differs between coating systems. Do not assume that a product suitable for automotive paint, another fence or a different powder brand is suitable here. Use a solvent only under the written instructions for the supplied finish, test an inconspicuous area and rinse as directed. Prevent sunscreen, insect spray and other personal or household chemicals from remaining on coated surfaces; wash accidental deposits off promptly."
+        }
+      ]
+    },
+    {
+      "id": "w7",
+      "number": 7,
+      "title": "Building work and later alterations",
+      "blocks": [
+        {
+          "type": "bullet",
+          "text": "Protect the fence during landscaping, concreting, rendering, painting, welding and grinding nearby. Prevent cement slurry, mortar, paint, metal filings and hot sparks from contacting the coating. Remove contamination before it dries, using the approved method; seek advice where removal is difficult."
+        },
+        {
+          "type": "bullet",
+          "text": "Do not drill, cut, grind, weld, bend or otherwise modify coated steelwork, add incompatible fixings or dissimilar metal attachments, or repaint it without first obtaining repair and protection instructions from the Company."
+        },
+        {
+          "type": "bullet",
+          "text": "Use only approved temporary protection. Remove tapes and films within their stated time limits. Do not trap moisture beneath wrapping or allow adhesive residue to bake onto the surface."
+        },
+        {
+          "type": "p",
+          "text": "Any protection or repair needed because of the Company's own installation or modification remains the Company's responsibility. This section does not exclude an original defect merely because the work was cut, drilled or welded during installation."
+        }
+      ]
+    },
+    {
+      "id": "w8",
+      "number": 8,
+      "title": "Inspections damage and safe use",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "During the monthly inspection, check accessible welds, joints, post bases, fasteners and coated edges for chips, scratches, loose parts, rust spots, blistering or peeling. Photograph and report developing problems promptly. Do not remove sound coating to investigate rust, and do not paint over a suspected defect before it is assessed. Damage exposing steel needs prompt advice and an appropriate compatible repair to limit spreading corrosion."
+        },
+        {
+          "type": "p",
+          "text": "Use fences and gates for their designed purpose. Do not climb, swing on or force gates, overload them, hang signs or other loads without approval, or use a fence as a retaining wall unless designed for that purpose. Keep gate tracks and moving clearances free of debris. Arrange mechanical or electrical work through a suitably qualified person and follow the separate gate maintenance instructions."
+        }
+      ]
+    },
+    {
+      "id": "w9",
+      "number": 9,
+      "title": "Maintenance records",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Keep a simple dated record of washing, inspections, products used, reported damage and repairs. Photos, a calendar entry or a property maintenance log are suitable. The Client may carry out routine cleaning; paid servicing or a cleaning contractor's invoice is not required for the steelwork and coating warranty. Supply available records when a claim is assessed. Missing paperwork alone does not automatically invalidate the whole warranty."
+        }
+      ]
+    },
+    {
+      "id": "w10",
+      "number": 10,
+      "title": "Exclusions and assessment of cause",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Under this voluntary warranty, the Company does not cover the affected damage to the extent that it is caused or materially worsened by failure to carry out the stated maintenance; accumulated sap, resin, tannins, droppings or other contamination; chemical exposure; abrasion, chips or impact; unauthorised alterations; misuse; or prolonged moisture contact caused by later landscaping, blocked drainage or changed site conditions."
+        },
+        {
+          "type": "p",
+          "text": "The same principle applies to damage caused by vehicle impact, vandalism, forced entry, fire, flood, storm debris, animal damage, or ground movement, heave or settlement unrelated to a defect in the Company's design or work. Ordinary intended outdoor exposure is not, by itself, an exclusion. The Company must explain the factual basis of any excluded cause it relies on. An exclusion applies to the affected damage, not automatically to unrelated components or defects."
+        },
+        {
+          "type": "p",
+          "text": "Normal wear of consumables, including batteries, lamps and worn moving parts, is excluded, but a manufacturing defect is not ordinary wear. Existing or third-party equipment not supplied by the Company is outside this voluntary warranty. For equipment the Company did supply, third-party manufacture alone does not exclude cover. Electrical surges, lightning, pest damage, water exposure or network outages are excluded only to the extent they cause the claimed fault and are not attributable to a defect in the Company's own goods or work."
+        }
+      ]
+    },
+    {
+      "id": "w11",
+      "number": 11,
+      "title": "Fading appearance and corrosion",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Gradual weathering can include changes in colour or gloss and some chalking. The finish is not promised to remain identical to its new appearance throughout the 10 years. Whether a change is ordinary weathering or a covered defect must be assessed against the actual product, the site exposure, reasonable durability expectations and any relevant performance specification supplied with the quotation. Normal sunlight, coastal location or the mere presence of trees does not automatically cancel cover."
+        },
+        {
+          "type": "p",
+          "text": "Premature fading, excessive chalking, peeling or corrosion caused by defective original coating selection, preparation, application or installation remains assessable under this warranty. Surface deposits or stains must not automatically be treated as a coating failure, and genuine coating failure must not automatically be dismissed as normal weathering. Screen images, lighting, separate batches and ageing can affect apparent colour; a reasonable assessment may require a clean surface and inspection in consistent conditions."
+        }
+      ]
+    },
+    {
+      "id": "w12",
+      "number": 12,
+      "title": "Claims remedies and expenses",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Notify the Company promptly after discovering a suspected defect, with the site address, invoice number or other reasonable proof of purchase, a description, photographs where possible and available maintenance records. Defects must arise within the 10-year voluntary warranty period. Statutory rights are not restricted to that period. Allow reasonable access for inspection. Contact the Company before elective remedial work so it can assess the cause; reasonable urgent work to make the site safe or prevent further damage does not automatically cancel cover. Preserve evidence where practicable."
+        },
+        {
+          "type": "p",
+          "text": "The Company will investigate within a reasonable time and explain its assessment. For a covered defect, it will repair, recoat or replace the affected work as appropriate, without charging for necessary labour or materials, subject to any different remedy required by law. Repairs under this voluntary warranty remain covered for the balance of the original period, without limiting statutory rights. Manufacturer approval is not a substitute for the Company honouring its own warranty."
+        },
+        {
+          "type": "p",
+          "text": "The Company bears reasonable expenses of making a successful warranty claim. Send receipts or other reasonable evidence of those expenses to the claims contact below for reimbursement. Advise anticipated transport, access or other unusual costs beforehand where practicable. Any charge for agreed work outside warranty must be disclosed and agreed before it is incurred. Statutory rights to recover reasonable expenses are preserved."
+        },
+        {
+          "type": "p",
+          "text": "Send the claim to the Company named in your quotation using the contact details in this booklet. For a gate creating an immediate hazard, stop using it, keep people clear and contact the Company. Do not attempt electrical or mechanical repairs yourself."
+        }
+      ]
+    },
+    {
+      "id": "w13",
+      "number": 13,
+      "title": "Relationship with other quotation terms",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Read this booklet with the accepted quotation, project specifications, agreed variations and any mandatory project contract. The quotation identifies the contracting Company, work, price and project dates. Part 1 governs the warranties, subject to any longer period expressly promised. Mandatory law prevails. A product-specific restriction relied on by the Company must be supplied before acceptance. The Company must select a coating system suitable for the agreed site and provide the relevant care instructions at handover. Website changes do not retrospectively reduce an accepted warranty."
+        }
+      ]
+    },
+    {
+      "id": "w14",
+      "number": 14,
+      "title": "Australian Consumer Law",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The benefits of this warranty are in addition to other rights and remedies available to the Client under law. The following statement applies to the supply of goods and services:"
+        },
+        {
+          "type": "p",
+          "text": "Our goods and services come with guarantees that cannot be excluded under the Australian Consumer Law. For major failures with the service, you are entitled:"
+        },
+        {
+          "type": "bullet",
+          "text": "to cancel your service contract with us; and"
+        },
+        {
+          "type": "bullet",
+          "text": "to a refund for the unused portion, or to compensation for its reduced value."
+        },
+        {
+          "type": "p",
+          "text": "You are also entitled to choose a refund or replacement for major failures with goods. If a failure with the goods or a service does not amount to a major failure, you are entitled to have the failure rectified in a reasonable time. If this is not done you are entitled to a refund for the goods and to cancel the contract for the service and obtain a refund of any unused portion. You are also entitled to be compensated for any other reasonably foreseeable loss or damage from a failure in the goods or service."
+        }
+      ]
+    }
+  ],
+  "sales": [
+    {
+      "id": "s1",
+      "number": 1,
+      "title": "Quotation and acceptance",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Quotations remain open for 30 days unless stated otherwise and assume acceptance of the whole quoted scope. A request to accept only part may require a revised quotation. A contract is formed through the acceptance method in the quotation, after the Client has received the quotation and these terms and had a reasonable opportunity to read them. A mandatory signed project contract takes precedence where legislation requires one."
+        },
+        {
+          "type": "p",
+          "text": "This booklet supplements any project-specific domestic building contract, prescribed notice, checklist or other statutory document required for the work; it does not replace them. Variations must be documented under clause 5."
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "number": 2,
+      "title": "Prices and GST",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Prices are in Australian dollars. The quotation must identify GST and the total payable. Where a component is stated exclusive of GST, GST is added and the total must also be shown where required by law. Once a quotation is accepted, a price increase is permitted only by an agreed written variation or another lawful provision of the project contract; supplier increases do not create an unrestricted right to increase an accepted price."
+        },
+        {
+          "type": "p",
+          "text": "Any permitted card surcharge must be disclosed before payment and must not exceed the lawful cost of acceptance. An expired, unaccepted quotation may be re-priced."
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "number": 3,
+      "title": "Payment",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "For work not subject to mandatory domestic building payment rules, the default payment schedule is 50% on acceptance to secure materials, 25% before the delivery date confirmed in writing, and 25% at practical completion, unless the quotation sets a different lawful schedule. Bank and other payment instructions appear on the quotation or invoice."
+        },
+        {
+          "type": "p",
+          "text": "Where the Domestic Building Contracts Act 1995 (Vic) applies, its deposit limits and lawful progress-payment rules override that default. The deposit must not exceed 10% for a contract below $20,000 or 5% for a contract of $20,000 or more, subject to any legally applicable exception. Required insurance and project documents must be provided before a deposit is collected where the law requires."
+        },
+        {
+          "type": "p",
+          "text": "Undisputed overdue amounts may attract interest at an annual rate equal to the Reserve Bank of Australia cash rate plus 2 percentage points, calculated daily, where lawful. Recovery costs are limited to reasonable amounts actually incurred and lawfully recoverable. Suspension for non-payment is subject to clauses 19 and 22 and any mandatory notice requirements."
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "number": 4,
+      "title": "Practical completion and defects",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Practical completion occurs when the contracted works are substantially complete and fit for their intended purpose, with only minor omissions or defects that do not prevent safe intended use. The Company will identify outstanding items and rectify covered defects within a reasonable time."
+        },
+        {
+          "type": "p",
+          "text": "Payment follows the lawful project payment schedule. The Client must pay undisputed amounts when due. Nothing in these terms removes a lawful right to dispute a payment claim, withhold or set off an amount, or obtain an Australian Consumer Law remedy. Rectification is not the Client's sole remedy where the law provides another."
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "number": 5,
+      "title": "Variations ground conditions and concrete",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Before varied work proceeds, the Company will describe the proposed change, additional price and time effect in writing and obtain agreement, except to the extent legislation permits urgent or otherwise authorised work. Statutory variation procedures must also be followed where applicable."
+        },
+        {
+          "type": "p",
+          "text": "The quotation assumes the ground conditions and excavation allowances stated in it. Unexpected rock, buried concrete, footings, contamination or services may require a variation where they could not reasonably have been allowed for. The Company remains responsible for investigations and allowances required of it by law."
+        },
+        {
+          "type": "p",
+          "text": "Where the quotation does not include required jackhammering, coring, concrete cutting or removal, an agreed variation is charged at $90 per person per hour excluding GST ($99 including GST), plus disclosed disposal and equipment costs. Excavated soil may be spread in an agreed suitable location on site; removal is included only where stated or separately agreed."
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "number": 6,
+      "title": "Work excluded unless quoted",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Unless expressly included, allowances do not cover a new 240 V supply and licensed electrical connection; clearing vegetation or obstacles; additional concrete work; conduit or cabling; making existing gates or structures suitable for automation; or a boundary survey. Any required extra work must be priced and authorised before proceeding under clause 5."
+        },
+        {
+          "type": "p",
+          "text": "Mandatory safety, permit, engineering or legal obligations cannot be avoided merely by describing them as excluded. The scope must identify who will arrange any separately supplied work before installation proceeds."
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "number": 7,
+      "title": "Site access and recovery access",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Client must arrange safe, reasonable access to land they are authorised to make available, at agreed times, for the contracted work and agreed inspections or servicing. Access to adjoining land requires the permission of the person entitled to grant it."
+        },
+        {
+          "type": "p",
+          "text": "These terms do not grant an irrevocable right of forced entry, waive trespass protections or authorise removal of fixtures. Access to recover unpaid goods requires lawful authority and must comply with clause 12. The Company must take reasonable care to avoid damage."
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "number": 8,
+      "title": "Client information boundaries and approvals",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Client confirms that they own the property or have authority to engage the Company. They must disclose known hazards and provide available boundary, service and site information, and obtain owner, occupier, owners corporation or neighbour consents allocated to them in the quotation."
+        },
+        {
+          "type": "p",
+          "text": "The quotation must identify responsibility for permits, approvals, survey and service locating. Each party retains obligations imposed on it by law. Before You Dig Australia plans do not prove the exact position of every service; appropriate locating and verification must be arranged. Liability for an error is assessed according to responsibility and contribution, rather than automatically shifted to the Client."
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "number": 9,
+      "title": "Existing structures and equipment",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Company will exercise reasonable care around existing wiring, services, foundations, paving, concrete, gates, automation and access-control equipment. Pre-existing defects or incompatibilities may require an agreed variation. The Company does not warrant equipment it did not supply, but remains responsible for loss caused by its own defective work or failure to exercise required care."
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "number": 10,
+      "title": "Colour and finish",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Client selects the quoted colour and finish after considering any supplied physical sample. Screens and lighting can change apparent colour. Reasonable batch and material variation may occur. The Company must supply the agreed specification and remain responsible for a defect or material mismatch; this clause does not exclude the 10-year powdercoating cover or statutory rights. See Part 1 for weathering and care."
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "number": 11,
+      "title": "Radio GSM and network interference",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "External radio interference, telecommunications outages, customer network settings and third-party system changes can affect operation. The Company will explain any investigation or equipment proposed and agree additional charges before non-warranty work proceeds. Faults in supplied goods or installation remain subject to the applicable warranty and law."
+        }
+      ]
+    },
+    {
+      "id": "s12",
+      "number": 12,
+      "title": "Ownership and personal property security",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "To the extent the goods remain personal property and the law permits, title to goods supplied for the project remains with the Company until the amount owing for those goods is paid. The Client must take reasonable care of unpaid goods. Risk and responsibility for site materials are allocated in the quotation, subject to the Company's continuing responsibility for its own acts and legal obligations."
+        },
+        {
+          "type": "p",
+          "text": "Where a valid security interest arises, these terms constitute a security agreement under the Personal Property Securities Act 2009 (Cth), and the Company may register it on the Personal Property Securities Register (PPSR). The Client will provide reasonable assistance for a valid registration. Land and fixtures are not automatically personal property under that Act. Registration does not create an unrestricted right to enter land or remove installed works; any enforcement must be lawful and proportionate."
+        }
+      ]
+    },
+    {
+      "id": "s13",
+      "number": 13,
+      "title": "Insurance",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Company must maintain insurance required by law for the work it undertakes and can provide evidence of applicable cover on request. Any required domestic building insurance must be arranged and evidenced as the law requires. Responsibility for additional project or contract-works insurance must be set out in the quotation; mandatory insurance obligations cannot be transferred to the Client by this clause."
+        }
+      ]
+    },
+    {
+      "id": "s14",
+      "number": 14,
+      "title": "Delivery and delays",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The quotation or project contract sets the delivery and installation dates or how they will be determined. The Company will notify the Client of material delays and take reasonable steps to reduce their effect. Any extension or extra cost must follow the project contract and applicable law; weather or supplier delay does not automatically excuse every obligation."
+        },
+        {
+          "type": "p",
+          "text": "If the Client postpones an agreed delivery after manufacture, reasonable storage or re-delivery costs may apply if disclosed and agreed. Neither party loses a statutory right because a date was described as an estimate."
+        }
+      ]
+    },
+    {
+      "id": "s15",
+      "number": 15,
+      "title": "Warranty servicing and rapid response",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Part 1 provides the 10-year custom steelwork and powdercoating warranty, 2-year general workmanship warranty, and 3-year supplied sliding motor and automation warranty. An expressly promised longer period is honoured. Annual motor servicing and reasonable routine maintenance apply as stated in Part 1; an unrelated warranty is not automatically cancelled."
+        },
+        {
+          "type": "p",
+          "text": "Priority rapid-response assistance is available to RJL clients through the contact number for the contracting Company. Availability, travel, call-out and after-hours charges are agreed when booking unless covered by warranty or a service plan. Response times are not guaranteed unless expressly agreed. A maintenance plan covers only the visits, parts and services specified in that plan and does not renew or increase in price without its agreed notice and renewal process."
+        }
+      ]
+    },
+    {
+      "id": "s16",
+      "number": 16,
+      "title": "Drawings designs and intellectual property",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Company retains intellectual property rights in its original drawings, bespoke designs, renders, specifications and software unless a written licence or assignment states otherwise. The Client may use the quotation to assess and compare scope and price and may give it to professional advisers or authorities. The Client must not copy a protected bespoke design for manufacture by another party without permission. Ownership of the Client's pre-existing material is not transferred."
+        }
+      ]
+    },
+    {
+      "id": "s17",
+      "number": 17,
+      "title": "Photographs and marketing",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Company may photograph the work for project and service records. Marketing photographs are subject to the Client's written objection and any consent required by law. The Company will not publish the Client's name, address, identifiable people or sensitive site security details without appropriate consent."
+        }
+      ]
+    },
+    {
+      "id": "s18",
+      "number": 18,
+      "title": "Liability",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Nothing excludes or limits liability, a consumer guarantee, an express warranty, a statutory building warranty or another right that cannot lawfully be excluded. Where section 64A of the Australian Consumer Law permits a fair and reasonable limitation for goods or services not ordinarily acquired for personal, domestic or household use, liability for the relevant guarantee may be limited to the remedies that section permits."
+        },
+        {
+          "type": "p",
+          "text": "Any limitation does not apply beyond what the law permits and does not excuse fraud, wilful misconduct or liability that cannot be limited. Recoverable loss is assessed under the applicable law, including reasonable foreseeability and each party's contribution. This clause does not impose a blanket exclusion of consequential loss or a repair-only remedy on a consumer."
+        }
+      ]
+    },
+    {
+      "id": "s19",
+      "number": 19,
+      "title": "Health safety and respectful conduct",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The Client must arrange safe, clear and unobstructed access and must not expose workers to threats, abuse, harassment or other unsafe conditions. The Company may stop work or leave immediately where reasonably necessary for safety, explain the issue and advise what is needed for safe resumption."
+        },
+        {
+          "type": "p",
+          "text": "Reasonable additional costs caused by a Client breach may be recovered only where lawful and properly substantiated. There is no automatic forfeiture of unused prepayments or blanket exclusion of refunds. Required SWMS, licences and insurance evidence will be provided where applicable. Each party retains its own health and safety duties."
+        }
+      ]
+    },
+    {
+      "id": "s20",
+      "number": 20,
+      "title": "Privacy",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Personal information is handled under applicable privacy law, including the Privacy Act 1988 (Cth) where it applies, and the contracting Company's published privacy policy. Information submitted through a website enquiry is used to assess and respond to that enquiry and may be processed by the form-delivery provider for that purpose. Do not submit payment-card information, passwords or unnecessary sensitive information through an enquiry form."
+        }
+      ]
+    },
+    {
+      "id": "s21",
+      "number": 21,
+      "title": "Disputes and mediation",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "A party raising a dispute should give written notice describing the issue and proposed resolution. The parties will attempt a good-faith discussion within 10 business days. If unresolved after 20 business days, they will seek mediation with an agreed independent accredited mediator, subject to any mandatory statutory dispute process."
+        },
+        {
+          "type": "p",
+          "text": "This process does not prevent either party from contacting a regulator, using a statutory building dispute or tribunal process, bringing a claim where the law permits, recovering an undisputed debt, or seeking urgent relief. It does not extend a limitation period unless lawfully agreed. Any recovery of goods must independently comply with clause 12. Mediation costs are agreed with the mediator and the parties."
+        }
+      ]
+    },
+    {
+      "id": "s22",
+      "number": 22,
+      "title": "Default and cancellation",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "For an undisputed overdue payment or other remediable material breach, the Company must give written particulars and a reasonable opportunity to remedy, normally at least 5 business days, before suspension or termination, subject to mandatory contract procedures. Immediate safety action under clause 19 remains available. Insolvency-related action is subject to applicable law."
+        },
+        {
+          "type": "p",
+          "text": "The Client retains all statutory cooling-off, cancellation and termination rights and may terminate for a material Company breach where law permits. Other requested cancellations must be assessed reasonably. A cancellation account may include the agreed value of work performed and reasonable, evidenced, irrecoverable costs for custom materials or restocking, less amounts avoided or recovered through resale and less payments already received. The Company must mitigate loss and refund any balance due; no automatic charge for all unperformed future work applies."
+        }
+      ]
+    },
+    {
+      "id": "s23",
+      "number": 23,
+      "title": "Governing law and jurisdiction",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "Victorian and Commonwealth laws apply. The parties submit to Victorian courts and tribunals with jurisdiction, without restricting a non-excludable right to another statutory forum or dispute-resolution process."
+        }
+      ]
+    },
+    {
+      "id": "s24",
+      "number": 24,
+      "title": "General",
+      "blocks": [
+        {
+          "type": "p",
+          "text": "The accepted quotation, this booklet, required project contract and agreed written variations record the agreement. They do not exclude an enforceable representation, express warranty or statutory right. Mandatory law prevails. A severable invalid term is severed only to the extent necessary; the remainder continues where it can lawfully operate. Failure to enforce a term is not a waiver."
+        },
+        {
+          "type": "p",
+          "text": "The Client must seek written consent before assigning the contract; consent must not be unreasonably withheld. The Company may use suitably qualified subcontractors and remains responsible for its contracted work. Terms that appropriately survive completion or termination continue, including accrued payment obligations, lawful security, intellectual property, liability and dispute provisions. Later website changes do not retrospectively alter an accepted contract."
+        }
+      ]
+    }
+  ],
+  "acceptance": "By accepting the quotation in the manner it specifies, after receiving and having a reasonable opportunity to read the quotation and these terms, the Client confirms their authority to enter the contract and arrange the agreed site access. Any legally required signed contract, cooling-off rights and non-excludable consumer protections continue to apply.",
+  "sources": [
+    [
+      "Dulux Powder Coatings",
+      "Care and Maintenance of Powder Coated Surfaces",
+      "https://www.duluxpowders.com.au/media/tpfcxinp/j241112-dulux-powder-tech-advice-brochure-maintenance-au-nov-2025-v2.pdf"
+    ],
+    [
+      "Interpon",
+      "Powder Coatings Care and Maintenance",
+      "https://www.specifyinterpon.com.au/wp-content/uploads/interpon-care-and-maintenance.pdf"
+    ],
+    [
+      "ACCC",
+      "Warranties",
+      "https://www.accc.gov.au/business/selling-products-and-services/warranties"
+    ],
+    [
+      "Consumer Affairs Victoria",
+      "Deposits and payments for building work",
+      "https://www.consumer.vic.gov.au/housing/building-and-renovating/plan-and-manage-your-building-project/deposits-and-payments"
+    ],
+    [
+      "Victorian legislation",
+      "Domestic Building Contracts Act 1995",
+      "https://www.legislation.vic.gov.au/in-force/acts/domestic-building-contracts-act-1995/094"
+    ],
+    [
+      "PPSR",
+      "About the PPSR",
+      "https://www.ppsr.gov.au/about-us/about-ppsr"
+    ]
+  ]
+}
