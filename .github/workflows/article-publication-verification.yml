@@ -1,0 +1,27 @@
+name: RJL article publication verification
+on:
+  push:
+    branches: [codex/verify-sloping-fence-20261117]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TZ: Australia/Melbourne
+      ARTICLE_ORIGIN: https://deploy-preview-32--rjlfencingandgates.netlify.app
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Run required checks
+        run: |
+          npm test
+          npm run check:site
+      - name: Rebuild and compare RSS
+        run: |
+          python3 tools/build_blog_feed.py
+          git diff --exit-code -- site/blog-feed.xml
+      - name: Verify published article and navigation
+        run: python3 tools/verify_sloping_fence_publication.py
