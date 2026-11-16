@@ -126,3 +126,5 @@ The homepage displays **10,520+ completed jobs**, supplied by the owner on this 
 [Fencing a sloping block in Melbourne](https://www.rjlfencingandgates.com.au/blogs/fencing-sloping-block-melbourne) covers stepped and raked panels, clearances and planning around retaining walls. The existing homepage advice section, blog index, RSS feed and sitemap link to the guide. See the [content log](docs/content-log.md) for sources.
 
 The site audit flagged three existing version tags. This release updates the homepage job counter and legal stylesheet tags to match the current assets.
+
+The RSS builder uses the Melbourne date and keeps articles with the same publication date in listing order so repeated builds produce the same feed.
