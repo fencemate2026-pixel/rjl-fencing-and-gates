@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 5
     env:
       TZ: Australia/Melbourne
-      ARTICLE_ORIGIN: https://deploy-preview-32--rjlfencingandgates.netlify.app
+      ARTICLE_ORIGIN: https://www.rjlfencingandgates.com.au
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -25,3 +25,5 @@ jobs:
           git diff --exit-code -- site/blog-feed.xml
       - name: Verify published article and navigation
         run: python3 tools/verify_sloping_fence_publication.py
+      - name: Submit verified URLs to IndexNow
+        run: python3 tools/notify_indexnow.py 'https://www.rjlfencingandgates.com.au/blogs/fencing-sloping-block-melbourne' 'https://www.rjlfencingandgates.com.au/blogs' 'https://www.rjlfencingandgates.com.au/'
