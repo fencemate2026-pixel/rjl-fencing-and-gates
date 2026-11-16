@@ -119,3 +119,8 @@ Canonical content: `docs/terms-and-warranty-victoria.json`. The printable bookle
 ## Homepage completed-job counter - 4 November 2026
 
 The homepage displays **10,520+ completed jobs**, supplied by the owner on this date. The number counts up once when visible and remains at that recorded total. It does not automatically add jobs or connect to a job database. Update both the visible number and `data-total` in `site/index.html` when the owner supplies a new verified total. `site/assets/job-counter.js` respects reduced-motion preferences; the final number remains readable with JavaScript disabled and has a static screen-reader equivalent. `site/assets/job-counter.css` provides the outlined, responsive brand treatment.
+
+
+## Sloping-block homeowner guide — 17 November 2026
+
+[Fencing a sloping block in Melbourne](https://www.rjlfencingandgates.com.au/blogs/fencing-sloping-block-melbourne) covers stepped and raked panels, clearances and planning around retaining walls. The existing homepage advice section, blog index, RSS feed and sitemap link to the guide. See the [content log](docs/content-log.md) for sources.
