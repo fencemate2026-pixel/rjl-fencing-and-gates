@@ -10,7 +10,9 @@ CONFIG=json.loads((ROOT/'docs/search-publishing.json').read_text())
 ORIGIN='https://'+CONFIG['host']
 def build():
     index=(SITE/CONFIG['blog_index']).read_text()
-    linked={html.unescape(v) for v in re.findall(r'href="([^"]+)"',index)}
+    links = list(dict.fromkeys(html.unescape(value) for value in re.findall(r'href="([^"]+)"', index)))
+    link_order = {value: position for position, value in enumerate(links)}
+    today = datetime.now(ZoneInfo('Australia/Melbourne')).date()
     rows=[]
     for p in (SITE/CONFIG['blog_directory']).glob('*.html'):
         for raw in re.findall(r'<script type="application/ld\+json">(.*?)</script>',p.read_text(),re.S):
@@ -19,12 +21,17 @@ def build():
             url=data.get('mainEntityOfPage')
             if isinstance(url,dict):url=url.get('@id')
             if not isinstance(url,str) or not url.startswith(ORIGIN+'/'):continue
-            if url.removeprefix(ORIGIN) not in linked and url not in linked:continue
+            if url.removeprefix(ORIGIN) not in link_order and url not in link_order:continue
             published=data.get('datePublished','')[:10]
             d=date.fromisoformat(published)
-            if d>date.today():continue
+            if d > today: continue
             rows.append(dict(url=url,title=data['headline'],description=data['description'],published=published))
-    rows=sorted({r['url']:r for r in rows}.values(),key=lambda r:r['published'],reverse=True)
+    # Keep tied publication dates in the same order as the blog listing.
+    def sort_key(row):
+        url = row['url']
+        path = url.removeprefix(ORIGIN)
+        return (-date.fromisoformat(row['published']).toordinal(), min(link_order.get(path, len(links)), link_order.get(url, len(links))))
+    rows = sorted({row['url']: row for row in rows}.values(), key=sort_key)
     if not rows:raise ValueError('No published, linked articles found')
     ET.register_namespace('atom','http://www.w3.org/2005/Atom')
     root=ET.Element('rss',{'version':'2.0'});channel=ET.SubElement(root,'channel')
